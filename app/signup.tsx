@@ -5,6 +5,7 @@ import {
   ScrollView,
   Alert,
   TouchableOpacity,
+  Keyboard,
 } from 'react-native';
 import React, { useCallback, useEffect, useReducer, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -20,13 +21,16 @@ import OrSeparator from '../components/OrSeparator';
 import { useTheme } from '../theme/ThemeProvider';
 import { Image } from 'expo-image';
 import { useNavigation } from 'expo-router';
+import { isLoading } from 'expo-font';
 
 interface InputValues {
+  fullName: string;
   email: string;
   password: string;
 }
 
 interface InputValidities {
+  fullName: boolean | undefined;
   email: boolean | undefined;
   password: boolean | undefined;
 }
@@ -39,10 +43,12 @@ interface FormState {
 
 const initialState: FormState = {
   inputValues: {
+    fullName: '',
     email: '',
     password: '',
   },
   inputValidities: {
+    fullName: false,
     email: false,
     password: false,
   },
@@ -54,10 +60,11 @@ type Nav = {
 };
 
 const Signup = () => {
+  const [keyboardVisible, setKeyboardVisible] = useState(false);
   const { navigate } = useNavigation<Nav>();
   const [formState, dispatchFormState] = useReducer(reducer, initialState);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
   const [isChecked, setChecked] = useState(false);
   const { colors, dark } = useTheme();
 
@@ -73,11 +80,76 @@ const Signup = () => {
     [dispatchFormState]
   );
 
+  const handleSignUp = async () => {
+    setIsLoading((prev) => true);
+
+    // console.log(formState.formIsValid);
+    // console.log(formState.inputValues);
+    if (!formState.formIsValid) {
+      setIsLoading((prev) => false);
+      return;
+    }
+    if (
+      formState.inputValues.password !== formState.inputValues.confirmPassword
+    ) {
+      setIsLoading((prev) => false);
+      setError('Both passords must match');
+      return;
+    }
+    setTimeout(() => {
+      setIsLoading((prev) => false);
+    }, 2000);
+    // navigate('reasonforusingallpay')
+    // try {
+    //   const response = await fetch(
+    //     'https://dummyjson.com/users/add',
+    //     {
+    //       method: 'POST',
+    //       headers: {
+    //         'Content-Type': 'application/json',
+    //       },
+    //       body: JSON.stringify(formState.inputValues),
+    //     }
+    //   );
+    //   if (response.status === 201) {
+    //     navigate('login');
+    //   } else {
+    //     setError('Something went wrong');
+    //   }
+    // } catch (error) {
+    //   setError('Something went wrong');
+    // }
+    // setIsLoading(false);
+  };
+
   useEffect(() => {
     if (error) {
-      Alert.alert('An error occured', error);
+      Alert.alert(error);
+      setError(null);
     }
   }, [error]);
+
+  //Event listener to check whether the keyBoard is open or not
+  useEffect(() => {
+    const keyboardDidShowListener = Keyboard.addListener(
+      'keyboardDidShow',
+      () => {
+        setKeyboardVisible(true); // Keyboard is open
+      }
+    );
+    const keyboardDidHideListener = Keyboard.addListener(
+      'keyboardDidHide',
+      () => {
+        setKeyboardVisible(false); // Keyboard is closed
+      }
+    );
+
+    // Cleanup the listeners on unmount
+    return () => {
+      keyboardDidHideListener.remove();
+      keyboardDidShowListener.remove();
+    };
+  }, []);
 
   // implementing apple authentication
   const appleAuthHandler = () => {
@@ -93,6 +165,8 @@ const Signup = () => {
   const googleAuthHandler = () => {
     console.log('Google Authentication');
   };
+
+  // console.log(keyboardVisible);
 
   return (
     <SafeAreaView style={[styles.area, { backgroundColor: colors.background }]}>
@@ -117,6 +191,15 @@ const Signup = () => {
             Create Your Account
           </Text>
           <Input
+            id="fullName"
+            onInputChanged={inputChangedHandler}
+            errorText={formState.inputValidities['fullName']}
+            placeholder="Full Name"
+            placeholderTextColor={dark ? COLORS.grayTie : COLORS.black}
+            icon={icons.profile2}
+            keyboardType="default"
+          />
+          <Input
             id="email"
             onInputChanged={inputChangedHandler}
             errorText={formState.inputValidities['email']}
@@ -131,6 +214,16 @@ const Signup = () => {
             autoCapitalize="none"
             id="password"
             placeholder="Password"
+            placeholderTextColor={dark ? COLORS.grayTie : COLORS.black}
+            icon={icons.padlock}
+            secureTextEntry={true}
+          />
+          <Input
+            onInputChanged={inputChangedHandler}
+            errorText={formState.inputValidities['confirmPassword']}
+            autoCapitalize="none"
+            id="confirmPassword"
+            placeholder="Confirm Password"
             placeholderTextColor={dark ? COLORS.grayTie : COLORS.black}
             icon={icons.padlock}
             secureTextEntry={true}
@@ -160,12 +253,13 @@ const Signup = () => {
             </View>
           </View>
           <Button
-            title="Sign Up"
+            title={isLoading ? 'Signing Up...' : 'Sign Up'}
             filled
-            onPress={() => navigate('reasonforusingallpay')}
-            style={styles.button}
+            disabled={isLoading}
+            onPress={handleSignUp}
+            style={[styles.button, { opacity: isLoading ? 0.5 : 1 }]}
           />
-          <View>
+          {/* <View>
             <OrSeparator text="or continue with" />
             <View style={styles.socialBtnContainer}>
               <SocialButton
@@ -179,9 +273,16 @@ const Signup = () => {
               />
               <SocialButton icon={icons.google} onPress={googleAuthHandler} />
             </View>
-          </View>
+          </View> */}
         </ScrollView>
-        <View style={styles.bottomContainer}>
+        <View
+          style={[
+            styles.bottomContainer,
+            {
+              opacity: keyboardVisible ? 0 : 1,
+            },
+          ]}
+        >
           <Text
             style={[
               styles.bottomLeft,
@@ -288,6 +389,7 @@ const styles = StyleSheet.create({
     marginVertical: 6,
     width: SIZES.width - 32,
     borderRadius: 30,
+    // opacity: isLoading ? 0.5 : 1
   },
 });
 
