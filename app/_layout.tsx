@@ -6,6 +6,8 @@ import 'react-native-reanimated';
 import { FONTS } from '@/constants/fonts';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 import { LogBox } from 'react-native';
+import Toast from 'react-native-toast-message';
+import CustomToast from '@/components/CustomToast';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -97,6 +99,13 @@ export default function RootLayout() {
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="+not-found" />
       </Stack>
+      <Toast
+        config={{
+          success: (internalProps) => <CustomToast {...internalProps} />,
+          error: (internalProps) => <CustomToast {...internalProps} />,
+          info: (internalProps) => <CustomToast {...internalProps} />,
+        }}
+      />
     </ThemeProvider>
   );
 }

@@ -21,6 +21,7 @@
     "@react-native-picker/picker": "2.7.5",
     "@react-navigation/native": "^6.0.2",
     "@types/react-native-modern-datepicker": "^1.0.5",
+    "axios": "^1.7.7",
     "expo": "^51.0.31",
     "expo-camera": "~15.0.15",
     "expo-checkbox": "~3.0.0",
@@ -54,6 +55,7 @@
     "react-native-screens": "3.31.1",
     "react-native-svg": "15.2.0",
     "react-native-tab-view": "^3.5.2",
+    "react-native-toast-message": "^2.2.1",
     "react-native-virtualized-view": "^1.0.0",
     "react-native-web": "~0.19.10",
     "validate.js": "^0.13.1"

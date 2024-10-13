@@ -22,6 +22,9 @@ import { useTheme } from '../theme/ThemeProvider';
 import { Image } from 'expo-image';
 import { useNavigation } from 'expo-router';
 import { isLoading } from 'expo-font';
+import useApiRequest from '@/hooks/useApiRequest';
+import { API_DOMAIN, API_ENDPOINTS } from '@/apiConfig';
+import Toast from 'react-native-toast-message';
 
 interface InputValues {
   fullName: string;
@@ -60,11 +63,11 @@ type Nav = {
 };
 
 const Signup = () => {
+  const { isLoading, isError, isSuccess, setIsError, fetchRequest } =
+    useApiRequest();
   const [keyboardVisible, setKeyboardVisible] = useState(false);
   const { navigate } = useNavigation<Nav>();
   const [formState, dispatchFormState] = useReducer(reducer, initialState);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [isChecked, setChecked] = useState(false);
   const { colors, dark } = useTheme();
 
@@ -81,53 +84,63 @@ const Signup = () => {
   );
 
   const handleSignUp = async () => {
-    setIsLoading((prev) => true);
-
     // console.log(formState.formIsValid);
     // console.log(formState.inputValues);
     if (!formState.formIsValid) {
-      setIsLoading((prev) => false);
+      console.log('invalid form');
       return;
     }
     if (
       formState.inputValues.password !== formState.inputValues.confirmPassword
     ) {
-      setIsLoading((prev) => false);
-      setError('Both passords must match');
+      Toast.show({
+        type: 'error',
+        text1: 'Passwords do not match',
+        position: 'top',
+        visibilityTime: 3000,
+        swipeable: true,
+        props: {
+          customStyle: {
+            backgroundColor: COLORS.white,
+            borderLeftColor: COLORS.error,
+            textColor: COLORS.error,
+          },
+        },
+      });
       return;
     }
-    setTimeout(() => {
-      setIsLoading((prev) => false);
-    }, 2000);
-    // navigate('reasonforusingallpay')
-    // try {
-    //   const response = await fetch(
-    //     'https://dummyjson.com/users/add',
-    //     {
-    //       method: 'POST',
-    //       headers: {
-    //         'Content-Type': 'application/json',
-    //       },
-    //       body: JSON.stringify(formState.inputValues),
-    //     }
-    //   );
-    //   if (response.status === 201) {
-    //     navigate('login');
-    //   } else {
-    //     setError('Something went wrong');
-    //   }
-    // } catch (error) {
-    //   setError('Something went wrong');
-    // }
-    // setIsLoading(false);
+    await fetchRequest(
+      API_DOMAIN + API_ENDPOINTS.AUTH.Register,
+      formState.inputValues,
+      'POST'
+    );
   };
 
   useEffect(() => {
-    if (error) {
-      Alert.alert(error);
-      setError(null);
+    if (isSuccess) {
+      navigate('reasonforusingallpay');
     }
-  }, [error]);
+  }, [isSuccess]);
+
+  useEffect(() => {
+    if (isError) {
+      Toast.show({
+        type: 'error',
+        text1: isError || 'Something went wrong',
+        position: 'top',
+        visibilityTime: 3000,
+        swipeable: true,
+        props: {
+          customStyle: {
+            backgroundColor: COLORS.white,
+            borderLeftColor: COLORS.error,
+            textColor: COLORS.error,
+          },
+        },
+      });
+      setIsError(null);
+    }
+  }, [isError]);
 
   //Event listener to check whether the keyBoard is open or not
   useEffect(() => {
