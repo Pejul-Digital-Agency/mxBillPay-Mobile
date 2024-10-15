@@ -24,18 +24,22 @@ import { useNavigation } from 'expo-router';
 import { isLoading } from 'expo-font';
 import useApiRequest from '@/hooks/useApiRequest';
 import { API_DOMAIN, API_ENDPOINTS } from '@/apiConfig';
-import Toast from 'react-native-toast-message';
+import showToast from '@/utils/showToast';
+import { useMutation } from '@tanstack/react-query';
+import { signUpUser } from '@/utils/queries/mutations';
 
-interface InputValues {
+export interface InputValues {
   fullName: string;
   email: string;
   password: string;
+  confirmPassword: string;
 }
 
 interface InputValidities {
   fullName: boolean | undefined;
   email: boolean | undefined;
   password: boolean | undefined;
+  confirmPassword: boolean | undefined;
 }
 
 interface FormState {
@@ -49,11 +53,13 @@ const initialState: FormState = {
     fullName: '',
     email: '',
     password: '',
+    confirmPassword: '',
   },
   inputValidities: {
     fullName: false,
     email: false,
     password: false,
+    confirmPassword: false,
   },
   formIsValid: false,
 };
@@ -63,13 +69,19 @@ type Nav = {
 };
 
 const Signup = () => {
-  const { isLoading, isError, isSuccess, setIsError, fetchRequest } =
-    useApiRequest();
+  // const { isLoading, isError, isSuccess, fetchRequest } = useApiRequest();
   const [keyboardVisible, setKeyboardVisible] = useState(false);
   const { navigate } = useNavigation<Nav>();
   const [formState, dispatchFormState] = useReducer(reducer, initialState);
   const [isChecked, setChecked] = useState(false);
   const { colors, dark } = useTheme();
+  const { mutate, isPending, error } = useMutation({
+    mutationFn: (data: InputValues) => signUpUser(data),
+    onSuccess: (data) => {
+      console.log(data);
+      navigate('reasonforusingallpay');
+    },
+  });
 
   const inputChangedHandler = useCallback(
     (inputId: string, inputValue: string) => {
@@ -86,61 +98,46 @@ const Signup = () => {
   const handleSignUp = async () => {
     // console.log(formState.formIsValid);
     // console.log(formState.inputValues);
+    if (!isChecked) {
+      showToast({
+        type: 'error',
+        text1: 'Please accept the terms and conditions',
+      });
+      return;
+    }
     if (!formState.formIsValid) {
-      console.log('invalid form');
+      showToast({
+        type: 'error',
+        text1: 'Fill all fields with valid data',
+      });
       return;
     }
     if (
       formState.inputValues.password !== formState.inputValues.confirmPassword
     ) {
-      Toast.show({
+      showToast({
         type: 'error',
-        text1: 'Passwords do not match',
-        position: 'top',
-        visibilityTime: 3000,
-        swipeable: true,
-        props: {
-          customStyle: {
-            backgroundColor: COLORS.white,
-            borderLeftColor: COLORS.error,
-            textColor: COLORS.error,
-          },
-        },
+        text1: 'Both passwords should match',
       });
       return;
     }
-    await fetchRequest(
-      API_DOMAIN + API_ENDPOINTS.AUTH.Register,
-      formState.inputValues,
-      'POST'
-    );
+    navigate('reasonforusingallpay');
+    // mutate({
+    //   fullName: formState.inputValues.fullName,
+    //   email: formState.inputValues.email,
+    //   password: formState.inputValues.password,
+    //   confirmPassword: formState.inputValues.confirmPassword,
+    // });
   };
 
   useEffect(() => {
-    if (isSuccess) {
-      navigate('reasonforusingallpay');
-    }
-  }, [isSuccess]);
-
-  useEffect(() => {
-    if (isError) {
-      Toast.show({
+    if (error) {
+      showToast({
         type: 'error',
-        text1: isError || 'Something went wrong',
-        position: 'top',
-        visibilityTime: 3000,
-        swipeable: true,
-        props: {
-          customStyle: {
-            backgroundColor: COLORS.white,
-            borderLeftColor: COLORS.error,
-            textColor: COLORS.error,
-          },
-        },
+        text1: error.message || 'Something Went Wrong',
       });
-      setIsError(null);
     }
-  }, [isError]);
+  }, [error]);
 
   //Event listener to check whether the keyBoard is open or not
   useEffect(() => {
@@ -266,11 +263,11 @@ const Signup = () => {
             </View>
           </View>
           <Button
-            title={isLoading ? 'Signing Up...' : 'Sign Up'}
+            title={isPending ? 'Signing Up...' : 'Sign Up'}
             filled
-            disabled={isLoading}
+            disabled={isPending}
             onPress={handleSignUp}
-            style={[styles.button, { opacity: isLoading ? 0.5 : 1 }]}
+            style={[styles.button, { opacity: isPending ? 0.5 : 1 }]}
           />
           {/* <View>
             <OrSeparator text="or continue with" />
