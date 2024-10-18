@@ -16,7 +16,7 @@
       "supportsTablet": true,
       "infoPlist": {
         "NSCameraUsageDescription": "This app uses the camera to scan barcodes on event tickets.",
-         "NSFaceIDUsageDescription": "This app uses Face ID for biometric authentication."
+        "NSFaceIDUsageDescription": "This app uses Face ID for biometric authentication."
       }
     },
     "android": {
@@ -37,7 +37,8 @@
         {
           "faceIDPermission": "Allow AllPay to use Face ID."
         }
-      ]
+      ],
+      "expo-secure-store"
     ],
     "experiments": {
       "typedRoutes": true

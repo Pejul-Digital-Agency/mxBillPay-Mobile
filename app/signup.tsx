@@ -6,10 +6,11 @@ import {
   Alert,
   TouchableOpacity,
   Keyboard,
+  Modal,
 } from 'react-native';
 import React, { useCallback, useEffect, useReducer, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { COLORS, SIZES, icons, images } from '../constants';
+import { COLORS, FONTS, SIZES, icons, images } from '../constants';
 import Header from '../components/Header';
 import { reducer } from '../utils/reducers/formReducers';
 import { validateInput } from '../utils/actions/formActions';
@@ -20,23 +21,21 @@ import SocialButton from '../components/SocialButton';
 import OrSeparator from '../components/OrSeparator';
 import { useTheme } from '../theme/ThemeProvider';
 import { Image } from 'expo-image';
-import { useNavigation } from 'expo-router';
+import { Redirect, router, useNavigation } from 'expo-router';
 import { isLoading } from 'expo-font';
-import useApiRequest from '@/hooks/useApiRequest';
-import { API_DOMAIN, API_ENDPOINTS } from '@/apiConfig';
 import showToast from '@/utils/showToast';
 import { useMutation } from '@tanstack/react-query';
 import { signUpUser } from '@/utils/queries/mutations';
+import { authSliceActions } from '@/store/slices/authSlice';
+import { useDispatch } from 'react-redux';
 
 export interface InputValues {
-  fullName: string;
   email: string;
   password: string;
   confirmPassword: string;
 }
 
 interface InputValidities {
-  fullName: boolean | undefined;
   email: boolean | undefined;
   password: boolean | undefined;
   confirmPassword: boolean | undefined;
@@ -50,13 +49,11 @@ interface FormState {
 
 const initialState: FormState = {
   inputValues: {
-    fullName: '',
     email: '',
     password: '',
     confirmPassword: '',
   },
   inputValidities: {
-    fullName: false,
     email: false,
     password: false,
     confirmPassword: false,
@@ -74,12 +71,33 @@ const Signup = () => {
   const { navigate } = useNavigation<Nav>();
   const [formState, dispatchFormState] = useReducer(reducer, initialState);
   const [isChecked, setChecked] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
   const { colors, dark } = useTheme();
-  const { mutate, isPending, error } = useMutation({
+  const dispatch = useDispatch();
+  const { mutate, isPending } = useMutation({
     mutationFn: (data: InputValues) => signUpUser(data),
     onSuccess: (data) => {
       console.log(data);
-      navigate('reasonforusingallpay');
+      dispatch(
+        authSliceActions.setUser({
+          userEmail: data.user.email,
+          userId: data.user_id,
+        })
+      );
+      router.push({
+        pathname: '/otpverification',
+        params: {
+          type: 'email',
+        },
+      });
+      // setModalVisible(true);
+    },
+    onError: (error) => {
+      console.log(error);
+      showToast({
+        type: 'error',
+        text1: error.message,
+      });
     },
   });
 
@@ -121,23 +139,13 @@ const Signup = () => {
       });
       return;
     }
-    navigate('reasonforusingallpay');
-    // mutate({
-    //   fullName: formState.inputValues.fullName,
-    //   email: formState.inputValues.email,
-    //   password: formState.inputValues.password,
-    //   confirmPassword: formState.inputValues.confirmPassword,
-    // });
+    console.log(formState.inputValues);
+    mutate({
+      email: formState.inputValues.email,
+      password: formState.inputValues.password,
+      confirmPassword: formState.inputValues.confirmPassword,
+    });
   };
-
-  useEffect(() => {
-    if (error) {
-      showToast({
-        type: 'error',
-        text1: error.message || 'Something Went Wrong',
-      });
-    }
-  }, [error]);
 
   //Event listener to check whether the keyBoard is open or not
   useEffect(() => {
@@ -161,6 +169,13 @@ const Signup = () => {
     };
   }, []);
 
+  // redirecting to bvn consent
+  const handleGoToBVNConsent = () => {
+    console.log('clicked url');
+    // router.push('https://www.google.com');
+    setModalVisible(false);
+    navigate('reasonforusingallpay');
+  };
   // implementing apple authentication
   const appleAuthHandler = () => {
     console.log('Apple Authentication');
@@ -200,15 +215,6 @@ const Signup = () => {
           >
             Create Your Account
           </Text>
-          <Input
-            id="fullName"
-            onInputChanged={inputChangedHandler}
-            errorText={formState.inputValidities['fullName']}
-            placeholder="Full Name"
-            placeholderTextColor={dark ? COLORS.grayTie : COLORS.black}
-            icon={icons.profile2}
-            keyboardType="default"
-          />
           <Input
             id="email"
             onInputChanged={inputChangedHandler}
@@ -308,6 +314,26 @@ const Signup = () => {
           </TouchableOpacity>
         </View>
       </View>
+      <Modal
+        animationType="slide"
+        visible={modalVisible}
+        transparent
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View style={styles.modalBackdrop}>
+          <View style={styles.modalContainer}>
+            <Text style={{ textAlign: 'center', ...FONTS.h3 }}>
+              Activating your account requires your BVN consent
+            </Text>
+            <TouchableOpacity
+              style={styles.modalButton}
+              onPress={handleGoToBVNConsent}
+            >
+              <Text style={styles.modalButtonText}>Click to continue</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 };
@@ -400,6 +426,31 @@ const styles = StyleSheet.create({
     width: SIZES.width - 32,
     borderRadius: 30,
     // opacity: isLoading ? 0.5 : 1
+  },
+  modalBackdrop: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+  },
+  modalContainer: {
+    backgroundColor: 'white',
+    padding: 20,
+    width: '80%',
+    alignItems: 'center',
+    borderRadius: 15,
+  },
+  modalButton: {
+    padding: 10,
+    backgroundColor: COLORS.primary,
+    borderRadius: 20,
+    width: '50%',
+    marginTop: 20,
+  },
+  modalButtonText: {
+    textAlign: 'center',
+    color: COLORS.white,
+    lineHeight: 17,
   },
 });
 

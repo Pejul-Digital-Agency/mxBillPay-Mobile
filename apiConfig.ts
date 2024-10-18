@@ -2,9 +2,14 @@ const API_DOMAIN: string = 'https://mxbillpay.hmstech.org/api';
 
 const API_ENDPOINTS = {
   AUTH: {
-    Login: API_DOMAIN + '/login',
-    Register: API_DOMAIN + '/register',
-    Logout: API_DOMAIN + '/logout',
+    Login: API_DOMAIN + '/auth/login',
+    Register: API_DOMAIN + '/auth/register',
+    Logout: API_DOMAIN + '/auth/logout',
+    VerfiyEmailOtp: API_DOMAIN + '/auth/verify-email',
+    ResendOtp: API_DOMAIN + '/auth/resend-otp',
+    ForgotPassword: API_DOMAIN + '/auth/forget-password',
+    VerifyPasswordOtp: API_DOMAIN + '/auth/reset-password-otp-verification',
+    ResetPassword: API_DOMAIN + '/auth/reset-password',
   },
   ACCOUNT_MANAGEMENT: {
     RequestBvnConsent: API_DOMAIN + '/accounts/bvn-consent',

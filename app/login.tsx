@@ -18,12 +18,14 @@ import Button from '../components/Button';
 import SocialButton from '../components/SocialButton';
 import OrSeparator from '../components/OrSeparator';
 import { useTheme } from '../theme/ThemeProvider';
-import { useNavigation } from 'expo-router';
+import { router, useNavigation } from 'expo-router';
 import { Image } from 'expo-image';
 import { useMutation } from '@tanstack/react-query';
-import { loginUser } from '@/utils/queries/mutations';
+import { forgotPassword, loginUser } from '@/utils/queries/mutations';
 import showToast from '@/utils/showToast';
 import * as LocalAuthentication from 'expo-local-authentication';
+import { useDispatch } from 'react-redux';
+import { authSliceActions } from '@/store/slices/authSlice';
 
 export interface InputValues {
   email: string;
@@ -63,7 +65,8 @@ const Login = () => {
   const [isChecked, setChecked] = useState(false);
   const [isBiometricAvailable, setIsBiometricAvailable] = useState(false);
   const { colors, dark } = useTheme();
-  const { error, isPending, mutate } = useMutation({
+  const dispatch = useDispatch();
+  const { isPending: isPendingLogin, mutate: mutateLogin } = useMutation({
     mutationFn: (data: InputValues) => loginUser(data),
     onSuccess: (data) => {
       console.log(data);
@@ -77,6 +80,27 @@ const Login = () => {
       });
     },
   });
+  const { isPending: isPendingForgot, mutate: mutateForgotPassword } =
+    useMutation({
+      mutationFn: (email: string) => forgotPassword(email),
+      onSuccess: (data) => {
+        console.log(data);
+        dispatch(
+          authSliceActions.setUser({
+            email: formState.inputValues.email,
+            userId: data.user_id,
+          })
+        );
+        router.push('/forgotpasswordmethods');
+      },
+      onError: (error) => {
+        console.log(error);
+        showToast({
+          type: 'error',
+          text1: error.message,
+        });
+      },
+    });
 
   const handleLogin = async () => {
     if (!isChecked) {
@@ -93,11 +117,18 @@ const Login = () => {
       });
       return;
     }
-    // mutate({
-    //   email: formState.inputValues.email,
-    //   password: formState.inputValues.password,
-    // });
+    mutateLogin({
+      email: formState.inputValues.email,
+      password: formState.inputValues.password,
+    });
     navigate('(tabs)');
+  };
+
+  const handleForgotPassword = async () => {
+    if (!formState.formIsValid) {
+      return;
+    }
+    mutateForgotPassword(formState.inputValues.email);
   };
 
   const inputChangedHandler = useCallback(
@@ -144,6 +175,12 @@ const Login = () => {
         showToast({
           type: 'success',
           text1: 'Login Successful',
+        });
+      }
+      if (result.success === false) {
+        showToast({
+          type: 'error',
+          text1: 'Invalid biometric, use password instead',
         });
       }
     };
@@ -250,7 +287,7 @@ const Login = () => {
             onPress={handleLogin}
             style={styles.button}
           />
-          <TouchableOpacity onPress={() => navigate('forgotpasswordmethods')}>
+          <TouchableOpacity onPress={handleForgotPassword}>
             <Text style={styles.forgotPasswordBtnText}>
               Forgot the password?
             </Text>

@@ -1,4 +1,10 @@
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+} from 'react-native';
 import React, { useState } from 'react';
 import { COLORS, SIZES, icons, illustrations } from '../constants';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -6,19 +12,32 @@ import Header from '../components/Header';
 import Button from '../components/Button';
 import { useTheme } from '../theme/ThemeProvider';
 import { Image } from 'expo-image';
-import { useNavigation } from 'expo-router';
+import { useNavigation, router, useLocalSearchParams } from 'expo-router';
+import { authSliceActions } from '@/store/slices/authSlice';
+import { useDispatch } from 'react-redux';
 
 type Nav = {
-  navigate: (value: string) => void
-}
+  navigate: (value: string) => void;
+};
 
 const ForgotPasswordMethods = () => {
+  const dispatch = useDispatch();
   const { navigate } = useNavigation<Nav>();
   const [selectedMethod, setSelectedMethod] = useState('sms');
   const { colors, dark } = useTheme();
 
   const handleMethodPress = (method: any) => {
     setSelectedMethod(method);
+  };
+  const handleClick = () => {
+    if (selectedMethod == 'email') {
+      router.push({
+        pathname: '/otpverification',
+        params: {
+          type: 'password',
+        },
+      });
+    }
   };
 
   return (
@@ -28,135 +47,165 @@ const ForgotPasswordMethods = () => {
         <ScrollView showsVerticalScrollIndicator={false}>
           <View style={styles.passwordContainer}>
             <Image
-              source={dark ? illustrations.passwordDark : illustrations.password}
-              contentFit='contain'
+              source={
+                dark ? illustrations.passwordDark : illustrations.password
+              }
+              contentFit="contain"
               style={styles.password}
             />
           </View>
-          <Text style={[styles.title, {
-            color: dark ? COLORS.white : COLORS.greyscale900
-          }]}>Select which contact details
-            should we use to reset your password</Text>
+          <Text
+            style={[
+              styles.title,
+              {
+                color: dark ? COLORS.white : COLORS.greyscale900,
+              },
+            ]}
+          >
+            Select which contact details should we use to reset your password
+          </Text>
           <TouchableOpacity
             style={[
               styles.methodContainer,
-              selectedMethod === 'sms' && { borderColor: COLORS.primary, borderWidth: 2 },
+              selectedMethod === 'sms' && {
+                borderColor: COLORS.primary,
+                borderWidth: 2,
+              },
             ]}
-            onPress={() => handleMethodPress('sms')}>
+            onPress={() => handleMethodPress('sms')}
+          >
             <View style={styles.iconContainer}>
               <Image
                 source={icons.chat}
-                contentFit='contain'
-                style={styles.icon} />
+                contentFit="contain"
+                style={styles.icon}
+              />
             </View>
             <View>
               <Text style={styles.methodTitle}>via SMS:</Text>
-              <Text style={[styles.methodSubtitle, {
-                color: dark ? COLORS.white : COLORS.black
-              }]}>+1 111 ******99</Text>
+              <Text
+                style={[
+                  styles.methodSubtitle,
+                  {
+                    color: dark ? COLORS.white : COLORS.black,
+                  },
+                ]}
+              >
+                +1 111 ******99
+              </Text>
             </View>
           </TouchableOpacity>
           <TouchableOpacity
             style={[
               styles.methodContainer,
-              selectedMethod === 'email' && { borderColor: COLORS.primary, borderWidth: 2 }, // Customize the border color for Email
+              selectedMethod === 'email' && {
+                borderColor: COLORS.primary,
+                borderWidth: 2,
+              }, // Customize the border color for Email
             ]}
-            onPress={() => handleMethodPress('email')}>
+            onPress={() => handleMethodPress('email')}
+          >
             <View style={styles.iconContainer}>
               <Image
                 source={icons.email}
-                contentFit='contain'
-                style={styles.icon} 
+                contentFit="contain"
+                style={styles.icon}
               />
             </View>
             <View>
               <Text style={styles.methodTitle}>via Email:</Text>
-              <Text style={[styles.methodSubtitle, {
-                color: dark ? COLORS.white : COLORS.black
-              }]}>and***ley@yourdomain.com</Text>
+              <Text
+                style={[
+                  styles.methodSubtitle,
+                  {
+                    color: dark ? COLORS.white : COLORS.black,
+                  },
+                ]}
+              >
+                and***ley@yourdomain.com
+              </Text>
             </View>
           </TouchableOpacity>
           <Button
             title="Continue"
             filled
             style={styles.button}
-            onPress={() =>
-              navigate(
-                selectedMethod === "sms"
-                  ? 'forgotpasswordphonenumber'
-                  : 'forgotpasswordemail'
-              )
-            }
+            onPress={handleClick}
+            // navigate(
+            //   selectedMethod === 'sms'
+            //     ? 'forgotpasswordphonenumber'
+            //     : 'forgotpasswordemail'
+            // )
           />
         </ScrollView>
       </View>
     </SafeAreaView>
-  )
+  );
 };
 
 const styles = StyleSheet.create({
   area: {
     flex: 1,
-    backgroundColor: COLORS.white
+    backgroundColor: COLORS.white,
   },
   container: {
     flex: 1,
     backgroundColor: COLORS.white,
-    padding: 16
+    padding: 16,
   },
   password: {
     width: 276,
-    height: 250
+    height: 250,
   },
   passwordContainer: {
-    alignItems: "center",
-    justifyContent: "center",
-    marginVertical: 32
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginVertical: 32,
   },
   title: {
     fontSize: 18,
-    fontFamily: "medium",
-    color: COLORS.greyscale900
+    fontFamily: 'medium',
+    color: COLORS.greyscale900,
   },
   methodContainer: {
     width: SIZES.width - 32,
     height: 112,
     borderRadius: 32,
-    borderColor: "gray",
-    borderWidth: .3,
-    flexDirection: "row",
-    alignItems: "center",
-    marginTop: 22
+    borderColor: 'gray',
+    borderWidth: 0.3,
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 22,
   },
   iconContainer: {
     width: 80,
     height: 80,
     borderRadius: 40,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
     backgroundColor: COLORS.tansparentPrimary,
-    marginHorizontal: 16
+    marginHorizontal: 16,
   },
   icon: {
     width: 32,
     height: 32,
-    tintColor: COLORS.primary
+    tintColor: COLORS.primary,
   },
   methodTitle: {
     fontSize: 14,
-    fontFamily: "medium",
-    color: COLORS.greyscale600
+    fontFamily: 'medium',
+    color: COLORS.greyscale600,
   },
   methodSubtitle: {
     fontSize: 16,
-    fontFamily: "bold",
+    fontFamily: 'bold',
     color: COLORS.black,
-    marginTop: 12
+    marginTop: 12,
   },
   button: {
     borderRadius: 32,
-    marginVertical: 22
-  }
-})
+    marginVertical: 22,
+  },
+});
 
-export default ForgotPasswordMethods
+export default ForgotPasswordMethods;
