@@ -21,7 +21,7 @@ import { useTheme } from '../theme/ThemeProvider';
 import { router, useNavigation } from 'expo-router';
 import { Image } from 'expo-image';
 import { useMutation } from '@tanstack/react-query';
-import { forgotPassword, loginUser } from '@/utils/queries/mutations';
+import { forgotPassword, loginUser } from '@/utils/mutations/authMutations';
 import showToast from '@/utils/showToast';
 import * as LocalAuthentication from 'expo-local-authentication';
 import { useDispatch } from 'react-redux';
@@ -117,11 +117,11 @@ const Login = () => {
       });
       return;
     }
-    mutateLogin({
-      email: formState.inputValues.email,
-      password: formState.inputValues.password,
-    });
-    navigate('(tabs)');
+    // mutateLogin({
+    //   email: formState.inputValues.email,
+    //   password: formState.inputValues.password,
+    // });
+    navigate('fillyourprofile');
   };
 
   const handleForgotPassword = async () => {

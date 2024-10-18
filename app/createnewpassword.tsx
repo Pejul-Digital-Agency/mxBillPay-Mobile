@@ -21,7 +21,7 @@ import { useTheme } from '../theme/ThemeProvider';
 import { useNavigation } from 'expo-router';
 import showToast from '@/utils/showToast';
 import { useMutation } from '@tanstack/react-query';
-import { resetPassword } from '@/utils/queries/mutations';
+import { resetPassword } from '@/utils/mutations/authMutations';
 import { useAppDispatch, useAppSelector } from '@/store/slices/authSlice';
 
 type Nav = {

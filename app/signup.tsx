@@ -25,7 +25,7 @@ import { Redirect, router, useNavigation } from 'expo-router';
 import { isLoading } from 'expo-font';
 import showToast from '@/utils/showToast';
 import { useMutation } from '@tanstack/react-query';
-import { signUpUser } from '@/utils/queries/mutations';
+import { signUpUser } from '@/utils/mutations/authMutations';
 import { authSliceActions } from '@/store/slices/authSlice';
 import { useDispatch } from 'react-redux';
 

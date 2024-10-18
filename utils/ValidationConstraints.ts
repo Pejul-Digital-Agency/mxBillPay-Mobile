@@ -76,6 +76,34 @@ export const validatePassword = (
   return validationResult && validationResult[id]?.[0];
 };
 
+export const validateNigerianNumber = (id: string, value: string) => {
+  // console.log(value);
+  const constraints = {
+    presence: {
+      allowEmpty: false,
+    },
+    format: {
+      pattern: /^((\+234)[789][01]\d{8}|)$/,
+      message: 'Invalid',
+    },
+  };
+  const validationResult = validate({ [id]: value }, { [id]: constraints });
+  // console.log(validationResult);
+  return validationResult && validationResult[id];
+};
+export const validateBvn = (id: string, value: string) => {
+  const constraints = {
+    presence: {
+      allowEmpty: false,
+    },
+    format: {
+      pattern: /^(\d{11}|)$/,
+      message: 'Invalid BVN',
+    },
+  };
+  const validationResult = validate({ [id]: value }, { [id]: constraints });
+  return validationResult && validationResult[id];
+};
 export const validateNumber = (
   id: string,
   value: string

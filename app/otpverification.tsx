@@ -13,7 +13,7 @@ import {
   forgotPassword,
   verifyEmailOTP,
   verifyPasswordOTP,
-} from '@/utils/queries/mutations';
+} from '@/utils/mutations/authMutations';
 import { useAppSelector } from '@/store/slices/authSlice';
 import showToast from '@/utils/showToast';
 
@@ -43,7 +43,7 @@ const OTPVerification = () => {
     onSuccess: (data) => {
       console.log(data);
       type == 'email'
-        ? router.push('/reasonforusingallpay')
+        ? router.push('/fillyourprofile')
         : router.push('/createnewpassword');
     },
     onError: (error) => {
