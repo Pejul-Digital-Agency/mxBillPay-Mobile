@@ -25,11 +25,14 @@ import DatePickerModal from '../components/DatePickerModal';
 import Button from '../components/Button';
 import { useTheme } from '../theme/ThemeProvider';
 import { Image } from 'expo-image';
-import { useNavigation } from 'expo-router';
+import { router, useNavigation } from 'expo-router';
 import { useMutation } from '@tanstack/react-query';
 import { createIndividualAccount } from '@/utils/mutations/accountMutations';
 import showToast from '@/utils/showToast';
 import { useAppSelector } from '@/store/slices/authSlice';
+import { initializePusher } from '@/store/slices/pusherSlice';
+import { useDispatch } from 'react-redux';
+import { PusherEvent } from '@pusher/pusher-websocket-react-native';
 
 type imageType = {
   name: string;
@@ -85,20 +88,25 @@ type Nav = {
 
 const FillYourProfile = () => {
   const { navigate } = useNavigation<Nav>();
+  const dispatch = useDispatch();
   // const [selectedArea, setSelectedArea] = useState<any>(null);
   // const [modalVisible, setModalVisible] = useState(false);
   const { token, userId } = useAppSelector((state) => state.auth);
+  const { channel } = useAppSelector((state) => state.pusher);
   const [image, setImage] = useState<any>(null);
+  const [modalVisible, setModalVisible] = useState(false);
   const [formState, dispatchFormState] = useReducer(reducer, initialState);
   const [areas, setAreas] = useState<any[]>([]);
   const [openStartDatePicker, setOpenStartDatePicker] = useState(false);
   const [keyboardVisible, setKeyboardVisible] = useState(false);
+  const [startedDate, setStartedDate] = useState(`-Select your Date of Birth`);
   const { colors, dark } = useTheme();
 
   const { mutate, isPending } = useMutation({
     mutationFn: (data: IClientCreation) => createIndividualAccount(data),
     onSuccess: (data) => {
       console.log(data);
+      initializePusher(userId);
     },
     onError: (error) => {
       console.log(error);
@@ -109,14 +117,39 @@ const FillYourProfile = () => {
     },
   });
 
+  //handle go to bvn consent
+  const handleGoToBVNConsent = async () => {
+    //naivgate to the URL received for consent page
+    console.log('clicked url');
+    router.push('/(tabs)');
+    // navigate('')
+  };
+
+  useEffect(() => {
+    if (channel && channel.onEvent) {
+      setModalVisible(true);
+      console.log('event listener being resigtered');
+      //binding of channel
+      channel.onEvent((event: PusherEvent) => {
+        if (event.userId === 'account.released') {
+          setModalVisible(false);
+          router.push('/login');
+        }
+      });
+    }
+
+    // return () => {
+    //   if (channel) {
+    //     channel.unsubscribe()
+    //   }
+    // }
+  }, [dispatch, channel]);
   // console.log(image);
   const today = new Date();
   const startDate = getFormatedDate(
     new Date(today.setDate(today.getDate() + 1)),
     'YYYY/MM/DD'
   );
-
-  const [startedDate, setStartedDate] = useState('12/12/2023');
 
   const handleOnPressStartDate = () => {
     setOpenStartDatePicker(!openStartDatePicker);
@@ -315,6 +348,8 @@ const FillYourProfile = () => {
   //   );
   // }
 
+  function RenderConsentModal() {}
+
   return (
     <SafeAreaView style={[styles.area, { backgroundColor: colors.background }]}>
       <View style={[styles.container, { backgroundColor: colors.background }]}>
@@ -486,6 +521,26 @@ const FillYourProfile = () => {
           />
         </View>
       )}
+      <Modal
+        animationType="slide"
+        visible={modalVisible}
+        transparent
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View style={styles.modalBackdrop}>
+          <View style={styles.modalContainer}>
+            <Text style={{ textAlign: 'center', ...FONTS.h3 }}>
+              Activating your account requires your BVN consent
+            </Text>
+            <TouchableOpacity
+              style={styles.modalButton}
+              onPress={handleGoToBVNConsent}
+            >
+              <Text style={styles.modalButtonText}>Click to continue</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 };
@@ -602,6 +657,31 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 9999,
+  },
+  modalBackdrop: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+  },
+  modalContainer: {
+    backgroundColor: 'white',
+    padding: 20,
+    width: '80%',
+    alignItems: 'center',
+    borderRadius: 15,
+  },
+  modalButton: {
+    padding: 10,
+    backgroundColor: COLORS.primary,
+    borderRadius: 20,
+    width: '50%',
+    marginTop: 20,
+  },
+  modalButtonText: {
+    textAlign: 'center',
+    color: COLORS.white,
+    lineHeight: 17,
   },
 });
 
