@@ -8,11 +8,11 @@ import Onboarding1Styles from '../styles/OnboardingStyles';
 import { COLORS, illustrations } from '../constants';
 import { useTheme } from '../theme/ThemeProvider';
 import { useNavigation } from 'expo-router';
-import { Image } from "expo-image";
+import { Image } from 'expo-image';
 
 type Nav = {
-  navigate: (value: string) => void
-}
+  navigate: (value: string) => void;
+};
 
 const Onboarding1 = () => {
   const [progress, setProgress] = useState(0);
@@ -35,28 +35,41 @@ const Onboarding1 = () => {
 
   useEffect(() => {
     if (progress >= 1) {
-      // Navigate to the onboarding3 screen 
-      navigate('onboarding2')
+      // Navigate to the onboarding3 screen
+      navigate('accountcreationmethod');
+      // navigate('onboarding2')
     }
   }, [progress, navigate]);
 
   return (
-    <SafeAreaView style={[Onboarding1Styles.container, { backgroundColor: colors.background }]}>
+    <SafeAreaView
+      style={[
+        Onboarding1Styles.container,
+        { backgroundColor: colors.background },
+      ]}
+    >
       <PageContainer>
         <View style={Onboarding1Styles.contentContainer}>
           <Image
-            source={dark ? illustrations.onboarding1Dark : illustrations.onboarding1}
+            source={
+              dark ? illustrations.onboarding1Dark : illustrations.onboarding1
+            }
             contentFit="contain"
             style={Onboarding1Styles.illustration}
           />
           <View style={Onboarding1Styles.buttonContainer}>
             <View style={Onboarding1Styles.titleContainer}>
-              <Text style={[Onboarding1Styles.title, { color: colors.text }]}>Manage all your finances in</Text>
+              <Text style={[Onboarding1Styles.title, { color: colors.text }]}>
+                Manage all your finances in
+              </Text>
               <Text style={Onboarding1Styles.subTitle}>ONE PLACE</Text>
             </View>
 
-            <Text style={[Onboarding1Styles.description, { color: colors.text }]}>
-              Track your spending, savings, and investments. With just a few taps, you're in control of your financial future.
+            <Text
+              style={[Onboarding1Styles.description, { color: colors.text }]}
+            >
+              Track your spending, savings, and investments. With just a few
+              taps, you're in control of your financial future.
             </Text>
 
             <View style={Onboarding1Styles.dotsContainer}>

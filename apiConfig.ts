@@ -1,4 +1,4 @@
-const API_DOMAIN: string = 'https://mxbillpay.hmstech.org/api';
+const API_DOMAIN = 'https://mxbillpay.hmstech.org/api';
 
 const API_ENDPOINTS = {
   AUTH: {
@@ -13,7 +13,8 @@ const API_ENDPOINTS = {
   },
   ACCOUNT_MANAGEMENT: {
     RequestBvnConsent: API_DOMAIN + '/accounts/bvn-consent',
-    CreateAccount: API_DOMAIN + '/accounts/individual',
+    CreateIndividualAccount: API_DOMAIN + '/accounts/individual',
+    CreateCoorporateAccount: API_DOMAIN + '/accounts/coorporate',
     ReleaseAccount: API_DOMAIN + '/accounts/release',
     DeleteAccount: API_DOMAIN + '/accounts',
   },

@@ -42,8 +42,9 @@ export default function RootLayout() {
             <Stack.Screen name="welcome" />
             <Stack.Screen name="login" />
             <Stack.Screen name="signup" />
-            <Stack.Screen name="forgotpasswordmethods" />
+            <Stack.Screen name="accountcreationmethod" />
             <Stack.Screen name="otpverification" />
+            <Stack.Screen name="forgotpasswordmethods" />
             <Stack.Screen name="forgotpasswordphonenumber" />
             <Stack.Screen name="forgotpasswordemail" />
             <Stack.Screen name="createnewpin" />

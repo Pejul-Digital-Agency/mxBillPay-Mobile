@@ -19,6 +19,8 @@ export const validateInput = (
     inputId === 'firstName' ||
     inputId === 'lastName' ||
     inputId === 'location' ||
+    inputId === 'rcNumber' ||
+    inputId === 'companyName' ||
     // inputId === 'phoneNumber' ||
     inputId === 'bio' ||
     inputId === 'address' ||

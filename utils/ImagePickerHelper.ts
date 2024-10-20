@@ -1,5 +1,6 @@
 import { Platform, Linking } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
+import * as FileSystem from 'expo-file-system';
 
 export const launchImagePicker = async (): Promise<object | undefined> => {
   console.log('reached image picker');
@@ -10,11 +11,24 @@ export const launchImagePicker = async (): Promise<object | undefined> => {
     aspect: [1, 1],
     quality: 1,
   });
-  console.log(result);
+  // console.log(result);
+  // const data = new FormData();
+  // data.append('iamge', 'imagetset');
+  // console.log(data.get('image'));
 
   if (!result.canceled) {
-    const { uri, fileName, mimeType } = result.assets[0];
-    return { uri, fileName, mimeType };
+    const { uri, fileName, mimeType, assetId, type } = result.assets[0];
+    console.log('URI:', uri);
+    console.log('FILE NAME:', fileName);
+    console.log('MIME TYPE:', mimeType);
+    let base64 = '';
+    try {
+      base64 = await FileSystem.readAsStringAsync(uri);
+      // console.log(base64);
+    } catch (error) {
+      console.log(error);
+    }
+    return { uri, base64, assetId, fileName, mimeType, type };
   }
 };
 

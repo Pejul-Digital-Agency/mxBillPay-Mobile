@@ -43,7 +43,7 @@ const OTPVerification = () => {
     onSuccess: (data) => {
       console.log(data);
       type == 'email'
-        ? router.push('/fillyourprofile')
+        ? router.push('/accountcreationmethod')
         : router.push('/createnewpassword');
     },
     onError: (error) => {

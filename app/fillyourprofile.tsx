@@ -27,7 +27,7 @@ import { useTheme } from '../theme/ThemeProvider';
 import { Image } from 'expo-image';
 import { useNavigation } from 'expo-router';
 import { useMutation } from '@tanstack/react-query';
-import { createClient } from '@/utils/mutations/accountMutations';
+import { createIndividualAccount } from '@/utils/mutations/accountMutations';
 import showToast from '@/utils/showToast';
 import { useAppSelector } from '@/store/slices/authSlice';
 
@@ -41,9 +41,12 @@ export interface IClientCreation {
   firstName: string;
   lastName: string;
   dob: string;
-  phoneNumber: string;
+  phone: string;
   bvn: string;
-  profilePicture: imageType;
+  profilePicture: {
+    extension: string;
+    base64: string;
+  };
 }
 type initialStateType = {
   inputValues: {
@@ -85,7 +88,7 @@ const FillYourProfile = () => {
   // const [selectedArea, setSelectedArea] = useState<any>(null);
   // const [modalVisible, setModalVisible] = useState(false);
   const { token, userId } = useAppSelector((state) => state.auth);
-  const [image, setImage] = useState<imageType | null>(null);
+  const [image, setImage] = useState<any>(null);
   const [formState, dispatchFormState] = useReducer(reducer, initialState);
   const [areas, setAreas] = useState<any[]>([]);
   const [openStartDatePicker, setOpenStartDatePicker] = useState(false);
@@ -93,7 +96,7 @@ const FillYourProfile = () => {
   const { colors, dark } = useTheme();
 
   const { mutate, isPending } = useMutation({
-    mutationFn: (data: IClientCreation) => createClient(data),
+    mutationFn: (data: IClientCreation) => createIndividualAccount(data),
     onSuccess: (data) => {
       console.log(data);
     },
@@ -131,7 +134,9 @@ const FillYourProfile = () => {
     [dispatchFormState]
   );
 
+  // console.log(image);
   const handleSubmit = async () => {
+    console.log('readchec');
     if (!formState.formIsValid) {
       showToast({
         type: 'error',
@@ -147,18 +152,43 @@ const FillYourProfile = () => {
       return;
     }
     const { firstName, lastName, bvn, phoneNumber } = formState.inputValues;
+    const base64 = image?.base64;
+    const extension = image?.fileName.split('.').pop();
+    console.log(extension);
+    // console.log(base64);
     const data = {
       // userId: userId.toString(),
-      userId: '11',
+      userId: '18',
       firstName: firstName as string,
       lastName: lastName as string,
       bvn: bvn as string,
       dob: startedDate,
-      phoneNumber: phoneNumber as string,
-      profilePicture: image,
+      phone: phoneNumber as string,
+      profilePicture: {
+        extension: extension as string,
+        base64: base64 as string,
+      },
     };
+
     console.log(data);
     mutate(data);
+
+    // let requestFormData = new FormData();
+
+    // requestFormData.append('userId', '11');
+    // requestFormData.append('firstName', data.firstName);
+    // requestFormData.append('lastName', data.lastName);
+    // requestFormData.append('bvn', data.bvn);
+    // requestFormData.append('dob', data.dob);
+    // requestFormData.append('phoneNumber', data.phoneNumber);
+    // requestFormData.append(
+    //   'file',
+    //   new Blob([data.profilePicture.uri], {
+    //     type: data.profilePicture.type,
+    //   })
+    // );
+    // const bro = requestFormData.get('userId');
+    // console.log(requestFormData.entries().forEach((item) => console.log(item)));
   };
   // Fetch codes from rescountries api
   useEffect(() => {
@@ -193,7 +223,7 @@ const FillYourProfile = () => {
       if (!imageData) return;
 
       // set the image
-      setImage({ ...(imageData as imageType) });
+      setImage({ ...imageData });
     } catch (error) {}
   };
 
@@ -293,7 +323,7 @@ const FillYourProfile = () => {
           <View style={{ alignItems: 'center', marginVertical: 12 }}>
             <View style={styles.avatarContainer}>
               <Image
-                source={image === null ? icons.userDefault2 : image.uri}
+                source={image === null ? icons.userDefault2 : image?.uri}
                 contentFit="cover"
                 style={styles.avatar}
               />
