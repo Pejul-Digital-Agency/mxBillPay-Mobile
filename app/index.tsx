@@ -36,7 +36,12 @@ const Onboarding1 = () => {
   useEffect(() => {
     if (progress >= 1) {
       // Navigate to the onboarding3 screen
-      router.push('/login');
+      router.push({
+        pathname: '/otpverification',
+        params: {
+          type: 'password',
+        },
+      });
       // navigate('onboarding2')
     }
   }, [progress, navigate]);

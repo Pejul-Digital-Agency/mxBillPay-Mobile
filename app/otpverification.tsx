@@ -11,11 +11,13 @@ import { toDottedEmail } from '@/utils/helpers/toDottedEmail';
 import { useMutation } from '@tanstack/react-query';
 import {
   forgotPassword,
+  resendOtp,
   verifyEmailOTP,
   verifyPasswordOTP,
 } from '@/utils/mutations/authMutations';
 import { useAppSelector } from '@/store/slices/authSlice';
 import showToast from '@/utils/showToast';
+import { TouchableOpacity } from 'react-native-gesture-handler';
 
 type Nav = {
   navigate: (value: string) => void;
@@ -27,12 +29,14 @@ type Params = {
 
 const OTPVerification = () => {
   const { navigate } = useNavigation<Nav>();
-  const [time, setTime] = useState(50);
+  const [timeInterval, setTimeInterval] = useState<NodeJS.Timeout | null>(null);
+  const [time, setTime] = useState(8);
   const { colors, dark } = useTheme();
   const { type } = useLocalSearchParams<Params>();
   const [otp, setOtp] = useState('');
+  const [timerOut, setTimerOut] = useState(false);
   const { userId, userEmail } = useAppSelector((state) => state.auth);
-  const { mutate, isPending } = useMutation({
+  const { mutate: submitOtp, isPending: submittingOtp } = useMutation({
     mutationFn: (data: { user_id: string; otp: string }) => {
       if (type == 'password') {
         return verifyPasswordOTP(data);
@@ -54,24 +58,70 @@ const OTPVerification = () => {
       });
     },
   });
+  const { mutate: resend, isPending: resedingOtp } = useMutation({
+    mutationFn: (data: { email: string; userId: string }) => resendOtp(data),
+    onSuccess: (data) => {
+      console.log(data);
+      setTime(8);
+      setTimerOut(false);
+      setTimeInterval(
+        setInterval(() => {
+          setTime((prevTime) => (prevTime > 0 ? prevTime - 1 : 0));
+        }, 1000)
+      );
+    },
+    onError: (error) => {
+      console.log(error);
+      showToast({
+        type: 'error',
+        text1: error.message,
+      });
+    },
+  });
 
   const handleVerifyOTP = () => {
     // console.log(otp);
     // console.log(type);
-    mutate({ user_id: userId.toString(), otp });
+    submitOtp({ user_id: userId.toString(), otp });
   };
   // console.log(isPending);
 
   useEffect(() => {
-    const intervalId = setInterval(() => {
-      setTime((prevTime) => (prevTime > 0 ? prevTime - 1 : 0));
-    }, 1000);
+    setTimeInterval(
+      setInterval(() => {
+        setTime((prevTime) => (prevTime > 0 ? prevTime - 1 : 0));
+      }, 1000)
+    );
 
     return () => {
-      clearInterval(intervalId);
+      if (timeInterval) {
+        clearInterval(timeInterval);
+      }
     };
   }, []);
 
+  useEffect(() => {
+    if (time == 0) {
+      console.log('ok');
+      setTimerOut(true);
+      if (timeInterval) {
+        clearInterval(timeInterval);
+      }
+    }
+  }, [time]);
+
+  const handleResendOtp = () => {
+    setTime(8);
+    setTimerOut(false);
+    setTimeInterval(
+      setInterval(() => {
+        setTime((prevTime) => (prevTime > 0 ? prevTime - 1 : 0));
+      }, 1000)
+    );
+    resend({ email: userEmail, userId: userId.toString() });
+  };
+
+  console.log(timerOut);
   return (
     <SafeAreaView style={[styles.area, { backgroundColor: colors.background }]}>
       <View style={[styles.container, { backgroundColor: colors.background }]}>
@@ -107,34 +157,54 @@ const OTPVerification = () => {
               },
             }}
           />
-          <View style={styles.codeContainer}>
-            <Text
-              style={[
-                styles.code,
-                {
-                  color: dark ? COLORS.white : COLORS.greyscale900,
-                },
-              ]}
-            >
-              Resend code in
-            </Text>
-            <Text style={styles.time}>{`  ${time} `}</Text>
-            <Text
-              style={[
-                styles.code,
-                {
-                  color: dark ? COLORS.white : COLORS.greyscale900,
-                },
-              ]}
-            >
-              s
-            </Text>
-          </View>
+          {time == 0 && timerOut && (
+            <View style={styles.codeContainer}>
+              <Text
+                onPress={handleResendOtp}
+                disabled={resedingOtp}
+                style={[
+                  styles.code,
+                  {
+                    color: COLORS.primary,
+                    opacity: resedingOtp ? 0.7 : 1,
+                    textDecorationLine: 'underline',
+                  },
+                ]}
+              >
+                {resedingOtp ? 'Resending...' : 'Resend code'}
+              </Text>
+            </View>
+          )}
+          {time > 0 && (
+            <View style={[styles.codeContainer, { flexDirection: 'row' }]}>
+              <Text
+                style={[
+                  styles.code,
+                  {
+                    color: dark ? COLORS.white : COLORS.greyscale900,
+                  },
+                ]}
+              >
+                Resend code in
+              </Text>
+              <Text style={styles.time}>{`  ${time}  `}</Text>
+              <Text
+                style={[
+                  styles.code,
+                  {
+                    color: dark ? COLORS.white : COLORS.greyscale900,
+                  },
+                ]}
+              >
+                s
+              </Text>
+            </View>
+          )}
         </ScrollView>
         <Button
           title="Verify"
           filled
-          disabled={otp.length !== 4 || isPending}
+          disabled={otp.length !== 4 || submittingOtp}
           style={styles.button}
           onPress={handleVerifyOTP}
         />
@@ -171,7 +241,7 @@ const styles = StyleSheet.create({
     borderColor: 'gray',
   },
   codeContainer: {
-    flexDirection: 'row',
+    // flexDirection: 'row',
     alignItems: 'center',
     marginVertical: 24,
     justifyContent: 'center',

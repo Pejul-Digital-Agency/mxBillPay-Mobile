@@ -109,3 +109,15 @@ export const resetPassword = async (data: {
     }
   }
 };
+export const resendOtp = async (data: { email: string; userId: string }) => {
+  try {
+    const response = await axios.post(API_ENDPOINTS.AUTH.ResendOtp, data);
+    return response.data;
+  } catch (error) {
+    if (axios.isAxiosError(error) && error.response) {
+      throw new Error(error.response.data?.message || 'Something went wrong');
+    } else {
+      throw new Error('Something went wrong');
+    }
+  }
+};
