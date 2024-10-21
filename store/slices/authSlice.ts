@@ -3,6 +3,18 @@ import { createSlice } from '@reduxjs/toolkit';
 import type { RootState, AppDispatch } from '../store';
 
 // Define a type for the slice state
+interface IUserAction {
+  type: string;
+  payload: {
+    userId: string;
+    userEmail: string;
+  };
+}
+interface ITokenAction {
+  type: string;
+  payload: string;
+}
+
 type initialStateType = {
   token: string;
   isLoggedIn: boolean;
@@ -19,12 +31,12 @@ const authSlice = createSlice({
   name: 'auth',
   initialState,
   reducers: {
-    setUser: (state, action) => {
-      state.userId = action.payload.userId as string;
-      state.userEmail = action.payload.userEmail as string;
+    setUser: (state, action: IUserAction) => {
+      state.userId = action.payload.userId;
+      state.userEmail = action.payload.userEmail;
     },
-    setToken: (state, action) => {
-      state.token = action.payload as string;
+    setToken: (state, action: ITokenAction) => {
+      state.token = action.payload;
       state.isLoggedIn = true;
     },
     clearToken: (state) => {

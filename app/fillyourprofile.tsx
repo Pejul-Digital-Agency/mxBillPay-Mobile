@@ -33,6 +33,7 @@ import { useAppSelector } from '@/store/slices/authSlice';
 import { initializePusher } from '@/store/slices/pusherSlice';
 import { useDispatch } from 'react-redux';
 import { PusherEvent } from '@pusher/pusher-websocket-react-native';
+import CustomModal from './custommodal';
 
 type imageType = {
   name: string;
@@ -521,26 +522,14 @@ const FillYourProfile = () => {
           />
         </View>
       )}
-      <Modal
-        animationType="slide"
-        visible={modalVisible}
-        transparent
-        onRequestClose={() => setModalVisible(false)}
-      >
-        <View style={styles.modalBackdrop}>
-          <View style={styles.modalContainer}>
-            <Text style={{ textAlign: 'center', ...FONTS.h3 }}>
-              Activating your account requires your BVN consent
-            </Text>
-            <TouchableOpacity
-              style={styles.modalButton}
-              onPress={handleGoToBVNConsent}
-            >
-              <Text style={styles.modalButtonText}>Click to continue</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
+      <CustomModal
+        key={'bvncustommodal'}
+        onClick={handleGoToBVNConsent}
+        btnText="Click to continue"
+        title="Activating your account requires you BVN consent."
+        modalVisible={modalVisible}
+        setModalVisible={setModalVisible}
+      />
     </SafeAreaView>
   );
 };
@@ -657,31 +646,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 9999,
-  },
-  modalBackdrop: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.8)',
-  },
-  modalContainer: {
-    backgroundColor: 'white',
-    padding: 20,
-    width: '80%',
-    alignItems: 'center',
-    borderRadius: 15,
-  },
-  modalButton: {
-    padding: 10,
-    backgroundColor: COLORS.primary,
-    borderRadius: 20,
-    width: '50%',
-    marginTop: 20,
-  },
-  modalButtonText: {
-    textAlign: 'center',
-    color: COLORS.white,
-    lineHeight: 17,
   },
 });
 

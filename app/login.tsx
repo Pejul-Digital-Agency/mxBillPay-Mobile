@@ -69,7 +69,13 @@ const Login = () => {
   const { isPending: isPendingLogin, mutate: mutateLogin } = useMutation({
     mutationFn: (data: InputValues) => loginUser(data),
     onSuccess: (data) => {
-      console.log(data);
+      dispatch(authSliceActions.setToken(data?.token));
+      dispatch(
+        authSliceActions.setUser({
+          userId: data.user_id,
+          userEmail: data.user.email,
+        })
+      );
       navigate('(tabs)');
     },
     onError: (error) => {
@@ -87,7 +93,7 @@ const Login = () => {
         console.log(data);
         dispatch(
           authSliceActions.setUser({
-            email: formState.inputValues.email,
+            userEmail: formState.inputValues.email,
             userId: data.user_id,
           })
         );
@@ -125,7 +131,7 @@ const Login = () => {
   };
 
   const handleForgotPassword = async () => {
-    if (!formState.formIsValid) {
+    if (!formState.inputValidities.email) {
       return;
     }
     mutateForgotPassword(formState.inputValues.email);
@@ -282,12 +288,16 @@ const Login = () => {
             </View>
           </View>
           <Button
-            title="Login"
+            title={isPendingLogin ? 'Logging In...' : 'Login'}
             filled
+            disabled={isPendingLogin}
             onPress={handleLogin}
             style={styles.button}
           />
-          <TouchableOpacity onPress={handleForgotPassword}>
+          <TouchableOpacity
+            disabled={isPendingForgot}
+            onPress={handleForgotPassword}
+          >
             <Text style={styles.forgotPasswordBtnText}>
               Forgot the password?
             </Text>

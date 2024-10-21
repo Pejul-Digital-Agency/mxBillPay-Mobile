@@ -1,11 +1,14 @@
-import { Tabs } from "expo-router";
-import { View, Text, Platform } from "react-native";
-import { Image } from "expo-image";
-import { COLORS, icons, FONTS } from "../../constants";
-import { useTheme } from "@/theme/ThemeProvider";
+import { Tabs } from 'expo-router';
+import { View, Text, Platform } from 'react-native';
+import { Image } from 'expo-image';
+import { COLORS, icons, FONTS } from '../../constants';
+import { useTheme } from '@/theme/ThemeProvider';
+import { useAppSelector } from '@/store/slices/authSlice';
+import TokenExpiryModal from '../tokenexpirymodal';
 
 const TabLayout = () => {
   const { dark } = useTheme();
+  const { token } = useAppSelector((state) => state.auth);
 
   return (
     <Tabs
@@ -26,146 +29,205 @@ const TabLayout = () => {
       <Tabs.Screen
         name="index"
         options={{
-          title: "",
+          title: '',
           tabBarIcon: ({ focused }: { focused: boolean }) => {
             return (
-              <View style={{
-                alignItems: "center",
-                paddingTop: 16
-              }}>
+              <View
+                style={{
+                  alignItems: 'center',
+                  paddingTop: 16,
+                }}
+              >
                 <Image
                   source={focused ? icons.home4 : icons.home4Outline}
                   contentFit="contain"
                   style={{
                     width: 24,
                     height: 24,
-                    tintColor: focused ? COLORS.primary : dark ? COLORS.gray3 : COLORS.gray3,
+                    tintColor: focused
+                      ? COLORS.primary
+                      : dark
+                      ? COLORS.gray3
+                      : COLORS.gray3,
                   }}
                 />
-                <Text style={{
-                  ...FONTS.body4,
-                  color: focused ? COLORS.primary : dark ? COLORS.gray3 : COLORS.gray3,
-                }}>Home</Text>
+                <Text
+                  style={{
+                    ...FONTS.body4,
+                    color: focused
+                      ? COLORS.primary
+                      : dark
+                      ? COLORS.gray3
+                      : COLORS.gray3,
+                  }}
+                >
+                  Home
+                </Text>
               </View>
-            )
+            );
           },
         }}
       />
       <Tabs.Screen
         name="statistics"
         options={{
-          title: "",
+          title: '',
           tabBarIcon: ({ focused }: { focused: boolean }) => {
             return (
-              <View style={{
-                alignItems: "center",
-                paddingTop: 16
-              }}>
+              <View
+                style={{
+                  alignItems: 'center',
+                  paddingTop: 16,
+                }}
+              >
                 <Image
                   source={focused ? icons.activity : icons.activityOutline}
                   contentFit="contain"
                   style={{
                     width: 24,
                     height: 24,
-                    tintColor: focused ? COLORS.primary : dark ? COLORS.gray3 : COLORS.gray3,
+                    tintColor: focused
+                      ? COLORS.primary
+                      : dark
+                      ? COLORS.gray3
+                      : COLORS.gray3,
                   }}
                 />
-                <Text style={{
-                  ...FONTS.body4,
-                  color: focused ? COLORS.primary : dark ? COLORS.gray3 : COLORS.gray3,
-                }}>Statistics</Text>
+                <Text
+                  style={{
+                    ...FONTS.body4,
+                    color: focused
+                      ? COLORS.primary
+                      : dark
+                      ? COLORS.gray3
+                      : COLORS.gray3,
+                  }}
+                >
+                  Statistics
+                </Text>
               </View>
-            )
+            );
           },
         }}
       />
       <Tabs.Screen
         name="scanqrcode"
         options={{
-          title: "",
+          title: '',
           tabBarIcon: () => {
             return (
-              <View style={{
-                height: 64,
-                width: 64,
-                borderRadius: 32,
-                justifyContent: "center",
-                alignItems: "center",
-                backgroundColor: COLORS.primary,
-                marginBottom: 16
-              }}>
+              <View
+                style={{
+                  height: 64,
+                  width: 64,
+                  borderRadius: 32,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  backgroundColor: COLORS.primary,
+                  marginBottom: 16,
+                }}
+              >
                 <Image
                   source={icons.scan2}
                   contentFit="contain"
                   style={{
                     width: 24,
                     height: 24,
-                    tintColor: COLORS.white
+                    tintColor: COLORS.white,
                   }}
                 />
               </View>
-            )
+            );
           },
         }}
       />
       <Tabs.Screen
         name="mycard"
         options={{
-          title: "",
+          title: '',
           tabBarIcon: ({ focused }: { focused: boolean }) => {
             return (
-              <View style={{
-                alignItems: "center",
-                paddingTop: 16
-              }}>
+              <View
+                style={{
+                  alignItems: 'center',
+                  paddingTop: 16,
+                }}
+              >
                 <Image
                   source={focused ? icons.wallet2 : icons.wallet2Outline}
                   contentFit="contain"
                   style={{
                     width: 24,
                     height: 24,
-                    tintColor: focused ? COLORS.primary : dark ? COLORS.gray3 : COLORS.gray3,
+                    tintColor: focused
+                      ? COLORS.primary
+                      : dark
+                      ? COLORS.gray3
+                      : COLORS.gray3,
                   }}
                 />
-                <Text style={{
-                  ...FONTS.body4,
-                  color: focused ? COLORS.primary : dark ? COLORS.gray3 : COLORS.gray3,
-                }}>My Card</Text>
+                <Text
+                  style={{
+                    ...FONTS.body4,
+                    color: focused
+                      ? COLORS.primary
+                      : dark
+                      ? COLORS.gray3
+                      : COLORS.gray3,
+                  }}
+                >
+                  My Card
+                </Text>
               </View>
-            )
+            );
           },
         }}
       />
       <Tabs.Screen
         name="profile"
         options={{
-          title: "",
+          title: '',
           tabBarIcon: ({ focused }: { focused: boolean }) => {
             return (
-              <View style={{
-                alignItems: "center",
-                paddingTop: 16
-              }}>
+              <View
+                style={{
+                  alignItems: 'center',
+                  paddingTop: 16,
+                }}
+              >
                 <Image
                   source={focused ? icons.profile2 : icons.profile2Outline}
                   contentFit="contain"
                   style={{
                     width: 24,
                     height: 24,
-                    tintColor: focused ? COLORS.primary : dark ? COLORS.gray3 : COLORS.gray3,
+                    tintColor: focused
+                      ? COLORS.primary
+                      : dark
+                      ? COLORS.gray3
+                      : COLORS.gray3,
                   }}
                 />
-                <Text style={{
-                  ...FONTS.body4,
-                  color: focused ? COLORS.primary : dark ? COLORS.gray3 : COLORS.gray3,
-                }}>Profile</Text>
+                <Text
+                  style={{
+                    ...FONTS.body4,
+                    color: focused
+                      ? COLORS.primary
+                      : dark
+                      ? COLORS.gray3
+                      : COLORS.gray3,
+                  }}
+                >
+                  Profile
+                </Text>
               </View>
-            )
+            );
           },
         }}
       />
+      <TokenExpiryModal />
     </Tabs>
-  )
-}
+  );
+};
 
-export default TabLayout
+export default TabLayout;

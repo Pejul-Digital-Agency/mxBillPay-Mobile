@@ -7,7 +7,7 @@ import Button from '../components/Button';
 import Onboarding1Styles from '../styles/OnboardingStyles';
 import { COLORS, illustrations } from '../constants';
 import { useTheme } from '../theme/ThemeProvider';
-import { useNavigation } from 'expo-router';
+import { router, useNavigation } from 'expo-router';
 import { Image } from 'expo-image';
 
 type Nav = {
@@ -36,7 +36,7 @@ const Onboarding1 = () => {
   useEffect(() => {
     if (progress >= 1) {
       // Navigate to the onboarding3 screen
-      navigate('accountcreationmethod');
+      router.push('/login');
       // navigate('onboarding2')
     }
   }, [progress, navigate]);
