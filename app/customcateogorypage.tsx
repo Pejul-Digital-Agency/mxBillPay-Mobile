@@ -1,26 +1,136 @@
-import { View, Text, StyleSheet, TextInput, ScrollView } from 'react-native';
-import React, { useState } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TextInput,
+  ScrollView,
+  FlatList,
+  TouchableOpacity,
+} from 'react-native';
+import React, { useEffect, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Header from '@/components/Header';
 import { useTheme } from '@/theme/ThemeProvider';
 import { COLORS, SIZES, icons } from '@/constants';
 import { Image } from 'expo-image';
 import Button from '@/components/Button';
-import { useLocalSearchParams, useNavigation } from 'expo-router';
+import { router, useLocalSearchParams, useNavigation } from 'expo-router';
+import { useQuery } from '@tanstack/react-query';
+import {
+  getBillerItemDetails,
+  getBillerItems,
+} from '@/utils/queries/billPayment';
+import { NavigationProp, RouteProp, useRoute } from '@react-navigation/native';
+import Loader from './loader';
+import { IBillerItemsList } from '@/utils/queries/billPayment';
+import { Route } from 'expo-router/build/Route';
 
-type Nav = {
-  navigate: (value: string) => void;
+const dummy = [
+  'Electricity',
+  'Water',
+  'Gas',
+  'Internet',
+  'Electricity',
+  'Water',
+  'Gas',
+  'Internet',
+];
+
+const dummyParams = {
+  category: {
+    id: 1,
+    category: 'Electricity',
+    icon: icons.electricity,
+    iconColor: COLORS.primary,
+  },
+  itemList: [
+    {
+      id: 1,
+      paymentitemname: 'Fesco',
+    },
+    {
+      id: 2,
+      paymentitemname: 'Safaricom',
+    },
+    {
+      id: 3,
+      paymentitemname: 'Airtel',
+    },
+    {
+      id: 4,
+      paymentitemname: 'MTN',
+    },
+  ],
 };
 
-const PayBillsElectricityCustomerId = () => {
+type Nav = {
+  navigate: (value: number) => void;
+};
+const CustomCategoryPage = () => {
+  const route = useRoute<RouteProp<any>>();
+  if (!route.params) return router.push('/(tabs)');
+  const { billerItems }: { billerItems: IBillerItemsList } =
+    route.params as any;
+  // if (!params) {
+  //   return router.push('/(tabs)');
+  // }
   const { colors, dark } = useTheme();
-  const { navigate } = useNavigation<Nav>();
-  const [value, setValue] = useState<string>('');
+  const { navigate, setParams } = useNavigation<NavigationProp<any>>();
+  const [itemId, setItemId] = useState('');
+  const { data, isPending, error, isLoading } = useQuery({
+    queryKey: ['billerItems', itemId],
+    queryFn: () => getBillerItemDetails(itemId),
+    enabled: itemId !== '',
+  });
 
+  useEffect(() => {
+    if (data?.data) {
+      navigate('billreviewsummary', {
+        billerItemDetails: data?.data,
+      });
+    }
+  }, [data]);
+
+  const renderListItem = (itemName: string, itemId: string) => {
+    return (
+      <TouchableOpacity
+        style={{
+          backgroundColor: dark ? COLORS.dark2 : COLORS.white,
+          paddingHorizontal: SIZES.padding * 2,
+          paddingVertical: SIZES.padding * 1.5,
+          borderRadius: SIZES.radius,
+          marginBottom: SIZES.padding,
+        }}
+        onPress={() => setItemId(itemId)}
+      >
+        <Text
+          style={{
+            color: dark ? COLORS.white : COLORS.greyscale900,
+            fontSize: SIZES.h3,
+          }}
+        >
+          {itemName}
+        </Text>
+      </TouchableOpacity>
+    );
+  };
+  const renderList = () => {
+    return (
+      <FlatList
+        data={billerItems?.itemList || []}
+        renderItem={({ item }) =>
+          renderListItem(item.paymentitemname, item.id.toString())
+        }
+        keyExtractor={(item, index) => item.id.toString()}
+        showsVerticalScrollIndicator={false}
+        numColumns={1}
+      />
+    );
+  };
   return (
     <SafeAreaView style={[styles.area, { backgroundColor: colors.background }]}>
       <View style={[styles.container, { backgroundColor: colors.background }]}>
-        <Header title="Electricity" />
+        <Header title={billerItems?.category?.category} />
         <ScrollView showsVerticalScrollIndicator={false}>
           <View style={styles.viewContainer}>
             <View style={styles.iconContainer}>
@@ -38,9 +148,9 @@ const PayBillsElectricityCustomerId = () => {
                 },
               ]}
             >
-              Pay Electricity Bill
+              Choose category of {billerItems?.category?.category} bills
             </Text>
-            <View style={{ marginVertical: 12 }}>
+            {/* <View style={{ marginVertical: 12 }}>
               <Text
                 style={[
                   styles.subtitle,
@@ -49,7 +159,7 @@ const PayBillsElectricityCustomerId = () => {
                   },
                 ]}
               >
-                Pay electricity bills safely, conveniently & easily.
+                Pay {categoryName} bills safely, conveniently & easily.
               </Text>
               <Text
                 style={[
@@ -61,7 +171,7 @@ const PayBillsElectricityCustomerId = () => {
               >
                 You can pay anytime and anywhere!
               </Text>
-            </View>
+            </View> */}
             <View
               style={[
                 styles.separateLine,
@@ -73,7 +183,8 @@ const PayBillsElectricityCustomerId = () => {
               ]}
             />
           </View>
-          <Text
+          {renderList()}
+          {/* <Text
             style={[
               styles.idText,
               {
@@ -95,15 +206,16 @@ const PayBillsElectricityCustomerId = () => {
               },
             ]}
             placeholderTextColor={dark ? COLORS.white : COLORS.greyscale900}
-          />
-          <Button
+          /> */}
+          {/* <Button
             title="Continue"
             filled
             style={styles.continueBtn}
             onPress={() => navigate('paybillselectricityreviewsummary')}
-          />
+          /> */}
         </ScrollView>
       </View>
+      {isLoading && <Loader />}
     </SafeAreaView>
   );
 };
@@ -176,4 +288,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default PayBillsElectricityCustomerId;
+export default CustomCategoryPage;

@@ -34,6 +34,7 @@ import { initializePusher } from '@/store/slices/pusherSlice';
 import { useDispatch } from 'react-redux';
 import { PusherEvent } from '@pusher/pusher-websocket-react-native';
 import CustomModal from './custommodal';
+import { generateBvnLink } from '@/utils/mutations/authMutations';
 
 type imageType = {
   name: string;
@@ -48,8 +49,9 @@ export interface IClientCreation {
   phone: string;
   bvn: string;
   profilePicture: {
-    extension: string;
-    base64: string;
+    uri: string;
+    type: string;
+    name: string;
   };
 }
 type initialStateType = {
@@ -94,6 +96,10 @@ const FillYourProfile = () => {
   // const [modalVisible, setModalVisible] = useState(false);
   const { token, userId } = useAppSelector((state) => state.auth);
   const { channel } = useAppSelector((state) => state.pusher);
+  const [userBvn, setUserBvn] = useState('');
+  const [redirectURL, setRedirectURL] = useState('');
+  const [generateModalVisible, setGenerateModalVisible] = useState(false);
+  const [redirectModalVisible, setRedirectModalVisible] = useState(false);
   const [image, setImage] = useState<any>(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [formState, dispatchFormState] = useReducer(reducer, initialState);
@@ -104,10 +110,12 @@ const FillYourProfile = () => {
   const { colors, dark } = useTheme();
 
   const { mutate, isPending } = useMutation({
-    mutationFn: (data: IClientCreation) => createIndividualAccount(data),
+    mutationFn: (data: FormData) => createIndividualAccount(data),
     onSuccess: (data) => {
       console.log(data);
-      initializePusher(userId);
+      setUserBvn(data?.data?.bvn);
+      setGenerateModalVisible(true);
+      initializePusher(userId || data?.data.user_id);
     },
     onError: (error) => {
       console.log(error);
@@ -118,6 +126,21 @@ const FillYourProfile = () => {
     },
   });
 
+  const { mutate: generateURL, isPending: generatingURL } = useMutation({
+    mutationFn: generateBvnLink,
+    onSuccess: (data) => {
+      console.log(data);
+      const bvnUrl = data?.data?.url;
+      if (bvnUrl) {
+        setRedirectURL(bvnUrl);
+        setGenerateModalVisible(false);
+        setRedirectModalVisible(true);
+      }
+    },
+    onError: (data) => {
+      console.log(data);
+    },
+  });
   //handle go to bvn consent
   const handleGoToBVNConsent = async () => {
     //naivgate to the URL received for consent page
@@ -126,6 +149,15 @@ const FillYourProfile = () => {
     // navigate('')
   };
 
+  const handleGenerateLink = async () => {
+    console.log('generating link');
+    console.log(userId);
+    generateURL({
+      userId,
+      bvn: userBvn,
+      type: '02',
+    });
+  };
   useEffect(() => {
     if (channel && channel.onEvent) {
       setModalVisible(true);
@@ -138,12 +170,6 @@ const FillYourProfile = () => {
         }
       });
     }
-
-    // return () => {
-    //   if (channel) {
-    //     channel.unsubscribe()
-    //   }
-    // }
   }, [dispatch, channel]);
   // console.log(image);
   const today = new Date();
@@ -186,7 +212,7 @@ const FillYourProfile = () => {
       return;
     }
     const { firstName, lastName, bvn, phoneNumber } = formState.inputValues;
-    const base64 = image?.base64;
+    // const base64 = image?.base64;
     const extension = image?.fileName.split('.').pop();
     console.log(extension);
     // console.log(base64);
@@ -199,30 +225,28 @@ const FillYourProfile = () => {
       dob: startedDate,
       phone: phoneNumber as string,
       profilePicture: {
-        extension: extension as string,
-        base64: base64 as string,
+        uri: image?.uri,
+        type: image?.mimeType,
+        name: image?.fileName,
       },
     };
 
-    console.log(data);
-    mutate(data);
+    const formData = new FormData();
 
-    // let requestFormData = new FormData();
+    formData.append('userId', '18');
+    formData.append('firstName', data.firstName);
+    formData.append('lastName', data.lastName);
+    formData.append('bvn', data.bvn);
+    formData.append('dob', data.dob);
+    formData.append('phone', data.phone);
+    formData.append('profilePicture', {
+      uri: image?.uri,
+      name: image?.fileName,
+      type: image?.mimeType,
+    } as any);
 
-    // requestFormData.append('userId', '11');
-    // requestFormData.append('firstName', data.firstName);
-    // requestFormData.append('lastName', data.lastName);
-    // requestFormData.append('bvn', data.bvn);
-    // requestFormData.append('dob', data.dob);
-    // requestFormData.append('phoneNumber', data.phoneNumber);
-    // requestFormData.append(
-    //   'file',
-    //   new Blob([data.profilePicture.uri], {
-    //     type: data.profilePicture.type,
-    //   })
-    // );
-    // const bro = requestFormData.get('userId');
-    // console.log(requestFormData.entries().forEach((item) => console.log(item)));
+    console.log(formData);
+    mutate(formData);
   };
   // Fetch codes from rescountries api
   useEffect(() => {
@@ -515,20 +539,29 @@ const FillYourProfile = () => {
           onPress={() => navigate('createnewpin')}
         /> */}
           <Button
-            title="Submit"
+            title={isPending ? 'Submitting...' : 'Submit'}
             filled
+            disabled={isPending}
             style={styles.continueButton}
             onPress={handleSubmit}
           />
         </View>
       )}
       <CustomModal
-        key={'bvncustommodal'}
+        btnText="Go to URL"
+        modalVisible={redirectModalVisible}
+        setModalVisible={setRedirectModalVisible}
         onClick={handleGoToBVNConsent}
-        btnText="Click to continue"
-        title="Activating your account requires you BVN consent."
-        modalVisible={modalVisible}
-        setModalVisible={setModalVisible}
+        title={`${redirectURL}`}
+      />
+      {/* modal for generating link for bvn consent */}
+      <CustomModal
+        btnText={generatingURL ? 'Generating...' : 'Generate Link'}
+        modalVisible={generateModalVisible}
+        disabled={generatingURL}
+        setModalVisible={setGenerateModalVisible}
+        onClick={handleGenerateLink}
+        title="Generating your link requires your BVN consent. Please click below to get your bvn consent link"
       />
     </SafeAreaView>
   );

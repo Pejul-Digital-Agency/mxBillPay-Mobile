@@ -19,9 +19,11 @@ const API_ENDPOINTS = {
     DeleteAccount: API_DOMAIN + '/accounts',
   },
   BILL_MANAGEMENT: {
-    BillList: API_DOMAIN + '/bills',
-    CreateBill: API_DOMAIN + '/bills',
-    UpdateBill: API_DOMAIN + '/bills',
+    GetBillerCategories: API_DOMAIN + '/biller-categories-fetch',
+    GetBillerItems: API_DOMAIN + '/biller-items-fetch',
+    GetBillerItemDetails: API_DOMAIN + '/biller-Item-details',
+    ValidateCustomer: API_DOMAIN + '/Validate-Customer',
+    PayBills: API_DOMAIN + '/payBills',
     DeleteBill: API_DOMAIN + '/bills',
   },
 };

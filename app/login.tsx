@@ -127,7 +127,7 @@ const Login = () => {
     //   email: formState.inputValues.email,
     //   password: formState.inputValues.password,
     // });
-    navigate('fillyourprofile');
+    navigate('(tabs)');
   };
 
   const handleForgotPassword = async () => {

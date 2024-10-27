@@ -30,7 +30,7 @@ type Params = {
 const OTPVerification = () => {
   const { navigate } = useNavigation<Nav>();
   const [timeInterval, setTimeInterval] = useState<NodeJS.Timeout | null>(null);
-  const [time, setTime] = useState(8);
+  const [time, setTime] = useState(45);
   const { colors, dark } = useTheme();
   const { type } = useLocalSearchParams<Params>();
   const [otp, setOtp] = useState('');
@@ -45,7 +45,7 @@ const OTPVerification = () => {
       }
     },
     onSuccess: (data) => {
-      console.log(data);
+      console.log('Email verified: ', data);
       type == 'email'
         ? router.push('/accountcreationmethod')
         : router.push('/createnewpassword');
@@ -62,7 +62,7 @@ const OTPVerification = () => {
     mutationFn: (data: { email: string; userId: string }) => resendOtp(data),
     onSuccess: (data) => {
       console.log(data);
-      setTime(8);
+      setTime(45);
       setTimerOut(false);
       setTimeInterval(
         setInterval(() => {
@@ -80,8 +80,7 @@ const OTPVerification = () => {
   });
 
   const handleVerifyOTP = () => {
-    // console.log(otp);
-    // console.log(type);
+    // router.push('/accountcreationmethod');
     submitOtp({ user_id: userId.toString(), otp });
   };
   // console.log(isPending);
@@ -111,14 +110,14 @@ const OTPVerification = () => {
   }, [time]);
 
   const handleResendOtp = () => {
-    setTime(8);
-    setTimerOut(false);
-    setTimeInterval(
-      setInterval(() => {
-        setTime((prevTime) => (prevTime > 0 ? prevTime - 1 : 0));
-      }, 1000)
-    );
-    resend({ email: userEmail, userId: userId.toString() });
+    // resend({ email: userEmail, userId: userId.toString() });
+    // setTime(8);
+    // setTimerOut(false);
+    // setTimeInterval(
+    //   setInterval(() => {
+    //     setTime((prevTime) => (prevTime > 0 ? prevTime - 1 : 0));
+    //   }, 1000)
+    // );
   };
 
   console.log(timerOut);
@@ -135,7 +134,7 @@ const OTPVerification = () => {
               },
             ]}
           >
-            Code has been send to
+            Code has been send to your email
           </Text>
           <OtpInput
             numberOfDigits={4}

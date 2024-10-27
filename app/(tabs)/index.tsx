@@ -1,65 +1,113 @@
-import { View, Text, StyleSheet, TouchableOpacity, FlatList } from 'react-native';
-import React from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  FlatList,
+} from 'react-native';
+import React, { useEffect } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ScrollView } from 'react-native-virtualized-view';
 import { useTheme } from '@/theme/ThemeProvider';
 import { COLORS, SIZES, icons, images } from '@/constants';
 import { Image } from 'expo-image';
 import { NavigationProp } from '@react-navigation/native';
-import { useNavigation } from 'expo-router';
+import { router, useNavigation } from 'expo-router';
 import SubHeaderItem from '@/components/SubHeaderItem';
-import { services } from '@/data';
+import { invoiceItems, services } from '@/data';
 import Category from '@/components/Category';
+import { useQueries, useQuery } from '@tanstack/react-query';
+import {
+  getBillerCategories,
+  getBillerItems,
+} from '@/utils/queries/billPayment';
+import Loader from '../loader';
 
 type Nav = {
-  navigate: (value: string) => void
-}
+  navigate: (value: string) => void;
+};
 
 const HomeScreen = () => {
+  const [categoryId, setCategoryId] = React.useState<string>('');
+  const {
+    data: categoryData,
+    isPending: isPendingCategories,
+    error: errorCategories,
+  } = useQuery({
+    queryKey: ['billCategories'],
+    queryFn: getBillerCategories,
+    staleTime: 2000,
+  });
+  const {
+    data: billerItemsData,
+    isPending: isPendingItems,
+    error: errorItems,
+  } = useQuery({
+    queryKey: ['billCategories', categoryId],
+    queryFn: () => getBillerItems(categoryId?.toString()),
+    enabled: categoryId != '',
+  });
   const { dark, colors } = useTheme();
-  const navigation = useNavigation<NavigationProp<any>>();
-  const { navigate } = useNavigation<Nav>();
+  const { navigate, setParams } = useNavigation<NavigationProp<any>>();
 
-  /**
-  * Render header
-  */
+  useEffect(() => {
+    if (billerItemsData?.data) {
+      console.log('index page', billerItemsData?.data);
+      // setParams({
+      //   billerItems: billerItemsData?.data,
+      // });
+      navigate('customcateogorypage', { billerItems: billerItemsData?.data });
+    }
+  }, [billerItemsData]);
+
   const renderHeader = () => {
     return (
       <View style={styles.headerContainer}>
         <View style={styles.viewLeft}>
           <Image
             source={images.user1}
-            contentFit='contain'
+            contentFit="contain"
             style={styles.userIcon}
           />
           <View style={styles.viewNameContainer}>
             <Text style={styles.greeeting}>Good Morning👋</Text>
-            <Text style={[styles.title, {
-              color: dark ? COLORS.white : COLORS.greyscale900
-            }]}>Andrew Ainsley</Text>
+            <Text
+              style={[
+                styles.title,
+                {
+                  color: dark ? COLORS.white : COLORS.greyscale900,
+                },
+              ]}
+            >
+              Andrew Ainsley
+            </Text>
           </View>
         </View>
         <View style={styles.viewRight}>
-          <TouchableOpacity
-            onPress={() => navigation.navigate("promoanddiscount")}>
+          <TouchableOpacity onPress={() => navigate('promoanddiscount')}>
             <Image
               source={icons.discount3}
-              contentFit='contain'
-              style={[styles.bookmarkIcon, { tintColor: dark ? COLORS.white : COLORS.greyscale900 }]}
+              contentFit="contain"
+              style={[
+                styles.bookmarkIcon,
+                { tintColor: dark ? COLORS.white : COLORS.greyscale900 },
+              ]}
             />
           </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => navigation.navigate("notifications")}>
+          <TouchableOpacity onPress={() => navigate('notifications')}>
             <Image
               source={icons.notificationBell2}
-              contentFit='contain'
-              style={[styles.bellIcon, { tintColor: dark ? COLORS.white : COLORS.greyscale900 }]}
+              contentFit="contain"
+              style={[
+                styles.bellIcon,
+                { tintColor: dark ? COLORS.white : COLORS.greyscale900 },
+              ]}
             />
           </TouchableOpacity>
         </View>
       </View>
-    )
-  }
+    );
+  };
   /**
    * Render card
    */
@@ -73,7 +121,7 @@ const HomeScreen = () => {
           </View>
           <Image
             source={icons.mastercard}
-            contentFit='contain'
+            contentFit="contain"
             style={styles.cardIcon}
           />
         </View>
@@ -83,48 +131,52 @@ const HomeScreen = () => {
         </View>
         <View style={styles.bottomCardContainer}>
           <TouchableOpacity
-            onPress={() => navigation.navigate("transfertobankselectbank")}
-            style={styles.categoryContainer}>
+            onPress={() => navigate('transfertobankselectbank')}
+            style={styles.categoryContainer}
+          >
             <View style={styles.categoryIconContainer}>
               <Image
                 source={icons.send}
-                contentFit='contain'
+                contentFit="contain"
                 style={styles.categoryIcon}
               />
             </View>
             <Text style={styles.categoryText}>Transfer</Text>
           </TouchableOpacity>
           <TouchableOpacity
-            onPress={() => navigation.navigate("sendmoney")}
-            style={styles.categoryContainer}>
+            onPress={() => navigate('sendmoney')}
+            style={styles.categoryContainer}
+          >
             <View style={styles.categoryIconContainer}>
               <Image
                 source={icons.sendMoney}
-                contentFit='contain'
+                contentFit="contain"
                 style={styles.categoryIcon}
               />
             </View>
             <Text style={styles.categoryText}>Send</Text>
           </TouchableOpacity>
           <TouchableOpacity
-            onPress={() => navigation.navigate("requestmoney")}
-            style={styles.categoryContainer}>
+            onPress={() => navigate('requestmoney')}
+            style={styles.categoryContainer}
+          >
             <View style={styles.categoryIconContainer}>
               <Image
                 source={icons.arrowDownSquare}
-                contentFit='contain'
+                contentFit="contain"
                 style={styles.categoryIcon}
               />
             </View>
             <Text style={styles.categoryText}>Request</Text>
           </TouchableOpacity>
           <TouchableOpacity
-            onPress={() => navigation.navigate("inoutpaymenthistory")}
-            style={styles.categoryContainer}>
+            onPress={() => navigate('inoutpaymenthistory')}
+            style={styles.categoryContainer}
+          >
             <View style={styles.categoryIconContainer}>
               <Image
                 source={icons.swapUpDown}
-                contentFit='contain'
+                contentFit="contain"
                 style={styles.categoryIcon}
               />
             </View>
@@ -132,8 +184,8 @@ const HomeScreen = () => {
           </TouchableOpacity>
         </View>
       </View>
-    )
-  }
+    );
+  };
   /**
    * render category
    */
@@ -143,31 +195,28 @@ const HomeScreen = () => {
         <SubHeaderItem
           title="Services"
           navTitle="See all"
-          onPress={() => navigate("allservices")}
+          onPress={() => navigate('allservices')}
         />
         <FlatList
-          data={services.slice(0, 12)}
+          data={categoryData?.data || []}
           keyExtractor={(item, index) => index.toString()}
           horizontal={false}
-          numColumns={4} // Render two items per row
+          numColumns={4} // Render four items per row
           style={{ marginTop: 0 }}
           renderItem={({ item, index }) => (
             <Category
-              name={item.name}
-              icon={item.icon}
-              iconColor={item.iconColor}
-              backgroundColor={item.backgroundColor}
-              onPress={() => {
-                if (item.onPress !== "") {
-                  navigation.navigate(item.onPress);
-                }
-              }}
+              key={item.id}
+              name={item.category}
+              icon={item?.icon || icons.send}
+              iconColor={item?.iconColor || colors.primary}
+              backgroundColor={dark ? COLORS.greyScale800 : COLORS.grayscale100}
+              onPress={() => setCategoryId(item.id.toString())}
             />
           )}
         />
       </View>
-    )
-  }
+    );
+  };
 
   return (
     <SafeAreaView style={[styles.area, { backgroundColor: colors.background }]}>
@@ -178,63 +227,64 @@ const HomeScreen = () => {
           {renderCategories()}
         </ScrollView>
       </View>
+      {isPendingCategories && <Loader />}
     </SafeAreaView>
-  )
+  );
 };
 
 const styles = StyleSheet.create({
   area: {
     flex: 1,
-    backgroundColor: COLORS.white
+    backgroundColor: COLORS.white,
   },
   container: {
     flex: 1,
     backgroundColor: COLORS.white,
-    padding: 16
+    padding: 16,
   },
   headerContainer: {
-    flexDirection: "row",
+    flexDirection: 'row',
     width: SIZES.width - 32,
-    justifyContent: "space-between",
-    alignItems: "center"
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   userIcon: {
     width: 48,
     height: 48,
-    borderRadius: 32
+    borderRadius: 32,
   },
   viewLeft: {
-    flexDirection: "row",
-    alignItems: "center"
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   greeeting: {
     fontSize: 12,
-    fontFamily: "regular",
-    color: "gray",
-    marginBottom: 4
+    fontFamily: 'regular',
+    color: 'gray',
+    marginBottom: 4,
   },
   title: {
     fontSize: 20,
-    fontFamily: "bold",
-    color: COLORS.greyscale900
+    fontFamily: 'bold',
+    color: COLORS.greyscale900,
   },
   viewNameContainer: {
-    marginLeft: 12
+    marginLeft: 12,
   },
   viewRight: {
-    flexDirection: "row",
-    alignItems: "center"
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   bellIcon: {
     height: 24,
     width: 24,
     tintColor: COLORS.black,
-    marginRight: 8
+    marginRight: 8,
   },
   bookmarkIcon: {
     height: 24,
     width: 24,
-    tintColor: COLORS.black
+    tintColor: COLORS.black,
   },
   cardContainer: {
     width: SIZES.width - 32,
@@ -245,71 +295,71 @@ const styles = StyleSheet.create({
     paddingHorizontal: 22,
   },
   topCardContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginTop: 16
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 16,
   },
   username: {
     fontSize: 20,
-    fontFamily: "bold",
+    fontFamily: 'bold',
     color: COLORS.white,
-    marginBottom: 8
+    marginBottom: 8,
   },
   cardNum: {
     fontSize: 18,
-    fontFamily: "bold",
-    color: COLORS.white
+    fontFamily: 'bold',
+    color: COLORS.white,
   },
   cardIcon: {
     height: 45,
     width: 72,
   },
   balanceContainer: {
-    marginVertical: 32
+    marginVertical: 32,
   },
   balanceText: {
     fontSize: 16,
-    fontFamily: "regular",
+    fontFamily: 'regular',
     color: COLORS.white,
-    marginBottom: 8
+    marginBottom: 8,
   },
   balanceAmount: {
     fontSize: 48,
-    fontFamily: "extraBold",
-    color: COLORS.white
+    fontFamily: 'extraBold',
+    color: COLORS.white,
   },
   bottomCardContainer: {
-    width: "100%",
+    width: '100%',
     height: 90,
     borderRadius: 16,
     backgroundColor: COLORS.white,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 12
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 12,
   },
   categoryContainer: {
-    alignItems: "center",
+    alignItems: 'center',
   },
   categoryIconContainer: {
     height: 52,
     width: 52,
     borderRadius: 9999,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
     backgroundColor: COLORS.tansparentPrimary,
-    marginBottom: 4
+    marginBottom: 4,
   },
   categoryIcon: {
     height: 24,
     width: 24,
-    tintColor: COLORS.primary
+    tintColor: COLORS.primary,
   },
   categoryText: {
     fontSize: 14,
-    fontFamily: "semiBold",
-    color: COLORS.primary
-  }
-})
+    fontFamily: 'semiBold',
+    color: COLORS.primary,
+  },
+});
 
-export default HomeScreen
+export default HomeScreen;

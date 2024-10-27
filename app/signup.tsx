@@ -25,9 +25,10 @@ import { Redirect, router, useNavigation } from 'expo-router';
 import { isLoading } from 'expo-font';
 import showToast from '@/utils/showToast';
 import { useMutation } from '@tanstack/react-query';
-import { signUpUser } from '@/utils/mutations/authMutations';
+import { generateBvnLink, signUpUser } from '@/utils/mutations/authMutations';
 import { authSliceActions } from '@/store/slices/authSlice';
 import { useDispatch } from 'react-redux';
+import CustomModal from './custommodal';
 
 export interface InputValues {
   email: string;
@@ -68,16 +69,17 @@ type Nav = {
 const Signup = () => {
   // const { isLoading, isError, isSuccess, fetchRequest } = useApiRequest();
   const [keyboardVisible, setKeyboardVisible] = useState(false);
+  const [userBvn, setUserBvn] = useState('');
   const { navigate } = useNavigation<Nav>();
   const [formState, dispatchFormState] = useReducer(reducer, initialState);
   const [isChecked, setChecked] = useState(false);
-  const [modalVisible, setModalVisible] = useState(false);
   const { colors, dark } = useTheme();
   const dispatch = useDispatch();
-  const { mutate, isPending } = useMutation({
+  const { mutate: signUp, isPending: signingUp } = useMutation({
     mutationFn: (data: InputValues) => signUpUser(data),
     onSuccess: (data) => {
       console.log(data);
+      dispatch(authSliceActions.setToken(data?.token));
       dispatch(
         authSliceActions.setUser({
           userEmail: data.user.email,
@@ -140,7 +142,7 @@ const Signup = () => {
       return;
     }
     console.log(formState.inputValues);
-    mutate({
+    signUp({
       email: formState.inputValues.email,
       password: formState.inputValues.password,
       confirmPassword: formState.inputValues.confirmPassword,
@@ -169,13 +171,6 @@ const Signup = () => {
     };
   }, []);
 
-  // redirecting to bvn consent
-  const handleGoToBVNConsent = () => {
-    console.log('clicked url');
-    // router.push('https://www.google.com');
-    setModalVisible(false);
-    navigate('reasonforusingallpay');
-  };
   // implementing apple authentication
   const appleAuthHandler = () => {
     console.log('Apple Authentication');
@@ -269,11 +264,11 @@ const Signup = () => {
             </View>
           </View>
           <Button
-            title={isPending ? 'Signing Up...' : 'Sign Up'}
+            title={signingUp ? 'Signing Up...' : 'Sign Up'}
             filled
-            disabled={isPending}
+            disabled={signingUp}
             onPress={handleSignUp}
-            style={[styles.button, { opacity: isPending ? 0.5 : 1 }]}
+            style={[styles.button, { opacity: signingUp ? 0.5 : 1 }]}
           />
           {/* <View>
             <OrSeparator text="or continue with" />
@@ -314,7 +309,8 @@ const Signup = () => {
           </TouchableOpacity>
         </View>
       </View>
-      <Modal
+      {/* modal for going to the bvn consent */}
+      {/*<Modal
         animationType="slide"
         visible={modalVisible}
         transparent
@@ -333,7 +329,7 @@ const Signup = () => {
             </TouchableOpacity>
           </View>
         </View>
-      </Modal>
+      </Modal>*/}
     </SafeAreaView>
   );
 };

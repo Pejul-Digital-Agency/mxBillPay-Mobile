@@ -58,8 +58,8 @@
 //   }, [userId]);
 
 //   return (
-//     <Provider>
+//     <PusherContext.Provider value={{ channel }}>
 //       {children}
-//     </Provider>
+//     </PusherContext.Provider>
 //   );
 // };

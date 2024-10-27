@@ -1,31 +1,14 @@
-import axios from 'axios';
+import { apiCall } from '../customApiCall';
 import { API_ENDPOINTS } from '@/apiConfig';
 import { InputValues as SignUpProps } from '@/app/signup';
 import { InputValues as LoginProps } from '@/app/login';
 
 export const signUpUser = async (data: SignUpProps): Promise<any> => {
-  try {
-    const response = await axios.post(API_ENDPOINTS.AUTH.Register, data);
-    return response.data;
-  } catch (error) {
-    if (axios.isAxiosError(error) && error.response) {
-      throw new Error(error.response.data?.message || 'Something went wrong');
-    } else {
-      throw new Error('Something went wrong');
-    }
-  }
+  return await apiCall(API_ENDPOINTS.AUTH.Register, 'POST', data);
 };
+
 export const loginUser = async (data: LoginProps): Promise<any> => {
-  try {
-    const response = await axios.post(API_ENDPOINTS.AUTH.Login, data);
-    return response.data;
-  } catch (error) {
-    if (axios.isAxiosError(error) && error.response) {
-      throw new Error(error.response.data?.message || 'Something went wrong');
-    } else {
-      throw new Error('Something went wrong');
-    }
-  }
+  return await apiCall(API_ENDPOINTS.AUTH.Login, 'POST', data);
 };
 
 export const verifyEmailOTP = async ({
@@ -34,90 +17,49 @@ export const verifyEmailOTP = async ({
 }: {
   user_id: string;
   otp: string;
-}): Promise<any> => {
-  console.log(otp);
-  try {
-    console.log('userId', user_id);
-    const response = await axios.post(API_ENDPOINTS.AUTH.VerfiyEmailOtp, {
-      user_id: user_id.toString(),
-      otp,
-    });
-    return response.data;
-  } catch (error) {
-    if (axios.isAxiosError(error) && error.response) {
-      throw new Error(error.response.data?.message || 'Something went wrong');
-    } else {
-      throw new Error('Something went wrong');
-    }
-  }
+}) => {
+  return await apiCall(API_ENDPOINTS.AUTH.VerfiyEmailOtp, 'POST', {
+    user_id: user_id.toString(),
+    otp,
+  });
 };
-export const verifyPasswordOTP = async ({
-  user_id,
-  otp,
-}: {
+
+export const verifyPasswordOTP = async (data: {
   user_id: string;
   otp: string;
-}): Promise<any> => {
-  try {
-    const response = await axios.post(API_ENDPOINTS.AUTH.VerifyPasswordOtp, {
-      user_id,
-      otp,
-    });
-    return response.data;
-  } catch (error) {
-    if (axios.isAxiosError(error) && error.response) {
-      throw new Error(error.response.data?.message || 'Something went wrong');
-    } else {
-      throw new Error('Something went wrong');
-    }
-  }
+}) => {
+  return await apiCall(API_ENDPOINTS.AUTH.VerifyPasswordOtp, 'POST', data);
 };
 
 export const forgotPassword = async (email: string) => {
-  try {
-    const response = await axios.post(API_ENDPOINTS.AUTH.ForgotPassword, {
-      email,
-    });
-    return response.data;
-  } catch (error) {
-    if (axios.isAxiosError(error) && error.response) {
-      throw new Error(error.response.data?.message || 'Something went wrong');
-    } else {
-      throw new Error('Something went wrong');
-    }
-  }
+  return await apiCall(API_ENDPOINTS.AUTH.ForgotPassword, 'POST', { email });
 };
 
 export const resetPassword = async (data: {
   user_id: string;
   newPassword: string;
   confirmPassword: string;
-}): Promise<any> => {
+}) => {
   const { user_id, newPassword, confirmPassword } = data;
-  try {
-    const response = await axios.post(API_ENDPOINTS.AUTH.ResetPassword, {
-      user_id,
-      new_password: newPassword,
-      confirm_password: confirmPassword,
-    });
-    return response.data;
-  } catch (error) {
-    if (axios.isAxiosError(error) && error.response) {
-      throw new Error(error.response.data?.message || 'Something went wrong');
-    } else {
-      throw new Error('Something went wrong');
-    }
-  }
+  return await apiCall(API_ENDPOINTS.AUTH.ResetPassword, 'POST', {
+    user_id,
+    new_password: newPassword,
+    confirm_password: confirmPassword,
+  });
 };
+
 export const resendOtp = async (data: { email: string; userId: string }) => {
-  try {
-    const response = await axios.post(API_ENDPOINTS.AUTH.ResendOtp, data);
-    return response.data;
-  } catch (error) {
-    if (axios.isAxiosError(error) && error.response) {
-      throw new Error(error.response.data?.message || 'Something went wrong');
-    } else {
-      throw new Error('Something went wrong');
-    }
-  }
+  return await apiCall(API_ENDPOINTS.AUTH.ResendOtp, 'POST', data);
+};
+
+export const generateBvnLink = async (data: {
+  bvn: string;
+  userId: string;
+  type: string;
+}) => {
+  return await apiCall(
+    API_ENDPOINTS.ACCOUNT_MANAGEMENT.RequestBvnConsent,
+    'POST',
+    data
+  );
 };

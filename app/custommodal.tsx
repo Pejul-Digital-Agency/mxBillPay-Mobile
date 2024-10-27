@@ -8,6 +8,7 @@ type modalProps = {
   onClick: () => void;
   title: string;
   btnText: string;
+  disabled?: boolean;
 };
 
 const CustomModal = ({
@@ -16,6 +17,7 @@ const CustomModal = ({
   onClick,
   title,
   btnText,
+  disabled = false,
 }: modalProps) => {
   return (
     <Modal

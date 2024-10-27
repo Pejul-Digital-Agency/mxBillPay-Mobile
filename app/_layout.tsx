@@ -11,6 +11,7 @@ import CustomToast from '@/components/CustomToast';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Provider } from 'react-redux';
 import { store } from '@/store/store';
+import CustomModal from './custommodal';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();

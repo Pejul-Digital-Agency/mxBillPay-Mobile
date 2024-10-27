@@ -17,10 +17,12 @@ export const launchImagePicker = async (): Promise<object | undefined> => {
   // console.log(data.get('image'));
 
   if (!result.canceled) {
-    const { uri, fileName, mimeType, assetId, type } = result.assets[0];
+    const { uri, fileName, fileSize, mimeType, assetId, type } =
+      result.assets[0];
     console.log('URI:', uri);
     console.log('FILE NAME:', fileName);
     console.log('MIME TYPE:', mimeType);
+    console.log('Size:', fileSize);
     let base64 = '';
     try {
       base64 = await FileSystem.readAsStringAsync(uri);

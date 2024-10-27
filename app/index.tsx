@@ -37,10 +37,10 @@ const Onboarding1 = () => {
     if (progress >= 1) {
       // Navigate to the onboarding3 screen
       router.push({
-        pathname: '/otpverification',
-        params: {
-          type: 'password',
-        },
+        pathname: '/(tabs)',
+        // params: {
+        //   type: 'password',
+        // },
       });
       // navigate('onboarding2')
     }
