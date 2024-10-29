@@ -22,6 +22,7 @@ export const validateInput = (
     inputId === 'rcNumber' ||
     inputId === 'companyName' ||
     // inputId === 'phoneNumber' ||
+    inputId === 'customerId' ||
     inputId === 'bio' ||
     inputId === 'address' ||
     inputId === 'street' ||

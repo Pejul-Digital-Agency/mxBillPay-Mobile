@@ -153,7 +153,7 @@ const FillYourProfile = () => {
     console.log('generating link');
     console.log(userId);
     generateURL({
-      userId,
+      userId: userId.toString(),
       bvn: userBvn,
       type: '02',
     });
@@ -218,7 +218,7 @@ const FillYourProfile = () => {
     // console.log(base64);
     const data = {
       // userId: userId.toString(),
-      userId: '18',
+      userId,
       firstName: firstName as string,
       lastName: lastName as string,
       bvn: bvn as string,
@@ -233,7 +233,7 @@ const FillYourProfile = () => {
 
     const formData = new FormData();
 
-    formData.append('userId', '18');
+    formData.append('userId', userId);
     formData.append('firstName', data.firstName);
     formData.append('lastName', data.lastName);
     formData.append('bvn', data.bvn);
@@ -372,8 +372,6 @@ const FillYourProfile = () => {
   //     </Modal>
   //   );
   // }
-
-  function RenderConsentModal() {}
 
   return (
     <SafeAreaView style={[styles.area, { backgroundColor: colors.background }]}>
@@ -551,7 +549,7 @@ const FillYourProfile = () => {
         btnText="Go to URL"
         modalVisible={redirectModalVisible}
         setModalVisible={setRedirectModalVisible}
-        onClick={handleGoToBVNConsent}
+        onPress={handleGoToBVNConsent}
         title={`${redirectURL}`}
       />
       {/* modal for generating link for bvn consent */}
@@ -560,7 +558,7 @@ const FillYourProfile = () => {
         modalVisible={generateModalVisible}
         disabled={generatingURL}
         setModalVisible={setGenerateModalVisible}
-        onClick={handleGenerateLink}
+        onPress={handleGenerateLink}
         title="Generating your link requires your BVN consent. Please click below to get your bvn consent link"
       />
     </SafeAreaView>

@@ -4,6 +4,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   FlatList,
+  BackHandler,
 } from 'react-native';
 import React, { useEffect } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -59,6 +60,16 @@ const HomeScreen = () => {
       navigate('customcateogorypage', { billerItems: billerItemsData?.data });
     }
   }, [billerItemsData]);
+
+  useEffect(() => {
+    const backPressEvent = BackHandler.addEventListener(
+      'hardwareBackPress',
+      //prevent going back to login screen
+      () => true
+    );
+
+    return () => backPressEvent.remove();
+  }, []);
 
   const renderHeader = () => {
     return (

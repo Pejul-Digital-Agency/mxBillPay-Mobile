@@ -19,3 +19,28 @@ export const createCooperateAccount = async (data: ICooperateClient) => {
     data
   );
 };
+
+export const validateCustomer = async (data: {
+  customerId: string;
+  id: string;
+}): Promise<any> => {
+  return await apiCall(
+    API_ENDPOINTS.BILL_MANAGEMENT.ValidateCustomer,
+    'POST',
+    data
+  );
+};
+
+export const payBillFn = async (data: IPayBill): Promise<any> => {
+  return await apiCall(API_ENDPOINTS.BILL_MANAGEMENT.PayBills, 'POST', data);
+};
+
+export interface IPayBill {
+  billerId: string;
+  amount: number;
+  customerId: string;
+  billerItemId: string;
+  phoneNumber: string;
+  userId: string;
+  // paymentMethod: string;
+}

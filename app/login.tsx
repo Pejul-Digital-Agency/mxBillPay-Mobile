@@ -69,10 +69,11 @@ const Login = () => {
   const { isPending: isPendingLogin, mutate: mutateLogin } = useMutation({
     mutationFn: (data: InputValues) => loginUser(data),
     onSuccess: (data) => {
+      console.log(data);
       dispatch(authSliceActions.setToken(data?.token));
       dispatch(
         authSliceActions.setUser({
-          userId: data.user_id,
+          userId: data.user.id.toString(),
           userEmail: data.user.email,
         })
       );
@@ -123,11 +124,11 @@ const Login = () => {
       });
       return;
     }
-    // mutateLogin({
-    //   email: formState.inputValues.email,
-    //   password: formState.inputValues.password,
-    // });
-    navigate('(tabs)');
+    mutateLogin({
+      email: formState.inputValues.email,
+      password: formState.inputValues.password,
+    });
+    // navigate('(tabs)');
   };
 
   const handleForgotPassword = async () => {

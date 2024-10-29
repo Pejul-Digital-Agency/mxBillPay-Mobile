@@ -2,22 +2,19 @@ import { View, Text, Modal, StyleSheet, TouchableOpacity } from 'react-native';
 import React from 'react';
 import { COLORS, FONTS } from '@/constants';
 
-type modalProps = {
+interface modalProps extends React.ComponentProps<typeof TouchableOpacity> {
   modalVisible: boolean;
   setModalVisible: React.Dispatch<React.SetStateAction<boolean>>;
-  onClick: () => void;
   title: string;
   btnText: string;
-  disabled?: boolean;
-};
+}
 
 const CustomModal = ({
   modalVisible,
   setModalVisible,
-  onClick,
   title,
   btnText,
-  disabled = false,
+  ...props
 }: modalProps) => {
   return (
     <Modal
@@ -29,7 +26,7 @@ const CustomModal = ({
       <View style={styles.modalBackdrop}>
         <View style={styles.modalContainer}>
           <Text style={{ textAlign: 'center', ...FONTS.h3 }}>{title}</Text>
-          <TouchableOpacity style={styles.modalButton} onPress={onClick}>
+          <TouchableOpacity style={styles.modalButton} {...props}>
             <Text style={styles.modalButtonText}>{btnText}</Text>
           </TouchableOpacity>
         </View>

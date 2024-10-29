@@ -8,7 +8,12 @@ export const apiCall = async (
 ) => {
   const headers = {
     Authorization: token ? `Bearer ${token}` : '',
+    'Content-Type': 'application/json',
   };
+  if (data && data instanceof FormData) {
+    headers['Content-Type'] = 'multipart/form-data';
+  }
+
   try {
     let response: AxiosResponse | undefined;
     switch (method) {

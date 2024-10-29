@@ -26,17 +26,6 @@ export const getBillerItemDetails = async (
   );
 };
 
-export const validateCustomer = async (data: {
-  phone: string;
-  email: string;
-}): Promise<any> => {
-  return await apiCall(
-    API_ENDPOINTS.BILL_MANAGEMENT.ValidateCustomer,
-    'POST',
-    data
-  );
-};
-
 interface IBillerCategories {
   message: string;
   data: [

@@ -4,6 +4,7 @@ import {
   AppStateEvent,
   AppStateStatic,
   AppStateStatus,
+  BackHandler,
 } from 'react-native';
 import { useState, useEffect, useRef } from 'react';
 import CustomModal from './custommodal';
@@ -18,6 +19,21 @@ const TokenExpiryModal = () => {
   const currentStateRef = useRef(AppState.currentState);
   const [expiryTimer, setExpiryTimer] = useState<NodeJS.Timeout | null>(null);
   const dispatch = useDispatch();
+
+  useEffect(() => {
+    const backHandler = BackHandler.addEventListener(
+      'hardwareBackPress',
+      () => {
+        if (visible) {
+          // Return true to prevent back button behavior
+          return true;
+        }
+        return false;
+      }
+    );
+
+    return () => backHandler.remove();
+  }, [visible]);
 
   useEffect(() => {
     let subscription: undefined | ReturnType<typeof AppState.addEventListener>;
@@ -73,7 +89,7 @@ const TokenExpiryModal = () => {
       setModalVisible={setVisible}
       btnText="Login"
       title="Sorry, your session has been expired, please login again to continue."
-      onClick={() => {
+      onPress={() => {
         setVisible(false);
         router.push('/login');
       }}

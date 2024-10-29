@@ -1,5 +1,5 @@
 import { View, Text, StyleSheet, TextInput } from 'react-native';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Header from '@/components/Header';
 import { ScrollView } from 'react-native-virtualized-view';
@@ -9,253 +9,342 @@ import { Image } from 'expo-image';
 import Button from '@/components/Button';
 import { useNavigation } from 'expo-router';
 import { NavigationProp, useRoute } from '@react-navigation/native';
-import {
-  IBillerItemDetails,
-  validateCustomer,
-} from '@/utils/queries/billPayment';
+import { IBillerItemDetails } from '@/utils/queries/billPayment';
+import { IPayBill, payBillFn } from '@/utils/mutations/accountMutations';
+import { validateCustomer } from '@/utils/mutations/accountMutations';
 import { useMutation } from '@tanstack/react-query';
 import CustomModal from './custommodal';
+import { useAppSelector } from '@/store/slices/authSlice';
+import LabeledInput from '@/components/LabeledInput';
+import Input from '@/components/Input';
+import { reducer } from '@/utils/reducers/formReducers';
+import { validateInput } from '@/utils/actions/formActions';
+import showToast from '@/utils/showToast';
+
+interface InputValues {
+  customerId: string;
+  phone: string;
+}
+
+interface InputValidities {
+  customerId: boolean | undefined;
+  phone: boolean | undefined;
+}
+
+interface FormState {
+  inputValues: InputValues;
+  inputValidities: InputValidities;
+  formIsValid: boolean;
+}
+const initialState: FormState = {
+  inputValues: {
+    customerId: '',
+    phone: '',
+  },
+  inputValidities: {
+    customerId: false,
+    phone: false,
+  },
+  formIsValid: false,
+};
 
 const BillReviewSummary = () => {
   const { colors, dark } = useTheme();
   const { navigate } = useNavigation<NavigationProp<any>>();
   const route = useRoute();
-  const [customerId, setCustomerId] = React.useState('');
-  const [modalOpen, setModalOpen] = React.useState(true);
+  const [formState, dispatchFormState] = React.useReducer(
+    reducer,
+    initialState
+  );
+  const [modalOpen, setModalOpen] = React.useState(false);
+  const [value, setValue] = React.useState('');
+  const { userId } = useAppSelector((state) => state.auth);
   if (!route.params) return navigate('/(tabs)');
   const { billerItemDetails }: { billerItemDetails: IBillerItemDetails } =
     route.params as any;
-  const { mutate, isPending } = useMutation({
+  const { mutate: validate, isPending: isValidating } = useMutation({
     mutationFn: validateCustomer,
     onSuccess: (data) => {
       console.log(data);
-      //setModalOpen(true)
+      setModalOpen(true);
+    },
+    onError: (error) => {
+      console.log(error.message);
+    },
+  });
+  const { mutate: payBill, isPending: isBillPaying } = useMutation({
+    mutationFn: payBillFn,
+    onSuccess: (data) => {
+      console.log(data);
+      setModalOpen(false);
+      navigate('paybillssuccessful');
     },
     onError: (error) => {
       console.log(error.message);
     },
   });
 
+  const inputChangedHandler = React.useCallback(
+    (inputId: string, inputValue: string) => {
+      const result = validateInput(inputId, inputValue);
+      dispatchFormState({
+        inputId,
+        validationResult: result,
+        inputValue,
+      });
+    },
+    [dispatchFormState]
+  );
+
   const handlePaymentClick = () => {
-    console.log('clicked');
-    setModalOpen(false);
-    //navigate to success page
-    // mutate({customerid: customerId})
+    if (!formState.formIsValid) {
+      showToast({
+        type: 'error',
+        text1: 'Fill all fields with valid data',
+      });
+      return;
+    }
+    const reqData = {
+      amount: Number(billerItemDetails?.itemFee),
+      billerId: billerItemDetails?.billerId,
+      billerItemId: billerItemDetails?.id.toString(),
+      customerId: formState.inputValues.customerId,
+      phoneNumber: formState.inputValues.phone,
+      userId,
+    };
+    console.log(reqData);
+    // console.log(reqData);
+    payBill(reqData);
   };
 
-  console.log(billerItemDetails);
+  const handleValidateCustomer = () => {
+    validate({
+      customerId: formState.inputValues.customerId,
+      id: billerItemDetails?.id.toString(),
+    });
+  };
+
+  useEffect(() => {
+    console.log('rerendering..');
+  }, []);
+  // console.log(billerItemDetails);
 
   return (
     <SafeAreaView style={[styles.area, { backgroundColor: colors.background }]}>
       {
         <CustomModal
-          btnText="Pay"
+          btnText={isBillPaying ? 'Paying...' : 'Pay'}
           modalVisible={modalOpen}
           setModalVisible={setModalOpen}
           title="Successfully validated your customer id, please click below to continue"
-          onClick={handlePaymentClick}
+          disabled={isBillPaying}
+          onPress={handlePaymentClick}
         />
       }
       <View style={[styles.container, { backgroundColor: colors.background }]}>
         <Header title="Electricity" />
-        <ScrollView showsVerticalScrollIndicator={false}>
-          <View style={styles.viewViewContainer}>
-            {/* <View style={styles.iconContainer}>
+        {/* <ScrollView showsVerticalScrollIndicator={false}> */}
+        <View style={styles.viewViewContainer}>
+          {/* <View style={styles.iconContainer}>
               <Image
                 source={icons.electricity}
                 contentFit="contain"
                 style={styles.icon}
               />
             </View> */}
+          <Text
+            style={[
+              styles.title,
+              {
+                color: dark ? COLORS.white : COLORS.greyscale900,
+              },
+            ]}
+          >
+            Pay {billerItemDetails?.paymentitemname} Bill
+          </Text>
+          <View style={{ marginVertical: 12 }}>
             <Text
               style={[
-                styles.title,
+                styles.subtitle,
+                {
+                  color: dark ? COLORS.greyscale300 : COLORS.greyScale800,
+                },
+              ]}
+            >
+              Pay {billerItemDetails?.paymentitemname} bills safely,
+              conveniently & easily.
+            </Text>
+            <Text
+              style={[
+                styles.subtitle,
+                {
+                  color: dark ? COLORS.greyscale300 : COLORS.greyScale800,
+                },
+              ]}
+            >
+              You can pay anytime and anywhere!
+            </Text>
+          </View>
+          <View
+            style={[
+              styles.separateLine,
+              {
+                backgroundColor: dark
+                  ? COLORS.greyscale900
+                  : COLORS.grayscale200,
+              },
+            ]}
+          />
+        </View>
+        <View
+          style={[
+            styles.viewContainer,
+            {
+              backgroundColor: dark ? COLORS.dark2 : '#FAFAFA',
+            },
+          ]}
+        >
+          {/* <Image
+              source={images.user1}
+              contentFit="contain"
+              style={styles.avatar}
+            /> */}
+          {/* <View
+              style={[
+                styles.separateLine,
+                {
+                  backgroundColor: dark
+                    ? COLORS.greyScale800
+                    : COLORS.grayscale200,
+                },
+              ]}
+            /> */}
+          <View style={styles.view}>
+            <Text
+              style={[
+                styles.viewLeft,
+                {
+                  color: dark ? COLORS.greyscale300 : COLORS.grayscale700,
+                },
+              ]}
+            >
+              Bill Amount ({billerItemDetails?.itemCurrencySymbol})
+            </Text>
+            <Text
+              style={[
+                styles.viewRight,
                 {
                   color: dark ? COLORS.white : COLORS.greyscale900,
                 },
               ]}
             >
-              Pay {billerItemDetails?.paymentitemname} Bill
+              {billerItemDetails?.itemFee}
             </Text>
-            <View style={{ marginVertical: 12 }}>
-              <Text
-                style={[
-                  styles.subtitle,
-                  {
-                    color: dark ? COLORS.greyscale300 : COLORS.greyScale800,
-                  },
-                ]}
-              >
-                Pay {billerItemDetails?.paymentitemname} bills safely,
-                conveniently & easily.
-              </Text>
-              <Text
-                style={[
-                  styles.subtitle,
-                  {
-                    color: dark ? COLORS.greyscale300 : COLORS.greyScale800,
-                  },
-                ]}
-              >
-                You can pay anytime and anywhere!
-              </Text>
-            </View>
-            <View
+          </View>
+          <View style={styles.view}>
+            <Text
               style={[
-                styles.separateLine,
+                styles.viewLeft,
                 {
-                  backgroundColor: dark
-                    ? COLORS.greyscale900
-                    : COLORS.grayscale200,
+                  color: dark ? COLORS.greyscale300 : COLORS.grayscale700,
                 },
               ]}
-            />
+            >
+              Fixed Commission
+            </Text>
+            <Text
+              style={[
+                styles.viewRight,
+                {
+                  color: dark ? COLORS.white : COLORS.greyscale900,
+                },
+              ]}
+            >
+              {billerItemDetails?.fixed_commission}
+            </Text>
+          </View>
+          <View style={styles.view}>
+            <Text
+              style={[
+                styles.viewLeft,
+                {
+                  color: dark ? COLORS.greyscale300 : COLORS.grayscale700,
+                },
+              ]}
+            >
+              Percentage Commission
+            </Text>
+            <Text
+              style={[
+                styles.viewRight,
+                {
+                  color: dark ? COLORS.white : COLORS.greyscale900,
+                },
+              ]}
+            >
+              {billerItemDetails?.percentage_commission}
+            </Text>
           </View>
           <View
             style={[
-              styles.viewContainer,
+              styles.separateLine,
               {
-                backgroundColor: dark ? COLORS.dark2 : '#FAFAFA',
+                backgroundColor: dark
+                  ? COLORS.greyScale800
+                  : COLORS.grayscale200,
               },
             ]}
-          >
-            {/* <Image
-              source={images.user1}
-              contentFit="contain"
-              style={styles.avatar}
-            /> */}
-            {/* <View
+          />
+          <View style={styles.view}>
+            <Text
               style={[
-                styles.separateLine,
+                styles.viewLeft,
                 {
-                  backgroundColor: dark
-                    ? COLORS.greyScale800
-                    : COLORS.grayscale200,
+                  color: dark ? COLORS.greyscale300 : COLORS.grayscale700,
                 },
               ]}
-            /> */}
-            <View style={styles.view}>
-              <Text
-                style={[
-                  styles.viewLeft,
-                  {
-                    color: dark ? COLORS.greyscale300 : COLORS.grayscale700,
-                  },
-                ]}
-              >
-                Bill Amount ({billerItemDetails?.itemCurrencySymbol})
-              </Text>
-              <Text
-                style={[
-                  styles.viewRight,
-                  {
-                    color: dark ? COLORS.white : COLORS.greyscale900,
-                  },
-                ]}
-              >
-                {billerItemDetails?.itemFee}
-              </Text>
-            </View>
-            <View style={styles.view}>
-              <Text
-                style={[
-                  styles.viewLeft,
-                  {
-                    color: dark ? COLORS.greyscale300 : COLORS.grayscale700,
-                  },
-                ]}
-              >
-                Fixed Commission
-              </Text>
-              <Text
-                style={[
-                  styles.viewRight,
-                  {
-                    color: dark ? COLORS.white : COLORS.greyscale900,
-                  },
-                ]}
-              >
-                {billerItemDetails?.fixed_commission}
-              </Text>
-            </View>
-            <View style={styles.view}>
-              <Text
-                style={[
-                  styles.viewLeft,
-                  {
-                    color: dark ? COLORS.greyscale300 : COLORS.grayscale700,
-                  },
-                ]}
-              >
-                Percentage Commission
-              </Text>
-              <Text
-                style={[
-                  styles.viewRight,
-                  {
-                    color: dark ? COLORS.white : COLORS.greyscale900,
-                  },
-                ]}
-              >
-                {billerItemDetails?.percentage_commission}
-              </Text>
-            </View>
-            <View
-              style={[
-                styles.separateLine,
-                {
-                  backgroundColor: dark
-                    ? COLORS.greyScale800
-                    : COLORS.grayscale200,
-                },
-              ]}
-            />
-            <View style={styles.view}>
-              <Text
-                style={[
-                  styles.viewLeft,
-                  {
-                    color: dark ? COLORS.greyscale300 : COLORS.grayscale700,
-                  },
-                ]}
-              >
-                Status
-              </Text>
-              <View style={styles.paidBtn}>
-                <Text style={styles.paidBtnText}>Unpaid</Text>
-              </View>
+            >
+              Status
+            </Text>
+            <View style={styles.paidBtn}>
+              <Text style={styles.paidBtnText}>Unpaid</Text>
             </View>
           </View>
-          <Text
-            style={[
-              styles.idText,
-              {
-                color: dark ? COLORS.white : COLORS.greyscale900,
-              },
-            ]}
-          >
-            Customer ID
-          </Text>
-          <TextInput
-            value={customerId}
-            onChangeText={setCustomerId}
-            placeholder="37173838939"
-            style={[
-              styles.idInput,
-              {
-                backgroundColor: dark ? COLORS.dark2 : '#FAFAFA',
-                color: dark ? COLORS.white : COLORS.greyscale900,
-              },
-            ]}
-            placeholderTextColor={dark ? COLORS.white : COLORS.greyscale900}
-          />
-          <Button
-            title="Confirm & Pay Now"
-            filled
-            style={styles.continueBtn}
-            onPress={() => navigate('paybillssuccessful')}
-          />
-        </ScrollView>
+        </View>
+
+        <View style={{ height: 20 }} />
+
+        <Input
+          id="customerId"
+          value={formState.inputValues.customerId}
+          onInputChanged={inputChangedHandler}
+          errorText={formState.inputValidities['customerId']}
+          placeholder="Customer Id"
+          placeholderTextColor={dark ? COLORS.grayTie : COLORS.black}
+          icon={icons.profile2}
+          keyboardType="number-pad"
+        />
+
+        <Input
+          id="phone"
+          value={formState.inputValues.phone}
+          onInputChanged={inputChangedHandler}
+          errorText={formState.inputValidities['phone']}
+          placeholder="Phone Number"
+          placeholderTextColor={dark ? COLORS.grayTie : COLORS.black}
+          icon={icons.mobile}
+          keyboardType="number-pad"
+        />
+
+        <Button
+          title={isValidating ? 'Verifying...' : 'Confirm & Verify Bill'}
+          filled
+          disabled={isValidating}
+          style={styles.continueBtn}
+          onPress={handleValidateCustomer}
+          // onPress={() => navigate('paybillssuccessful')}
+        />
+        {/* </ScrollView> */}
       </View>
     </SafeAreaView>
   );
