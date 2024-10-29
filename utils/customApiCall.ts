@@ -1,4 +1,5 @@
 import axios, { AxiosResponse } from 'axios';
+import { useAppSelector } from '@/store/slices/authSlice';
 
 export const apiCall = async (
   url: string,
@@ -6,10 +7,12 @@ export const apiCall = async (
   data?: any,
   token?: string
 ) => {
-  const headers = {
+  let headers;
+  headers = {
     Authorization: token ? `Bearer ${token}` : '',
     'Content-Type': 'application/json',
   };
+
   if (data && data instanceof FormData) {
     headers['Content-Type'] = 'multipart/form-data';
   }

@@ -23,6 +23,7 @@ import {
   getBillerItems,
 } from '@/utils/queries/billPayment';
 import Loader from '../loader';
+import { useAppSelector } from '@/store/slices/authSlice';
 
 type Nav = {
   navigate: (value: string) => void;
@@ -30,13 +31,17 @@ type Nav = {
 
 const HomeScreen = () => {
   const [categoryId, setCategoryId] = React.useState<string>('');
+  const { token } = useAppSelector((state) => state.auth);
   const {
     data: categoryData,
     isPending: isPendingCategories,
     error: errorCategories,
   } = useQuery({
     queryKey: ['billCategories'],
-    queryFn: getBillerCategories,
+    queryFn: () =>
+      getBillerCategories({
+        token,
+      }),
     staleTime: 2000,
   });
   const {
@@ -45,7 +50,11 @@ const HomeScreen = () => {
     error: errorItems,
   } = useQuery({
     queryKey: ['billCategories', categoryId],
-    queryFn: () => getBillerItems(categoryId?.toString()),
+    queryFn: () =>
+      getBillerItems({
+        categoryId: categoryId,
+        token,
+      }),
     enabled: categoryId != '',
   });
   const { dark, colors } = useTheme();
@@ -65,7 +74,10 @@ const HomeScreen = () => {
     const backPressEvent = BackHandler.addEventListener(
       'hardwareBackPress',
       //prevent going back to login screen
-      () => true
+      () => {
+        console.log('back pressed');
+        return true;
+      }
     );
 
     return () => backPressEvent.remove();

@@ -28,8 +28,8 @@ type Nav = {
   navigate: (value: string) => void;
 };
 
-type mutateData = {
-  user_id: string;
+type resetPasswordData = {
+  userId: string;
   newPassword: string;
   confirmPassword: string;
 };
@@ -54,7 +54,7 @@ const CreateNewPassword = () => {
   const { colors, dark } = useTheme();
   const { userId } = useAppSelector((state) => state.auth);
   const { isPending, mutate } = useMutation({
-    mutationFn: (data: mutateData) => resetPassword(data),
+    mutationFn: (data: resetPasswordData) => resetPassword(data),
     onSuccess: (data) => {
       console.log(data);
       setModalVisible(true);
@@ -98,7 +98,7 @@ const CreateNewPassword = () => {
     }
 
     mutate({
-      user_id: userId.toString(),
+      userId,
       newPassword,
       confirmPassword: confirmNewPassword,
     });
@@ -136,8 +136,9 @@ const CreateNewPassword = () => {
                 page in a few seconds..
               </Text>
               <Button
-                title="Continue"
+                title={isPending ? 'Loading...' : 'Continue'}
                 filled
+                disabled={isPending}
                 onPress={() => {
                   setModalVisible(false);
                   navigate('login');

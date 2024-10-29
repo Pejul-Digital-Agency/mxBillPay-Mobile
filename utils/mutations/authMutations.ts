@@ -12,54 +12,55 @@ export const loginUser = async (data: LoginProps): Promise<any> => {
 };
 
 export const verifyEmailOTP = async ({
-  user_id,
-  otp,
+  data,
+  token,
 }: {
-  user_id: string;
-  otp: string;
+  data: { otp: string };
+  token: string;
 }) => {
-  return await apiCall(API_ENDPOINTS.AUTH.VerfiyEmailOtp, 'POST', {
-    user_id: user_id.toString(),
-    otp,
-  });
+  return await apiCall(API_ENDPOINTS.AUTH.VerfiyEmailOtp, 'POST', data, token);
 };
 
 export const verifyPasswordOTP = async (data: {
-  user_id: string;
   otp: string;
+  userId: string;
 }) => {
   return await apiCall(API_ENDPOINTS.AUTH.VerifyPasswordOtp, 'POST', data);
 };
 
-export const forgotPassword = async (email: string) => {
-  return await apiCall(API_ENDPOINTS.AUTH.ForgotPassword, 'POST', { email });
+export const forgotPassword = async (data: { email: string }) => {
+  return await apiCall(API_ENDPOINTS.AUTH.ForgotPassword, 'POST', data);
 };
 
 export const resetPassword = async (data: {
-  user_id: string;
   newPassword: string;
   confirmPassword: string;
-}) => {
-  const { user_id, newPassword, confirmPassword } = data;
-  return await apiCall(API_ENDPOINTS.AUTH.ResetPassword, 'POST', {
-    user_id,
-    new_password: newPassword,
-    confirm_password: confirmPassword,
-  });
-};
-
-export const resendOtp = async (data: { email: string; userId: string }) => {
-  return await apiCall(API_ENDPOINTS.AUTH.ResendOtp, 'POST', data);
-};
-
-export const generateBvnLink = async (data: {
-  bvn: string;
   userId: string;
-  type: string;
+}) => {
+  return await apiCall(API_ENDPOINTS.AUTH.ResetPassword, 'POST', data);
+};
+
+export const resendOtp = async ({
+  data,
+  token,
+}: {
+  data: { email: string };
+  token: string;
+}) => {
+  return await apiCall(API_ENDPOINTS.AUTH.ResendOtp, 'POST', data, token);
+};
+
+export const generateBvnLink = async ({
+  data,
+  token,
+}: {
+  data: { bvn: string; type: string };
+  token: string;
 }) => {
   return await apiCall(
     API_ENDPOINTS.ACCOUNT_MANAGEMENT.RequestBvnConsent,
     'POST',
-    data
+    data,
+    token
   );
 };

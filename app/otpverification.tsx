@@ -27,6 +27,15 @@ type Params = {
   type: string;
 };
 
+type PasswordData = {
+  otp: string;
+  userId: string;
+};
+type EmailData = {
+  data: { otp: string };
+  token: string;
+};
+
 const OTPVerification = () => {
   const { navigate } = useNavigation<Nav>();
   const [timeInterval, setTimeInterval] = useState<NodeJS.Timeout | null>(null);
@@ -35,13 +44,13 @@ const OTPVerification = () => {
   const { type } = useLocalSearchParams<Params>();
   const [otp, setOtp] = useState('');
   const [timerOut, setTimerOut] = useState(false);
-  const { userId, userEmail } = useAppSelector((state) => state.auth);
+  const { userId, userEmail, token } = useAppSelector((state) => state.auth);
   const { mutate: submitOtp, isPending: submittingOtp } = useMutation({
-    mutationFn: (data: { user_id: string; otp: string }) => {
+    mutationFn: (data: EmailData | PasswordData) => {
       if (type == 'password') {
-        return verifyPasswordOTP(data);
+        return verifyPasswordOTP(data as PasswordData);
       } else {
-        return verifyEmailOTP(data);
+        return verifyEmailOTP(data as EmailData);
       }
     },
     onSuccess: (data) => {
@@ -59,7 +68,8 @@ const OTPVerification = () => {
     },
   });
   const { mutate: resend, isPending: resedingOtp } = useMutation({
-    mutationFn: (data: { email: string; userId: string }) => resendOtp(data),
+    mutationFn: (data: { data: { email: string }; token: string }) =>
+      resendOtp(data),
     onSuccess: (data) => {
       console.log(data);
       setTime(45);
@@ -81,7 +91,18 @@ const OTPVerification = () => {
 
   const handleVerifyOTP = () => {
     // router.push('/accountcreationmethod');
-    submitOtp({ user_id: userId.toString(), otp });
+    if (type == 'password') {
+      submitOtp({
+        userId,
+        otp,
+      });
+    } else {
+      console.log(token);
+      submitOtp({
+        data: { otp: otp },
+        token,
+      });
+    }
   };
   // console.log(isPending);
 
@@ -110,21 +131,17 @@ const OTPVerification = () => {
   }, [time]);
 
   const handleResendOtp = () => {
-    // resend({ email: userEmail, userId: userId.toString() });
-    // setTime(8);
-    // setTimerOut(false);
-    // setTimeInterval(
-    //   setInterval(() => {
-    //     setTime((prevTime) => (prevTime > 0 ? prevTime - 1 : 0));
-    //   }, 1000)
-    // );
+    resend({
+      data: { email: userEmail },
+      token,
+    });
   };
 
-  console.log(timerOut);
+  // console.log(timerOut);
   return (
     <SafeAreaView style={[styles.area, { backgroundColor: colors.background }]}>
       <View style={[styles.container, { backgroundColor: colors.background }]}>
-        <Header title="Forgot Password" />
+        <Header title={type == 'email' ? 'Verify Email' : 'Forgot Password'} />
         <ScrollView>
           <Text
             style={[

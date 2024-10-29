@@ -24,44 +24,45 @@ import { NavigationProp, RouteProp, useRoute } from '@react-navigation/native';
 import Loader from './loader';
 import { IBillerItemsList } from '@/utils/queries/billPayment';
 import { Route } from 'expo-router/build/Route';
+import { useAppSelector } from '@/store/slices/authSlice';
 
-const dummy = [
-  'Electricity',
-  'Water',
-  'Gas',
-  'Internet',
-  'Electricity',
-  'Water',
-  'Gas',
-  'Internet',
-];
+// const dummy = [
+//   'Electricity',
+//   'Water',
+//   'Gas',
+//   'Internet',
+//   'Electricity',
+//   'Water',
+//   'Gas',
+//   'Internet',
+// ];
 
-const dummyParams = {
-  category: {
-    id: 1,
-    category: 'Electricity',
-    icon: icons.electricity,
-    iconColor: COLORS.primary,
-  },
-  itemList: [
-    {
-      id: 1,
-      paymentitemname: 'Fesco',
-    },
-    {
-      id: 2,
-      paymentitemname: 'Safaricom',
-    },
-    {
-      id: 3,
-      paymentitemname: 'Airtel',
-    },
-    {
-      id: 4,
-      paymentitemname: 'MTN',
-    },
-  ],
-};
+// const dummyParams = {
+//   category: {
+//     id: 1,
+//     category: 'Electricity',
+//     icon: icons.electricity,
+//     iconColor: COLORS.primary,
+//   },
+//   itemList: [
+//     {
+//       id: 1,
+//       paymentitemname: 'Fesco',
+//     },
+//     {
+//       id: 2,
+//       paymentitemname: 'Safaricom',
+//     },
+//     {
+//       id: 3,
+//       paymentitemname: 'Airtel',
+//     },
+//     {
+//       id: 4,
+//       paymentitemname: 'MTN',
+//     },
+//   ],
+// };
 
 type Nav = {
   navigate: (value: number) => void;
@@ -69,6 +70,7 @@ type Nav = {
 const CustomCategoryPage = () => {
   const route = useRoute<RouteProp<any>>();
   if (!route.params) return router.push('/(tabs)');
+  const { token } = useAppSelector((state) => state.auth);
   const { billerItems }: { billerItems: IBillerItemsList } =
     route.params as any;
   // if (!params) {
@@ -77,9 +79,9 @@ const CustomCategoryPage = () => {
   const { colors, dark } = useTheme();
   const { navigate, setParams } = useNavigation<NavigationProp<any>>();
   const [itemId, setItemId] = useState('');
-  const { data, isPending, error, isLoading } = useQuery({
+  const { data, error, isLoading } = useQuery({
     queryKey: ['billerItems', itemId],
-    queryFn: () => getBillerItemDetails(itemId),
+    queryFn: () => getBillerItemDetails({ itemId, token }),
     enabled: itemId !== '',
   });
 

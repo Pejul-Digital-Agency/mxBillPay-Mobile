@@ -18,13 +18,16 @@ const TokenExpiryModal = () => {
   const { token } = useAppSelector((state) => state.auth);
   const currentStateRef = useRef(AppState.currentState);
   const [expiryTimer, setExpiryTimer] = useState<NodeJS.Timeout | null>(null);
+  const [backgroundTime, setBackgroundTime] = useState<number | null>(null);
   const dispatch = useDispatch();
 
   useEffect(() => {
     const backHandler = BackHandler.addEventListener(
       'hardwareBackPress',
       () => {
+        // console.log('pressed back');
         if (visible) {
+          console.log('yes');
           // Return true to prevent back button behavior
           return true;
         }
@@ -55,27 +58,43 @@ const TokenExpiryModal = () => {
 
   const handleAppStateChange = (state: AppStateStatus) => {
     if (state === 'background' && currentStateRef.current === 'active') {
-      startTokenExpiryTimer();
+      console.log('expiry started');
+
+      setBackgroundTime((prev) => Date.now());
+      // startTokenExpiryTimer();
       currentStateRef.current = state;
     } else if (state === 'active' && currentStateRef.current === 'background') {
-      stopTokenExpiryTimer();
+      // stopTokenExpiryTimer();
+      console.log(backgroundTime);
+      if (backgroundTime) {
+        console.log('by');
+        const timeDiff = Date.now() - backgroundTime;
+        console.log(timeDiff);
+        if (timeDiff > 2 * 60 * 1000) {
+          dispatch(authSliceActions.clearToken());
+          setBackgroundTime(null);
+          setVisible(true);
+        }
+      }
       currentStateRef.current = state;
     }
   };
 
-  const startTokenExpiryTimer = () => {
-    const timer = setTimeout(() => {
-      dispatch(authSliceActions.clearToken());
-    }, 2 * 60 * 1000);
-    setExpiryTimer(timer);
-  };
+  // const startTokenExpiryTimer = () => {
+  //   console.log('started timer');
+  //   const timer = setTimeout(() => {
+  //     console.log('session timeout');
+  //     dispatch(authSliceActions.clearToken());
+  //   }, 10 * 1000);
+  //   setExpiryTimer(timer);
+  // };
 
-  const stopTokenExpiryTimer = () => {
-    if (expiryTimer) {
-      clearTimeout(expiryTimer);
-      setExpiryTimer(null);
-    }
-  };
+  // const stopTokenExpiryTimer = () => {
+  //   if (expiryTimer) {
+  //     clearTimeout(expiryTimer);
+  //     setExpiryTimer(null);
+  //   }
+  // };
 
   useEffect(() => {
     if (!token) {

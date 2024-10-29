@@ -21,7 +21,7 @@ const CustomModal = ({
       animationType="slide"
       visible={modalVisible}
       transparent
-      onRequestClose={() => setModalVisible(false)}
+      // onRequestClose={() => setModalVisible(false)}
     >
       <View style={styles.modalBackdrop}>
         <View style={styles.modalContainer}>

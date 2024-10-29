@@ -1,28 +1,46 @@
 import { API_ENDPOINTS } from '@/apiConfig';
 import { apiCall } from '../customApiCall';
 
-export const getBillerCategories = async (): Promise<IBillerCategories> => {
+export const getBillerCategories = async ({
+  token,
+}: {
+  token: string;
+}): Promise<IBillerCategories> => {
   return await apiCall(
     API_ENDPOINTS.BILL_MANAGEMENT.GetBillerCategories,
-    'GET'
+    'GET',
+    undefined,
+    token
   );
 };
 
-export const getBillerItems = async (
-  categoryId: string
-): Promise<IBillerItemsListData> => {
+export const getBillerItems = async ({
+  categoryId,
+  token,
+}: {
+  categoryId: string;
+  token: string;
+}): Promise<IBillerItemsListData> => {
   return await apiCall(
-    API_ENDPOINTS.BILL_MANAGEMENT.GetBillerItems + '/' + categoryId,
-    'GET'
+    `${API_ENDPOINTS.BILL_MANAGEMENT.GetBillerItems}/${categoryId}`,
+    'GET',
+    undefined,
+    token
   );
 };
 
-export const getBillerItemDetails = async (
-  itemId: string
-): Promise<IBillerItemDetailsData> => {
+export const getBillerItemDetails = async ({
+  itemId,
+  token,
+}: {
+  itemId: string;
+  token: string;
+}): Promise<IBillerItemDetailsData> => {
   return await apiCall(
-    API_ENDPOINTS.BILL_MANAGEMENT.GetBillerItemDetails + '/' + itemId,
-    'GET'
+    `${API_ENDPOINTS.BILL_MANAGEMENT.GetBillerItemDetails}/${itemId}`,
+    'GET',
+    undefined,
+    token
   );
 };
 
@@ -51,6 +69,7 @@ export interface IBillerItemsList {
     }
   ];
 }
+
 interface IBillerItemsListData {
   message: string;
   data: IBillerItemsList;
@@ -78,6 +97,7 @@ export type IBillerItemDetails = {
   updated_at: string;
   billerId: string;
 };
+
 interface IBillerItemDetailsData {
   message: string;
   data: IBillerItemDetails;

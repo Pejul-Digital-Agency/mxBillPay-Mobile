@@ -35,6 +35,7 @@ import { useDispatch } from 'react-redux';
 import { PusherEvent } from '@pusher/pusher-websocket-react-native';
 import CustomModal from './custommodal';
 import { generateBvnLink } from '@/utils/mutations/authMutations';
+import WebView from 'react-native-webview';
 
 type imageType = {
   name: string;
@@ -102,6 +103,10 @@ const FillYourProfile = () => {
   const [redirectModalVisible, setRedirectModalVisible] = useState(false);
   const [image, setImage] = useState<any>(null);
   const [modalVisible, setModalVisible] = useState(false);
+  const [webView, setWebView] = useState({
+    isVisible: false,
+    url: '',
+  });
   const [formState, dispatchFormState] = useReducer(reducer, initialState);
   const [areas, setAreas] = useState<any[]>([]);
   const [openStartDatePicker, setOpenStartDatePicker] = useState(false);
@@ -110,12 +115,13 @@ const FillYourProfile = () => {
   const { colors, dark } = useTheme();
 
   const { mutate, isPending } = useMutation({
-    mutationFn: (data: FormData) => createIndividualAccount(data),
+    mutationFn: createIndividualAccount,
     onSuccess: (data) => {
       console.log(data);
       setUserBvn(data?.data?.bvn);
       setGenerateModalVisible(true);
-      initializePusher(userId || data?.data.user_id);
+      // @ts-ignore
+      dispatch(initializePusher(userId || data?.data.user_id));
     },
     onError: (error) => {
       console.log(error);
@@ -134,7 +140,11 @@ const FillYourProfile = () => {
       if (bvnUrl) {
         setRedirectURL(bvnUrl);
         setGenerateModalVisible(false);
-        setRedirectModalVisible(true);
+        // setRedirectModalVisible(true);
+        setWebView({
+          isVisible: true,
+          url: bvnUrl,
+        });
       }
     },
     onError: (data) => {
@@ -153,9 +163,11 @@ const FillYourProfile = () => {
     console.log('generating link');
     console.log(userId);
     generateURL({
-      userId: userId.toString(),
-      bvn: userBvn,
-      type: '02',
+      data: {
+        bvn: userBvn,
+        type: '02',
+      },
+      token,
     });
   };
   useEffect(() => {
@@ -165,8 +177,13 @@ const FillYourProfile = () => {
       //binding of channel
       channel.onEvent((event: PusherEvent) => {
         if (event.userId === 'account.released') {
-          setModalVisible(false);
-          router.push('/login');
+          console.log('account released');
+          // setModalVisible(false);
+          setWebView({
+            isVisible: false,
+            url: '',
+          });
+          return router.push('/login');
         }
       });
     }
@@ -246,7 +263,10 @@ const FillYourProfile = () => {
     } as any);
 
     console.log(formData);
-    mutate(formData);
+    mutate({
+      data: formData,
+      token,
+    });
   };
   // Fetch codes from rescountries api
   useEffect(() => {
@@ -374,158 +394,169 @@ const FillYourProfile = () => {
   // }
 
   return (
-    <SafeAreaView style={[styles.area, { backgroundColor: colors.background }]}>
-      <View style={[styles.container, { backgroundColor: colors.background }]}>
-        <Header title="Fill Your Profile" />
-        <ScrollView showsVerticalScrollIndicator={false}>
-          <View style={{ alignItems: 'center', marginVertical: 12 }}>
-            <View style={styles.avatarContainer}>
-              <Image
-                source={image === null ? icons.userDefault2 : image?.uri}
-                contentFit="cover"
-                style={styles.avatar}
-              />
-              <TouchableOpacity onPress={pickImage} style={styles.pickImage}>
-                <MaterialCommunityIcons
-                  name="pencil-outline"
-                  size={24}
-                  color={COLORS.white}
+    <>
+      <SafeAreaView
+        style={[styles.area, { backgroundColor: colors.background }]}
+      >
+        <View
+          style={[
+            styles.container,
+            { backgroundColor: colors.background },
+            { display: webView.isVisible ? 'none' : 'flex' },
+          ]}
+        >
+          <Header title="Fill Your Profile" />
+          <ScrollView showsVerticalScrollIndicator={false}>
+            <View style={{ alignItems: 'center', marginVertical: 12 }}>
+              <View style={styles.avatarContainer}>
+                <Image
+                  source={image === null ? icons.userDefault2 : image?.uri}
+                  contentFit="cover"
+                  style={styles.avatar}
                 />
-              </TouchableOpacity>
+                <TouchableOpacity onPress={pickImage} style={styles.pickImage}>
+                  <MaterialCommunityIcons
+                    name="pencil-outline"
+                    size={24}
+                    color={COLORS.white}
+                  />
+                </TouchableOpacity>
+              </View>
             </View>
-          </View>
-          <View>
-            <Input
-              id="firstName"
-              onInputChanged={inputChangedHandler}
-              errorText={formState.inputValidities['firstName']}
-              placeholder="First Name"
-              placeholderTextColor={COLORS.gray}
-            />
-            <Input
-              id="lastName"
-              onInputChanged={inputChangedHandler}
-              errorText={formState.inputValidities['lastName']}
-              placeholder="Last Name"
-              placeholderTextColor={COLORS.gray}
-            />
-            <Input
-              id="bvn"
-              onInputChanged={inputChangedHandler}
-              errorText={formState.inputValidities['bvn']}
-              placeholder="Bank Verification Number (bvn)"
-              placeholderTextColor={COLORS.gray}
-              keyboardType="numeric"
-            />
-            <View
-              style={{
-                width: SIZES.width - 32,
-              }}
-            >
-              <TouchableOpacity
+            <View>
+              <Input
+                id="firstName"
+                onInputChanged={inputChangedHandler}
+                errorText={formState.inputValidities['firstName']}
+                placeholder="First Name"
+                placeholderTextColor={COLORS.gray}
+              />
+              <Input
+                id="lastName"
+                onInputChanged={inputChangedHandler}
+                errorText={formState.inputValidities['lastName']}
+                placeholder="Last Name"
+                placeholderTextColor={COLORS.gray}
+              />
+              <Input
+                id="bvn"
+                onInputChanged={inputChangedHandler}
+                errorText={formState.inputValidities['bvn']}
+                placeholder="Bank Verification Number (bvn)"
+                placeholderTextColor={COLORS.gray}
+                keyboardType="numeric"
+              />
+              <View
+                style={{
+                  width: SIZES.width - 32,
+                }}
+              >
+                <TouchableOpacity
+                  style={[
+                    styles.inputBtn,
+                    {
+                      backgroundColor: dark
+                        ? COLORS.dark2
+                        : COLORS.greyscale500,
+                      borderColor: dark ? COLORS.dark2 : COLORS.greyscale500,
+                    },
+                  ]}
+                  onPress={handleOnPressStartDate}
+                >
+                  <Text style={{ ...FONTS.body4, color: COLORS.grayscale400 }}>
+                    {startedDate}
+                  </Text>
+                  <Feather
+                    name="calendar"
+                    size={24}
+                    color={COLORS.grayscale400}
+                  />
+                </TouchableOpacity>
+              </View>
+              <View
                 style={[
-                  styles.inputBtn,
+                  styles.inputContainer,
                   {
                     backgroundColor: dark ? COLORS.dark2 : COLORS.greyscale500,
                     borderColor: dark ? COLORS.dark2 : COLORS.greyscale500,
                   },
                 ]}
-                onPress={handleOnPressStartDate}
               >
-                <Text style={{ ...FONTS.body4, color: COLORS.grayscale400 }}>
-                  {startedDate}
-                </Text>
-                <Feather
-                  name="calendar"
-                  size={24}
-                  color={COLORS.grayscale400}
+                <TouchableOpacity
+                  style={styles.selectFlagContainer}
+                  onPress={() => {}}
+                  //setModalVisible to true if want to show flags selection
+                >
+                  <View style={{ justifyContent: 'center' }}>
+                    <Image
+                      source={icons.down}
+                      contentFit="contain"
+                      style={styles.downIcon}
+                    />
+                  </View>
+                  <View style={{ justifyContent: 'center', marginLeft: 5 }}>
+                    <Image
+                      //in source, use the flag of the selected area if want to use all flags
+                      source={{ uri: areas.length > 0 && areas[0].flag }}
+                      contentFit="contain"
+                      style={styles.flagIcon}
+                    />
+                  </View>
+                  <View style={{ justifyContent: 'center', marginLeft: 5 }}>
+                    <Text
+                      style={{
+                        color: dark ? COLORS.white : '#111',
+                        fontSize: 12,
+                      }}
+                    >
+                      {areas.length > 0 && areas[0]?.callingCode}
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+                {/* Phone Number Text Input */}
+                <TextInput
+                  style={styles.input}
+                  placeholder="Enter your phone number"
+                  placeholderTextColor={COLORS.gray}
+                  selectionColor={COLORS.primary}
+                  keyboardType="numeric"
+                  value={formState.inputValues['phoneNumber'].slice(4)}
+                  onChangeText={(text) =>
+                    inputChangedHandler(
+                      'phoneNumber',
+                      `${areas.length > 0 && areas[0]?.callingCode}${text}`
+                    )
+                  }
                 />
-              </TouchableOpacity>
+              </View>
+              {
+                <Text style={{ color: 'red', fontSize: 12 }}>
+                  {formState.inputValidities['phoneNumber']}
+                </Text>
+              }
             </View>
-            <View
-              style={[
-                styles.inputContainer,
-                {
-                  backgroundColor: dark ? COLORS.dark2 : COLORS.greyscale500,
-                  borderColor: dark ? COLORS.dark2 : COLORS.greyscale500,
-                },
-              ]}
+          </ScrollView>
+        </View>
+        <DatePickerModal
+          open={openStartDatePicker}
+          startDate={startDate}
+          selectedDate={startedDate}
+          onClose={() => setOpenStartDatePicker(false)}
+          onChangeStartDate={(date) => setStartedDate(date)}
+        />
+        {/* {RenderAreasCodesModal()} */}
+        {!keyboardVisible && (
+          <View style={styles.bottomContainer}>
+            <Text
+              style={{
+                ...FONTS.body4,
+                color: dark ? COLORS.white : COLORS.primary,
+                textAlign: 'center',
+              }}
             >
-              <TouchableOpacity
-                style={styles.selectFlagContainer}
-                onPress={() => {}}
-                //setModalVisible to true if want to show flags selection
-              >
-                <View style={{ justifyContent: 'center' }}>
-                  <Image
-                    source={icons.down}
-                    contentFit="contain"
-                    style={styles.downIcon}
-                  />
-                </View>
-                <View style={{ justifyContent: 'center', marginLeft: 5 }}>
-                  <Image
-                    //in source, use the flag of the selected area if want to use all flags
-                    source={{ uri: areas.length > 0 && areas[0].flag }}
-                    contentFit="contain"
-                    style={styles.flagIcon}
-                  />
-                </View>
-                <View style={{ justifyContent: 'center', marginLeft: 5 }}>
-                  <Text
-                    style={{
-                      color: dark ? COLORS.white : '#111',
-                      fontSize: 12,
-                    }}
-                  >
-                    {areas.length > 0 && areas[0]?.callingCode}
-                  </Text>
-                </View>
-              </TouchableOpacity>
-              {/* Phone Number Text Input */}
-              <TextInput
-                style={styles.input}
-                placeholder="Enter your phone number"
-                placeholderTextColor={COLORS.gray}
-                selectionColor={COLORS.primary}
-                keyboardType="numeric"
-                value={formState.inputValues['phoneNumber'].slice(4)}
-                onChangeText={(text) =>
-                  inputChangedHandler(
-                    'phoneNumber',
-                    `${areas.length > 0 && areas[0]?.callingCode}${text}`
-                  )
-                }
-              />
-            </View>
-            {
-              <Text style={{ color: 'red', fontSize: 12 }}>
-                {formState.inputValidities['phoneNumber']}
-              </Text>
-            }
-          </View>
-        </ScrollView>
-      </View>
-      <DatePickerModal
-        open={openStartDatePicker}
-        startDate={startDate}
-        selectedDate={startedDate}
-        onClose={() => setOpenStartDatePicker(false)}
-        onChangeStartDate={(date) => setStartedDate(date)}
-      />
-      {/* {RenderAreasCodesModal()} */}
-      {!keyboardVisible && (
-        <View style={styles.bottomContainer}>
-          <Text
-            style={{
-              ...FONTS.body4,
-              color: dark ? COLORS.white : COLORS.primary,
-              textAlign: 'center',
-            }}
-          >
-            Please fill your credentials as per your legal documents.
-          </Text>
-          {/* <Button
+              Please fill your credentials as per your legal documents.
+            </Text>
+            {/* <Button
           title="Skip"
           style={{
             width: (SIZES.width - 32) / 2 - 8,
@@ -536,32 +567,45 @@ const FillYourProfile = () => {
           textColor={dark ? COLORS.white : COLORS.primary}
           onPress={() => navigate('createnewpin')}
         /> */}
-          <Button
-            title={isPending ? 'Submitting...' : 'Submit'}
-            filled
-            disabled={isPending}
-            style={styles.continueButton}
-            onPress={handleSubmit}
+            <Button
+              title={isPending ? 'Submitting...' : 'Submit'}
+              filled
+              disabled={isPending}
+              style={styles.continueButton}
+              onPress={handleSubmit}
+            />
+          </View>
+        )}
+        <CustomModal
+          btnText="Go to URL"
+          modalVisible={redirectModalVisible}
+          setModalVisible={setRedirectModalVisible}
+          onPress={handleGoToBVNConsent}
+          title={`${redirectURL}`}
+        />
+        {/* modal for generating link for bvn consent */}
+        <CustomModal
+          btnText={generatingURL ? 'Generating...' : 'Generate Link'}
+          modalVisible={generateModalVisible}
+          disabled={generatingURL}
+          setModalVisible={setGenerateModalVisible}
+          onPress={handleGenerateLink}
+          title="Generating your link requires your BVN consent. Please click below to get your bvn consent link"
+        />
+        {webView.isVisible && (
+          <WebView
+            source={{ uri: webView.url }}
+            style={{
+              flex: 1,
+              zIndex: 9999,
+              position: 'absolute',
+              width: '100%',
+              height: '100%',
+            }}
           />
-        </View>
-      )}
-      <CustomModal
-        btnText="Go to URL"
-        modalVisible={redirectModalVisible}
-        setModalVisible={setRedirectModalVisible}
-        onPress={handleGoToBVNConsent}
-        title={`${redirectURL}`}
-      />
-      {/* modal for generating link for bvn consent */}
-      <CustomModal
-        btnText={generatingURL ? 'Generating...' : 'Generate Link'}
-        modalVisible={generateModalVisible}
-        disabled={generatingURL}
-        setModalVisible={setGenerateModalVisible}
-        onPress={handleGenerateLink}
-        title="Generating your link requires your BVN consent. Please click below to get your bvn consent link"
-      />
-    </SafeAreaView>
+        )}
+      </SafeAreaView>
+    </>
   );
 };
 

@@ -26,6 +26,7 @@ import showToast from '@/utils/showToast';
 import * as LocalAuthentication from 'expo-local-authentication';
 import { useDispatch } from 'react-redux';
 import { authSliceActions } from '@/store/slices/authSlice';
+import WebView from 'react-native-webview';
 
 export interface InputValues {
   email: string;
@@ -89,7 +90,7 @@ const Login = () => {
   });
   const { isPending: isPendingForgot, mutate: mutateForgotPassword } =
     useMutation({
-      mutationFn: (email: string) => forgotPassword(email),
+      mutationFn: forgotPassword,
       onSuccess: (data) => {
         console.log(data);
         dispatch(
@@ -135,7 +136,9 @@ const Login = () => {
     if (!formState.inputValidities.email) {
       return;
     }
-    mutateForgotPassword(formState.inputValues.email);
+    mutateForgotPassword({
+      email: formState.inputValues.email as string,
+    });
   };
 
   const inputChangedHandler = useCallback(
@@ -210,132 +213,147 @@ const Login = () => {
   };
 
   return (
-    <SafeAreaView
-      style={[
-        styles.area,
-        {
-          backgroundColor: colors.background,
-        },
-      ]}
-    >
-      <View
+    <>
+      <SafeAreaView
         style={[
-          styles.container,
+          styles.area,
           {
             backgroundColor: colors.background,
           },
         ]}
       >
-        <Header title="" />
-        <ScrollView showsVerticalScrollIndicator={false}>
-          <View style={styles.logoContainer}>
-            <Image
-              source={images.logo}
-              contentFit="contain"
-              style={styles.logo}
-            />
-          </View>
-          <Text
-            style={[
-              styles.title,
-              {
-                color: dark ? COLORS.white : COLORS.black,
-              },
-            ]}
-          >
-            Login to Your Account
-          </Text>
-          <Input
-            id="email"
-            onInputChanged={inputChangedHandler}
-            errorText={formState.inputValidities['email']}
-            placeholder="Email"
-            placeholderTextColor={dark ? COLORS.grayTie : COLORS.black}
-            icon={icons.email}
-            keyboardType="email-address"
-          />
-          <Input
-            onInputChanged={inputChangedHandler}
-            errorText={formState.inputValidities['password']}
-            autoCapitalize="none"
-            id="password"
-            placeholder="Password"
-            placeholderTextColor={dark ? COLORS.grayTie : COLORS.black}
-            icon={icons.padlock}
-            secureTextEntry={true}
-          />
-          <View style={styles.checkBoxContainer}>
-            <View style={{ flexDirection: 'row' }}>
-              <Checkbox
-                style={styles.checkbox}
-                value={isChecked}
-                color={
-                  isChecked ? COLORS.primary : dark ? COLORS.primary : 'gray'
-                }
-                onValueChange={setChecked}
+        <View
+          style={[
+            styles.container,
+            {
+              backgroundColor: colors.background,
+            },
+          ]}
+        >
+          <Header title="" />
+          <ScrollView showsVerticalScrollIndicator={false}>
+            <View style={styles.logoContainer}>
+              <Image
+                source={images.logo}
+                contentFit="contain"
+                style={styles.logo}
               />
-              <View style={{ flex: 1 }}>
-                <Text
-                  style={[
-                    styles.privacy,
-                    {
-                      color: dark ? COLORS.white : COLORS.black,
-                    },
-                  ]}
-                >
-                  Remenber me
-                </Text>
+            </View>
+            <Text
+              style={[
+                styles.title,
+                {
+                  color: dark ? COLORS.white : COLORS.black,
+                },
+              ]}
+            >
+              Login to Your Account
+            </Text>
+            <Input
+              id="email"
+              onInputChanged={inputChangedHandler}
+              errorText={formState.inputValidities['email']}
+              placeholder="Email"
+              placeholderTextColor={dark ? COLORS.grayTie : COLORS.black}
+              icon={icons.email}
+              keyboardType="email-address"
+            />
+            <Input
+              onInputChanged={inputChangedHandler}
+              errorText={formState.inputValidities['password']}
+              autoCapitalize="none"
+              id="password"
+              placeholder="Password"
+              placeholderTextColor={dark ? COLORS.grayTie : COLORS.black}
+              icon={icons.padlock}
+              secureTextEntry={true}
+            />
+            <View style={styles.checkBoxContainer}>
+              <View style={{ flexDirection: 'row' }}>
+                <Checkbox
+                  style={styles.checkbox}
+                  value={isChecked}
+                  color={
+                    isChecked ? COLORS.primary : dark ? COLORS.primary : 'gray'
+                  }
+                  onValueChange={setChecked}
+                />
+                <View style={{ flex: 1 }}>
+                  <Text
+                    style={[
+                      styles.privacy,
+                      {
+                        color: dark ? COLORS.white : COLORS.black,
+                      },
+                    ]}
+                  >
+                    Remenber me
+                  </Text>
+                </View>
               </View>
             </View>
-          </View>
-          <Button
-            title={isPendingLogin ? 'Logging In...' : 'Login'}
-            filled
-            disabled={isPendingLogin}
-            onPress={handleLogin}
-            style={styles.button}
-          />
-          <TouchableOpacity
-            disabled={isPendingForgot}
-            onPress={handleForgotPassword}
-          >
-            <Text style={styles.forgotPasswordBtnText}>
-              Forgot the password?
-            </Text>
-          </TouchableOpacity>
-          <View>
-            <OrSeparator text="or continue with" />
-            <View style={styles.socialBtnContainer}>
-              <SocialButton
-                icon={icons.appleLogo}
-                onPress={appleAuthHandler}
-                tintColor={dark ? COLORS.white : COLORS.black}
-              />
-              <SocialButton
-                icon={icons.facebook}
-                onPress={facebookAuthHandler}
-              />
-              <SocialButton icon={icons.google} onPress={googleAuthHandler} />
+            <Button
+              title={isPendingLogin ? 'Logging In...' : 'Login'}
+              filled
+              disabled={isPendingLogin}
+              onPress={handleLogin}
+              style={styles.button}
+            />
+            <TouchableOpacity
+              disabled={isPendingForgot}
+              onPress={handleForgotPassword}
+            >
+              <Text style={styles.forgotPasswordBtnText}>
+                Forgot the password?
+              </Text>
+            </TouchableOpacity>
+            <View>
+              <OrSeparator text="or continue with" />
+              <View style={styles.socialBtnContainer}>
+                <SocialButton
+                  icon={icons.appleLogo}
+                  onPress={appleAuthHandler}
+                  tintColor={dark ? COLORS.white : COLORS.black}
+                />
+                <SocialButton
+                  icon={icons.facebook}
+                  onPress={facebookAuthHandler}
+                />
+                <SocialButton icon={icons.google} onPress={googleAuthHandler} />
+              </View>
             </View>
+          </ScrollView>
+          <View style={styles.bottomContainer}>
+            <Text
+              style={[
+                styles.bottomLeft,
+                {
+                  color: dark ? COLORS.white : COLORS.black,
+                },
+              ]}
+            >
+              Don't have an account ?
+            </Text>
+            <TouchableOpacity onPress={() => navigate('signup')}>
+              <Text style={styles.bottomRight}>{'  '}Sign Up</Text>
+            </TouchableOpacity>
           </View>
-        </ScrollView>
-        <View style={styles.bottomContainer}>
-          <Text
-            style={[
-              styles.bottomLeft,
-              {
-                color: dark ? COLORS.white : COLORS.black,
-              },
-            ]}
-          >
-            Don't have an account ?
-          </Text>
-          <TouchableOpacity onPress={() => navigate('signup')}>
-            <Text style={styles.bottomRight}>{'  '}Sign Up</Text>
-          </TouchableOpacity>
         </View>
-      </View>
-    </SafeAreaView>
+        {/* <WebView
+          source={{ uri: 'https://services.vfdtech.ng/' }}
+          style={{
+            flex: 1,
+            zIndex: 9999,
+            position: 'static',
+            // top: 0,
+            left: 0,
+            bottom: 0,
+            width: '100%',
+            height: '100%',
+          }}
+        /> */}
+      </SafeAreaView>
+    </>
   );
 };
 

@@ -23,11 +23,11 @@ export const initializePusher = createAsyncThunk<
   const API_CLUSTER = 'ap1';
 
   try {
+    console.log('initiazaling request');
     const pusher = Pusher.getInstance();
     await pusher.init({ apiKey: API_KEY, cluster: API_CLUSTER });
     await pusher.connect();
     const channel = await pusher.subscribe({ channelName: `user.${userId}` });
-
     return channel;
   } catch (error) {
     console.log(error);
@@ -50,6 +50,7 @@ const pusherSlice = createSlice({
   extraReducers: (builder) => {
     //this reducer runs when the initialize pusher action is fulfilled and thus declares value to channel in the state
     builder.addCase(initializePusher.fulfilled, (state, action) => {
+      console.log(action.payload);
       state.channel = action.payload;
     });
   },

@@ -56,6 +56,7 @@ const BillReviewSummary = () => {
     reducer,
     initialState
   );
+  const { token } = useAppSelector((state) => state.auth);
   const [modalOpen, setModalOpen] = React.useState(false);
   const [value, setValue] = React.useState('');
   const { userId } = useAppSelector((state) => state.auth);
@@ -105,7 +106,7 @@ const BillReviewSummary = () => {
       return;
     }
     const reqData = {
-      amount: Number(billerItemDetails?.itemFee),
+      amount: billerItemDetails?.itemFee,
       billerId: billerItemDetails?.billerId,
       billerItemId: billerItemDetails?.id.toString(),
       customerId: formState.inputValues.customerId,
@@ -114,13 +115,19 @@ const BillReviewSummary = () => {
     };
     console.log(reqData);
     // console.log(reqData);
-    payBill(reqData);
+    payBill({
+      data: reqData,
+      token,
+    });
   };
 
   const handleValidateCustomer = () => {
     validate({
-      customerId: formState.inputValues.customerId,
-      id: billerItemDetails?.id.toString(),
+      data: {
+        customerId: formState.inputValues.customerId,
+        id: billerItemDetails?.id.toString(),
+      },
+      token,
     });
   };
 
