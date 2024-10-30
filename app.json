@@ -23,14 +23,20 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#246BFD"
-      }
+      },
+      "permissions": [
+        "android.permission.USE_BIOMETRIC",
+        "android.permission.USE_FINGERPRINT",
+        "INTERNET"
+      ],
+      "package": "com.mehmood5491.AllPay"
     },
     "web": {
       "bundler": "metro",
       "output": "static",
       "favicon": "./assets/images/favicon.png"
     },
-    "plugins": [      
+    "plugins": [
       "expo-router",
       [
         "expo-local-authentication",
@@ -42,6 +48,11 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "eas": {
+        "projectId": "cbc05dfd-da38-4d26-b0e4-9d71fe95b4ef"
+      }
     }
   }
 }
