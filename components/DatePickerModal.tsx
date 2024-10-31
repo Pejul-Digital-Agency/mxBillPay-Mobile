@@ -11,7 +11,7 @@ console.error = (...args) => {
 
 interface DatePickerModalProps {
   open: boolean;
-  startDate: string;
+  endDate: string;
   selectedDate: string;
   onClose: () => void;
   onChangeStartDate: (date: string) => void;
@@ -19,7 +19,7 @@ interface DatePickerModalProps {
 
 const DatePickerModal: FC<DatePickerModalProps> = ({
   open,
-  startDate,
+  endDate,
   selectedDate,
   onClose,
   onChangeStartDate,
@@ -43,7 +43,8 @@ const DatePickerModal: FC<DatePickerModalProps> = ({
         <View style={styles.modalView}>
           <DatePicker
             mode="calendar"
-            minimumDate={startDate}
+            maximumDate={endDate}
+            // maximumDate={}
             selected={selectedStartDate}
             onDateChange={handleDateChange}
             onSelectedChange={(date) => setSelectedStartDate(date)}

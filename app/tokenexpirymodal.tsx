@@ -12,31 +12,60 @@ import { router } from 'expo-router';
 import { authSliceActions, useAppSelector } from '@/store/slices/authSlice';
 import { AppState } from 'react-native';
 import { useDispatch } from 'react-redux';
+import { useNavigation, useNavigationState } from '@react-navigation/native';
+import { act } from 'react-test-renderer';
 
 const TokenExpiryModal = () => {
   const [visible, setVisible] = useState(false);
   const { token } = useAppSelector((state) => state.auth);
+  const [currentTab, setCurrentTab] = useState('');
   const currentStateRef = useRef(AppState.currentState);
-  const [expiryTimer, setExpiryTimer] = useState<NodeJS.Timeout | null>(null);
+  const currentTabRef = useRef('');
   const [backgroundTime, setBackgroundTime] = useState<number | null>(null);
   const dispatch = useDispatch();
+  const navigation = useNavigation();
 
+  useEffect(() => {
+    console.log('registered');
+    const naivgationListener = navigation.addListener('state', (e) => {
+      const activeIndex = e.data?.state?.index;
+      const acitveTabName = e.data?.state?.routes[activeIndex]?.name;
+      console.log('TokenExpiryModal: ' + acitveTabName);
+      currentTabRef.current = acitveTabName;
+      // setCurrentTab(acitveTabName);
+    });
+
+    return () => {
+      navigation.removeListener('state', naivgationListener);
+    };
+  }, []);
+
+  // const currentIndex = useNavigationState(
+  //   (state) => state.routes[state.index].name
+  // );
+  console.log(currentTab);
   useEffect(() => {
     const backHandler = BackHandler.addEventListener(
       'hardwareBackPress',
       () => {
-        // console.log('pressed back');
         if (visible) {
-          console.log('yes');
           // Return true to prevent back button behavior
           return true;
         }
-        return false;
+        console.log('active Page', currentTabRef.current);
+        //Manage navigation here
+        if (currentTabRef.current == '(tabs)') {
+          console.log('its tabs');
+          return true;
+        }
+        // console.log('push back');
+        router.back();
+        return true;
       }
     );
 
     return () => backHandler.remove();
-  }, [visible]);
+  }, [visible, token]);
 
   useEffect(() => {
     let subscription: undefined | ReturnType<typeof AppState.addEventListener>;
@@ -50,11 +79,8 @@ const TokenExpiryModal = () => {
       if (subscription) {
         subscription.remove();
       }
-      if (expiryTimer) {
-        clearTimeout(expiryTimer); // Clean up the expiryTimer on component unmount
-      }
     };
-  }, [token, expiryTimer]);
+  }, [token]);
 
   const handleAppStateChange = (state: AppStateStatus) => {
     if (state === 'background' && currentStateRef.current === 'active') {

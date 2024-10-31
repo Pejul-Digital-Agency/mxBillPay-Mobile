@@ -12,7 +12,7 @@ import { ScrollView } from 'react-native-virtualized-view';
 import { useTheme } from '@/theme/ThemeProvider';
 import { COLORS, SIZES, icons, images } from '@/constants';
 import { Image } from 'expo-image';
-import { NavigationProp } from '@react-navigation/native';
+import { NavigationProp, useNavigationState } from '@react-navigation/native';
 import { router, useNavigation } from 'expo-router';
 import SubHeaderItem from '@/components/SubHeaderItem';
 import { invoiceItems, services } from '@/data';
@@ -38,11 +38,9 @@ const HomeScreen = () => {
     error: errorCategories,
   } = useQuery({
     queryKey: ['billCategories'],
-    queryFn: () =>
-      getBillerCategories({
-        token,
-      }),
-    staleTime: 2000,
+    queryFn: () => getBillerCategories({ token }),
+    staleTime: 0, // Data is considered stale immediately
+    refetchOnWindowFocus: true, // Optional: refetch when the window is focused
   });
   const {
     data: billerItemsData,
@@ -60,6 +58,9 @@ const HomeScreen = () => {
   const { dark, colors } = useTheme();
   const { navigate, setParams } = useNavigation<NavigationProp<any>>();
 
+  const currentIndex = useNavigationState(
+    (state) => state.routes[state.index].name
+  );
   useEffect(() => {
     if (billerItemsData?.data) {
       console.log('index page', billerItemsData?.data);
@@ -70,18 +71,28 @@ const HomeScreen = () => {
     }
   }, [billerItemsData]);
 
-  useEffect(() => {
-    const backPressEvent = BackHandler.addEventListener(
-      'hardwareBackPress',
-      //prevent going back to login screen
-      () => {
-        console.log('back pressed');
-        return true;
-      }
-    );
+  const handleClickCategory = (id: string) => {
+    if (categoryId == id && billerItemsData?.data) {
+      navigate('customcateogorypage', { billerItems: billerItemsData?.data });
+      return;
+    }
+    setCategoryId(id);
+  };
+  // useEffect(() => {
+  //   const backPressEvent = BackHandler.addEventListener(
+  //     'hardwareBackPress',
+  //     //prevent going back to login screen
+  //     () => {
+  //       // console.log(currentIndex);
+  //       console.log('back pressed');
+  //       return true;
+  //     }
+  //   );
 
-    return () => backPressEvent.remove();
-  }, []);
+  //   return () => backPressEvent.remove();
+  // }, []);
+
+  console.log('category id', categoryId);
 
   const renderHeader = () => {
     return (
@@ -233,7 +244,7 @@ const HomeScreen = () => {
               icon={item?.icon || icons.send}
               iconColor={item?.iconColor || colors.primary}
               backgroundColor={dark ? COLORS.greyScale800 : COLORS.grayscale100}
-              onPress={() => setCategoryId(item.id.toString())}
+              onPress={() => handleClickCategory(item.id.toString())}
             />
           )}
         />

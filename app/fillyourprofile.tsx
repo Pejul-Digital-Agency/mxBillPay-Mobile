@@ -190,7 +190,7 @@ const FillYourProfile = () => {
   }, [dispatch, channel]);
   // console.log(image);
   const today = new Date();
-  const startDate = getFormatedDate(
+  const endData = getFormatedDate(
     new Date(today.setDate(today.getDate() + 1)),
     'YYYY/MM/DD'
   );
@@ -539,7 +539,7 @@ const FillYourProfile = () => {
         </View>
         <DatePickerModal
           open={openStartDatePicker}
-          startDate={startDate}
+          endDate={endData}
           selectedDate={startedDate}
           onClose={() => setOpenStartDatePicker(false)}
           onChangeStartDate={(date) => setStartedDate(date)}

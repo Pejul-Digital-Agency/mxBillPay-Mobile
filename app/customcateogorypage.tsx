@@ -85,6 +85,15 @@ const CustomCategoryPage = () => {
     enabled: itemId !== '',
   });
 
+  const handleClickItem = (id: string) => {
+    if (itemId == id && data?.data) {
+      navigate('billreviewsummary', {
+        billerItemDetails: data?.data,
+      });
+      return;
+    }
+    setItemId(id);
+  };
   useEffect(() => {
     if (data?.data) {
       navigate('billreviewsummary', {
@@ -103,7 +112,7 @@ const CustomCategoryPage = () => {
           borderRadius: SIZES.radius,
           marginBottom: SIZES.padding,
         }}
-        onPress={() => setItemId(itemId)}
+        onPress={() => handleClickItem(itemId)}
       >
         <Text
           style={{

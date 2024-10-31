@@ -1,10 +1,11 @@
 import { Tabs } from 'expo-router';
-import { View, Text, Platform } from 'react-native';
+import { View, Text, Platform, BackHandler } from 'react-native';
 import { Image } from 'expo-image';
 import { COLORS, icons, FONTS } from '../../constants';
 import { useTheme } from '@/theme/ThemeProvider';
 import { useAppSelector } from '@/store/slices/authSlice';
 import TokenExpiryModal from '../tokenexpirymodal';
+import { useEffect } from 'react';
 
 const TabLayout = () => {
   const { dark } = useTheme();

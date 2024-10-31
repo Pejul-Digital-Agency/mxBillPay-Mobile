@@ -5,7 +5,6 @@
   },
   "build": {
     "development": {
-      "image": "latest", 
       "developmentClient": true,
       "distribution": "internal"
     },
@@ -13,7 +12,6 @@
       "distribution": "internal"
     },
     "production": {
-      "image": "latest", 
       "autoIncrement": true
     }
   },
