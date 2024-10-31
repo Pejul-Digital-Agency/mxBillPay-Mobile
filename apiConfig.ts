@@ -26,6 +26,12 @@ const API_ENDPOINTS = {
     PayBills: API_DOMAIN + '/payBills',
     DeleteBill: API_DOMAIN + '/bills',
   },
+  MONEY_TRANSFER: {
+    GetBanks: API_DOMAIN + '/fetch-banks',
+    Trasnsfer: API_DOMAIN + '/transfer',
+    GetRecepientDetails: API_DOMAIN + '/recepient-details',
+    GetTransactionStatus: API_DOMAIN + '/transaction-Status',
+  },
 };
 
 export { API_DOMAIN, API_ENDPOINTS };

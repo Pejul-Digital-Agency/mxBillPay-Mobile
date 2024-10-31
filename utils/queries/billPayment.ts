@@ -44,6 +44,30 @@ export const getBillerItemDetails = async ({
   );
 };
 
+export const getBanks = async (token: string): Promise<IBanksResponse> => {
+  return await apiCall(
+    API_ENDPOINTS.MONEY_TRANSFER.GetBanks,
+    'GET',
+    undefined,
+    token
+  );
+};
+
+export const getTransactionStatus = async ({
+  transactionId,
+  token,
+}: {
+  transactionId: string;
+  token: string;
+}) => {
+  return await apiCall(
+    API_ENDPOINTS.MONEY_TRANSFER.GetTransactionStatus,
+    'GET',
+    transactionId,
+    token
+  );
+};
+
 interface IBillerCategories {
   message: string;
   data: [
@@ -101,4 +125,16 @@ export type IBillerItemDetails = {
 interface IBillerItemDetailsData {
   message: string;
   data: IBillerItemDetails;
+}
+
+interface IBanksResponse {
+  status: string;
+  data: IBankDetails[];
+}
+
+export interface IBankDetails {
+  id: number;
+  name: string;
+  code: string;
+  logo: string | null;
 }

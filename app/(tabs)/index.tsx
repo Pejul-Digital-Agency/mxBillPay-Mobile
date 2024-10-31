@@ -19,6 +19,7 @@ import { invoiceItems, services } from '@/data';
 import Category from '@/components/Category';
 import { useQueries, useQuery } from '@tanstack/react-query';
 import {
+  getBanks,
   getBillerCategories,
   getBillerItems,
 } from '@/utils/queries/billPayment';
@@ -30,7 +31,9 @@ type Nav = {
 };
 
 const HomeScreen = () => {
-  const [categoryId, setCategoryId] = React.useState<string>('');
+  const [categoryId, setCategoryId] = React.useState('');
+  const [isSelectedBankPayment, setIsSelectedBankPayment] =
+    React.useState(false);
   const { token } = useAppSelector((state) => state.auth);
   const {
     data: categoryData,
@@ -44,7 +47,7 @@ const HomeScreen = () => {
   });
   const {
     data: billerItemsData,
-    isPending: isPendingItems,
+    isLoading: isPendingItems,
     error: errorItems,
   } = useQuery({
     queryKey: ['billCategories', categoryId],
@@ -55,12 +58,23 @@ const HomeScreen = () => {
       }),
     enabled: categoryId != '',
   });
+  const {
+    data: banksData,
+    isLoading: isLoadingBanks,
+    error: isErrorBanks,
+  } = useQuery({
+    queryKey: ['billerMethod'],
+    queryFn: () => {
+      if (isSelectedBankPayment) {
+        return getBanks(token);
+      }
+    },
+    enabled: isSelectedBankPayment,
+  });
+
   const { dark, colors } = useTheme();
   const { navigate, setParams } = useNavigation<NavigationProp<any>>();
 
-  const currentIndex = useNavigationState(
-    (state) => state.routes[state.index].name
-  );
   useEffect(() => {
     if (billerItemsData?.data) {
       console.log('index page', billerItemsData?.data);
@@ -71,12 +85,28 @@ const HomeScreen = () => {
     }
   }, [billerItemsData]);
 
+  useEffect(() => {
+    if (banksData?.data) {
+      console.log('index page', banksData?.data);
+      navigate('transfertobankselectbank', { data: banksData?.data });
+    }
+  }, [banksData]);
+
   const handleClickCategory = (id: string) => {
     if (categoryId == id && billerItemsData?.data) {
       navigate('customcateogorypage', { billerItems: billerItemsData?.data });
       return;
     }
     setCategoryId(id);
+  };
+
+  const handleNavigateToBankTransfer = () => {
+    if (banksData?.data) {
+      navigate('transfertobankselectbank', { data: banksData?.data });
+      return;
+    }
+    console.log('reached');
+    setIsSelectedBankPayment(true);
   };
   // useEffect(() => {
   //   const backPressEvent = BackHandler.addEventListener(
@@ -165,7 +195,7 @@ const HomeScreen = () => {
         </View>
         <View style={styles.bottomCardContainer}>
           <TouchableOpacity
-            onPress={() => navigate('transfertobankselectbank')}
+            onPress={handleNavigateToBankTransfer}
             style={styles.categoryContainer}
           >
             <View style={styles.categoryIconContainer}>
@@ -261,7 +291,7 @@ const HomeScreen = () => {
           {renderCategories()}
         </ScrollView>
       </View>
-      {isPendingCategories && <Loader />}
+      {(isPendingCategories || isLoadingBanks || isPendingItems) && <Loader />}
     </SafeAreaView>
   );
 };
