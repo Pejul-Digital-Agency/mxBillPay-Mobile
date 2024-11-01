@@ -1,6 +1,24 @@
 import axios, { AxiosResponse } from 'axios';
 import { useAppSelector } from '@/store/slices/authSlice';
 
+export class ApiError extends Error {
+  data: any;
+  statusText: string = '';
+  statusCode?: number;
+  constructor(
+    data: any,
+    statusText: string,
+    message: string,
+    statusCode?: number
+  ) {
+    super();
+    this.data = data;
+    this.message = message;
+    this.statusText = statusText;
+    this.statusCode = statusCode;
+  }
+}
+
 export const apiCall = async (
   url: string,
   method: string,
@@ -40,9 +58,18 @@ export const apiCall = async (
   } catch (error) {
     console.log(error);
     if (axios.isAxiosError(error) && error.response) {
-      throw new Error(error.response.data?.message || 'Something went wrong');
+      throw new ApiError(
+        error.response.data,
+        error.response.data?.message || 'Something Went wrong',
+        error.response.data?.status || error.response.statusText,
+        error.response.status
+      );
     } else {
-      throw new Error('Network or server error occurred');
+      throw new ApiError(
+        undefined,
+        'Network or server error occurred',
+        'Something wend wrong'
+      );
     }
   }
 };

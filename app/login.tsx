@@ -5,6 +5,7 @@ import {
   ScrollView,
   Alert,
   TouchableOpacity,
+  Keyboard,
 } from 'react-native';
 import React, { useCallback, useEffect, useReducer, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -20,13 +21,17 @@ import OrSeparator from '../components/OrSeparator';
 import { useTheme } from '../theme/ThemeProvider';
 import { router, useNavigation } from 'expo-router';
 import { Image } from 'expo-image';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueries } from '@tanstack/react-query';
 import { forgotPassword, loginUser } from '@/utils/mutations/authMutations';
 import showToast from '@/utils/showToast';
 import * as LocalAuthentication from 'expo-local-authentication';
 import { useDispatch } from 'react-redux';
-import { authSliceActions } from '@/store/slices/authSlice';
+import { authSliceActions, useAppSelector } from '@/store/slices/authSlice';
 import WebView from 'react-native-webview';
+import { getBillerCategories } from '@/utils/queries/billPayment';
+import { getUserProfile } from '@/utils/queries/accountQueries';
+import Loader from './loader';
+import { NavigationProp } from '@react-navigation/native';
 
 export interface InputValues {
   email: string;
@@ -61,11 +66,13 @@ type Nav = {
 };
 
 const Login = () => {
-  const { navigate } = useNavigation<Nav>();
+  const { navigate } = useNavigation<NavigationProp<any>>();
   const [formState, dispatchFormState] = useReducer(reducer, initialState);
   const [isChecked, setChecked] = useState(false);
   const [isBiometricAvailable, setIsBiometricAvailable] = useState(false);
+  const [keyboardVisible, setKeyboardVisible] = useState(false);
   const { colors, dark } = useTheme();
+  const { token } = useAppSelector((state) => state.auth);
   const dispatch = useDispatch();
   const { isPending: isPendingLogin, mutate: mutateLogin } = useMutation({
     mutationFn: (data: InputValues) => loginUser(data),
@@ -74,8 +81,7 @@ const Login = () => {
       dispatch(authSliceActions.setToken(data?.token));
       dispatch(
         authSliceActions.setUser({
-          userId: data.user.id.toString(),
-          userEmail: data.user.email,
+          userProfile: data.user,
         })
       );
       navigate('(tabs)');
@@ -160,6 +166,28 @@ const Login = () => {
       setIsBiometricAvailable(check);
     };
     checkBiometric();
+  }, []);
+
+  //control keyboard opening
+  useEffect(() => {
+    const keyboardDidShowListener = Keyboard.addListener(
+      'keyboardDidShow',
+      () => {
+        setKeyboardVisible(true); // Keyboard is open
+      }
+    );
+    const keyboardDidHideListener = Keyboard.addListener(
+      'keyboardDidHide',
+      () => {
+        setKeyboardVisible(false); // Keyboard is closed
+      }
+    );
+
+    // Cleanup the listeners on unmount
+    return () => {
+      keyboardDidHideListener.remove();
+      keyboardDidShowListener.remove();
+    };
   }, []);
   // console.log(isBiometricAvailable);
 
@@ -268,6 +296,7 @@ const Login = () => {
               icon={icons.padlock}
               secureTextEntry={true}
             />
+
             <View style={styles.checkBoxContainer}>
               <View style={{ flexDirection: 'row' }}>
                 <Checkbox
@@ -323,21 +352,23 @@ const Login = () => {
               </View>
             </View>
           </ScrollView>
-          <View style={styles.bottomContainer}>
-            <Text
-              style={[
-                styles.bottomLeft,
-                {
-                  color: dark ? COLORS.white : COLORS.black,
-                },
-              ]}
-            >
-              Don't have an account ?
-            </Text>
-            <TouchableOpacity onPress={() => navigate('signup')}>
-              <Text style={styles.bottomRight}>{'  '}Sign Up</Text>
-            </TouchableOpacity>
-          </View>
+          {!keyboardVisible && (
+            <View style={styles.bottomContainer}>
+              <Text
+                style={[
+                  styles.bottomLeft,
+                  {
+                    color: dark ? COLORS.white : COLORS.black,
+                  },
+                ]}
+              >
+                Don't have an account ?
+              </Text>
+              <TouchableOpacity onPress={() => navigate('signup')}>
+                <Text style={styles.bottomRight}>{'  '}Sign Up</Text>
+              </TouchableOpacity>
+            </View>
+          )}
         </View>
         {/* <WebView
           source={{ uri: 'https://services.vfdtech.ng/' }}

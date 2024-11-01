@@ -12,6 +12,7 @@ const API_ENDPOINTS = {
     ResetPassword: API_DOMAIN + '/auth/reset-password',
   },
   ACCOUNT_MANAGEMENT: {
+    GetUserProfileData: API_DOMAIN + '/profile-detail',
     RequestBvnConsent: API_DOMAIN + '/accounts/bvn-consent',
     CreateIndividualAccount: API_DOMAIN + '/accounts/individual',
     CreateCoorporateAccount: API_DOMAIN + '/accounts/coorporate',

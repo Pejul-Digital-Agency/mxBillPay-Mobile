@@ -38,21 +38,22 @@ interface IRecepeintDetailsRequest {
   transfer_type: string;
 }
 
+export interface IRecepeintDetails {
+  name: string;
+  clientId: string;
+  bvn: string;
+  account: {
+    number: string;
+    id: string;
+  };
+  status: string;
+  currency: string;
+  bank: string;
+}
 type IRecepeintDetailsResponse = {
   status: string;
   message: string;
-  data: {
-    name: string;
-    clientId: string;
-    bvn: string;
-    account: {
-      number: string;
-      id: string;
-    };
-    status: string;
-    currency: string;
-    bank: string;
-  };
+  data: IRecepeintDetails;
 };
 
 interface ITransferRequest {

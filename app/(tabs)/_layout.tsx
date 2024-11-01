@@ -6,10 +6,10 @@ import { useTheme } from '@/theme/ThemeProvider';
 import { useAppSelector } from '@/store/slices/authSlice';
 import TokenExpiryModal from '../tokenexpirymodal';
 import { useEffect } from 'react';
+import { useRoute } from '@react-navigation/native';
 
-const TabLayout = () => {
+const TabLayout: React.FC = () => {
   const { dark } = useTheme();
-  const { token } = useAppSelector((state) => state.auth);
 
   return (
     <>
@@ -112,7 +112,7 @@ const TabLayout = () => {
             },
           }}
         />
-        <Tabs.Screen
+        {/* <Tabs.Screen
           name="scanqrcode"
           options={{
             title: '',
@@ -142,7 +142,7 @@ const TabLayout = () => {
               );
             },
           }}
-        />
+        /> */}
         <Tabs.Screen
           name="mycard"
           options={{

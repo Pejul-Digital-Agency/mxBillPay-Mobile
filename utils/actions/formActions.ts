@@ -21,9 +21,10 @@ export const validateInput = (
     inputId === 'location' ||
     inputId === 'rcNumber' ||
     inputId === 'companyName' ||
-    // inputId === 'phoneNumber' ||
+    inputId === 'accountNo' ||
     inputId === 'customerId' ||
     inputId === 'bio' ||
+    inputId === 'amount' ||
     inputId === 'address' ||
     inputId === 'street' ||
     inputId === 'postalCode' ||

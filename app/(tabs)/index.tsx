@@ -12,7 +12,11 @@ import { ScrollView } from 'react-native-virtualized-view';
 import { useTheme } from '@/theme/ThemeProvider';
 import { COLORS, SIZES, icons, images } from '@/constants';
 import { Image } from 'expo-image';
-import { NavigationProp, useNavigationState } from '@react-navigation/native';
+import {
+  NavigationProp,
+  useNavigationState,
+  useRoute,
+} from '@react-navigation/native';
 import { router, useNavigation } from 'expo-router';
 import SubHeaderItem from '@/components/SubHeaderItem';
 import { invoiceItems, services } from '@/data';
@@ -25,25 +29,31 @@ import {
 } from '@/utils/queries/billPayment';
 import Loader from '../loader';
 import { useAppSelector } from '@/store/slices/authSlice';
+import { IBillerCategory } from '@/utils/queries/billPayment';
+import {
+  getUserProfile,
+  IUserProfileData,
+} from '@/utils/queries/accountQueries';
 
 type Nav = {
   navigate: (value: string) => void;
 };
 
 const HomeScreen = () => {
+  const { navigate, setParams } = useNavigation<NavigationProp<any>>();
   const [categoryId, setCategoryId] = React.useState('');
   const [isSelectedBankPayment, setIsSelectedBankPayment] =
     React.useState(false);
-  const { token } = useAppSelector((state) => state.auth);
+  const { token, userProfile } = useAppSelector((state) => state.auth);
+
   const {
-    data: categoryData,
-    isPending: isPendingCategories,
+    data: billerCategories,
     error: errorCategories,
+    isLoading: isLoadingCategories,
   } = useQuery({
     queryKey: ['billCategories'],
     queryFn: () => getBillerCategories({ token }),
-    staleTime: 0, // Data is considered stale immediately
-    refetchOnWindowFocus: true, // Optional: refetch when the window is focused
+    enabled: !!token,
   });
   const {
     data: billerItemsData,
@@ -73,11 +83,10 @@ const HomeScreen = () => {
   });
 
   const { dark, colors } = useTheme();
-  const { navigate, setParams } = useNavigation<NavigationProp<any>>();
 
   useEffect(() => {
     if (billerItemsData?.data) {
-      console.log('index page', billerItemsData?.data);
+      // console.log('index page', billerItemsData?.data);
       // setParams({
       //   billerItems: billerItemsData?.data,
       // });
@@ -108,28 +117,17 @@ const HomeScreen = () => {
     console.log('reached');
     setIsSelectedBankPayment(true);
   };
+
   // useEffect(() => {
-  //   const backPressEvent = BackHandler.addEventListener(
-  //     'hardwareBackPress',
-  //     //prevent going back to login screen
-  //     () => {
-  //       // console.log(currentIndex);
-  //       console.log('back pressed');
-  //       return true;
-  //     }
-  //   );
-
-  //   return () => backPressEvent.remove();
+  //   console.log(userDetailsRes?.data?.data?.profileP);
   // }, []);
-
-  console.log('category id', categoryId);
 
   const renderHeader = () => {
     return (
       <View style={styles.headerContainer}>
         <View style={styles.viewLeft}>
           <Image
-            source={images.user1}
+            source={userProfile?.profilePicture || icons.profile}
             contentFit="contain"
             style={styles.userIcon}
           />
@@ -143,7 +141,7 @@ const HomeScreen = () => {
                 },
               ]}
             >
-              Andrew Ainsley
+              {userProfile?.firstName + ' ' + userProfile?.lastName}
             </Text>
           </View>
         </View>
@@ -180,8 +178,10 @@ const HomeScreen = () => {
       <View style={styles.cardContainer}>
         <View style={styles.topCardContainer}>
           <View>
-            <Text style={styles.username}>Andrew Ainsley</Text>
-            <Text style={styles.cardNum}>.... .... .... 3779</Text>
+            <Text style={styles.username}>
+              {userProfile?.firstName + ' ' + userProfile?.lastName}
+            </Text>
+            <Text style={styles.cardNum}>{userProfile?.accountNumber}</Text>
           </View>
           <Image
             source={icons.mastercard}
@@ -191,7 +191,11 @@ const HomeScreen = () => {
         </View>
         <View style={styles.balanceContainer}>
           <Text style={styles.balanceText}>Your balance</Text>
-          <Text style={styles.balanceAmount}>$12,689</Text>
+          <Text style={styles.balanceAmount}>
+            $
+            {Number(userProfile?.accountBalance).toFixed(2).toString() ||
+              '0.00'}
+          </Text>
         </View>
         <View style={styles.bottomCardContainer}>
           <TouchableOpacity
@@ -205,7 +209,9 @@ const HomeScreen = () => {
                 style={styles.categoryIcon}
               />
             </View>
-            <Text style={styles.categoryText}>Transfer</Text>
+            <Text numberOfLines={2} style={styles.categoryText}>
+              Bank Transfer
+            </Text>
           </TouchableOpacity>
           <TouchableOpacity
             onPress={() => navigate('sendmoney')}
@@ -218,9 +224,9 @@ const HomeScreen = () => {
                 style={styles.categoryIcon}
               />
             </View>
-            <Text style={styles.categoryText}>Send</Text>
+            <Text style={styles.categoryText}>Wallet Transfer</Text>
           </TouchableOpacity>
-          <TouchableOpacity
+          {/* <TouchableOpacity
             onPress={() => navigate('requestmoney')}
             style={styles.categoryContainer}
           >
@@ -232,7 +238,7 @@ const HomeScreen = () => {
               />
             </View>
             <Text style={styles.categoryText}>Request</Text>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
           <TouchableOpacity
             onPress={() => navigate('inoutpaymenthistory')}
             style={styles.categoryContainer}
@@ -261,23 +267,28 @@ const HomeScreen = () => {
           navTitle="See all"
           onPress={() => navigate('allservices')}
         />
-        <FlatList
-          data={categoryData?.data || []}
-          keyExtractor={(item, index) => index.toString()}
-          horizontal={false}
-          numColumns={4} // Render four items per row
-          style={{ marginTop: 0 }}
-          renderItem={({ item, index }) => (
-            <Category
-              key={item.id}
-              name={item.category}
-              icon={item?.icon || icons.send}
-              iconColor={item?.iconColor || colors.primary}
-              backgroundColor={dark ? COLORS.greyScale800 : COLORS.grayscale100}
-              onPress={() => handleClickCategory(item.id.toString())}
-            />
-          )}
-        />
+
+        {billerCategories?.data && (
+          <FlatList
+            data={billerCategories?.data}
+            keyExtractor={(item, index) => index.toString()}
+            horizontal={false}
+            numColumns={4} // Render four items per row
+            style={{ marginTop: 0 }}
+            renderItem={({ item, index }) => (
+              <Category
+                key={item.id}
+                name={item.category}
+                icon={item?.icon || icons.send}
+                iconColor={item?.iconColor || colors.primary}
+                backgroundColor={
+                  dark ? COLORS.greyScale800 : COLORS.grayscale100
+                }
+                onPress={() => handleClickCategory(item.id.toString())}
+              />
+            )}
+          />
+        )}
       </View>
     );
   };
@@ -291,7 +302,7 @@ const HomeScreen = () => {
           {renderCategories()}
         </ScrollView>
       </View>
-      {(isPendingCategories || isLoadingBanks || isPendingItems) && <Loader />}
+      {(isLoadingBanks || isPendingItems || isLoadingCategories) && <Loader />}
     </SafeAreaView>
   );
 };

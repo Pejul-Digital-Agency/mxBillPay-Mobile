@@ -8,122 +8,280 @@ import { ScrollView } from 'react-native-virtualized-view';
 import { Image } from 'expo-image';
 import Button from '@/components/Button';
 import { useNavigation } from 'expo-router';
+import { NavigationProp, useRoute } from '@react-navigation/native';
+import { IBankDetails } from '@/utils/queries/billPayment';
+import { IRecepeintDetails } from '@/utils/mutations/paymentMutations';
+import { useAppSelector } from '@/store/slices/authSlice';
 
 type Nav = {
-  navigate: (value: string) => void
+  navigate: (value: string) => void;
+};
+interface IParams {
+  selectedBank: IBankDetails;
+  receipientDetails: IRecepeintDetails;
+  amount: string;
 }
 
 const TransferToBankReviewSummary = () => {
   const { colors, dark } = useTheme();
-  const { navigate } = useNavigation<Nav>();
+  const { navigate, goBack } = useNavigation<NavigationProp<any>>();
+  const route = useRoute();
+  if (!route.params || Object.keys(route.params).length === 0) {
+    return goBack();
+  }
+  const { selectedBank, receipientDetails, amount } = route.params as IParams;
+  const { token, userProfile } = useAppSelector((state) => state.auth);
 
   return (
     <SafeAreaView style={[styles.area, { backgroundColor: colors.background }]}>
       <View style={[styles.container, { backgroundColor: colors.background }]}>
         <Header title="Review Summary" />
         <ScrollView showsVerticalScrollIndicator={false}>
-          <View style={[styles.separateLine, {
-            backgroundColor: dark ? COLORS.greyscale900 : COLORS.grayscale200,
-          }]} />
-          <Text style={[styles.amount, {
-            color: dark ? COLORS.white : COLORS.greyscale900,
-          }]}>$1,000</Text>
-          <View style={[styles.separateLine, {
-            backgroundColor: dark ? COLORS.greyscale900 : COLORS.grayscale200
-          }]} />
-          <Text style={[styles.reviewText, {
-            color: dark ? COLORS.grayscale400 : COLORS.greyScale800,
-          }]}>From</Text>
+          <View
+            style={[
+              styles.separateLine,
+              {
+                backgroundColor: dark
+                  ? COLORS.greyscale900
+                  : COLORS.grayscale200,
+              },
+            ]}
+          />
+          <Text
+            style={[
+              styles.amount,
+              {
+                color: dark ? COLORS.white : COLORS.greyscale900,
+              },
+            ]}
+          >
+            $1,000
+          </Text>
+          <View
+            style={[
+              styles.separateLine,
+              {
+                backgroundColor: dark
+                  ? COLORS.greyscale900
+                  : COLORS.grayscale200,
+              },
+            ]}
+          />
+          <Text
+            style={[
+              styles.reviewText,
+              {
+                color: dark ? COLORS.grayscale400 : COLORS.greyScale800,
+              },
+            ]}
+          >
+            From
+          </Text>
           <View style={styles.bankContainer}>
             <Image
-              source={images.logo}
-              contentFit='contain'
-              style={styles.logoIcon} />
+              source={userProfile?.profilePicture || icons.profile}
+              contentFit="contain"
+              style={styles.logoIcon}
+            />
             <View>
-              <Text style={[styles.bankName, {
-                color: dark ? COLORS.white : COLORS.greyscale900
-              }]}>Payza Balance</Text>
-              <Text style={[styles.bankAmount, {
-                color: dark ? COLORS.greyscale300 : COLORS.greyScale800
-              }]}>Available: $9,479.25</Text>
+              <Text
+                style={[
+                  styles.bankName,
+                  {
+                    color: dark ? COLORS.white : COLORS.greyscale900,
+                  },
+                ]}
+              >
+                {userProfile?.firstName + ' ' + userProfile?.lastName}
+              </Text>
+              <Text
+                style={[
+                  styles.bankAmount,
+                  {
+                    color: dark ? COLORS.greyscale300 : COLORS.greyScale800,
+                  },
+                ]}
+              >
+                Available: $
+                {Number(userProfile?.accountBalance).toFixed(2).toString()}
+              </Text>
             </View>
           </View>
-          <Text style={[styles.reviewText, {
-            color: dark ? COLORS.grayscale400 : COLORS.greyScale800,
-          }]}>To</Text>
+          <Text
+            style={[
+              styles.reviewText,
+              {
+                color: dark ? COLORS.grayscale400 : COLORS.greyScale800,
+              },
+            ]}
+          >
+            To
+          </Text>
           <View style={styles.bankContainer}>
             <Image
-              source={icons.bank}
-              contentFit='contain'
-              style={styles.logoIcon} />
+              source={selectedBank?.logo || icons.bank}
+              contentFit="contain"
+              style={styles.logoIcon}
+            />
             <View>
-              <Text style={[styles.bankName, {
-                color: dark ? COLORS.white : COLORS.greyscale900
-              }]}>Bank of America</Text>
-              <Text style={[styles.bankAmount, {
-                color: dark ? COLORS.greyscale300 : COLORS.greyScale800
-              }]}>Checking ●●●● 4679</Text>
+              <Text
+                style={[
+                  styles.bankName,
+                  {
+                    color: dark ? COLORS.white : COLORS.greyscale900,
+                  },
+                ]}
+              >
+                {selectedBank?.name}
+              </Text>
+              <Text
+                style={[
+                  styles.bankAmount,
+                  {
+                    color: dark ? COLORS.greyscale300 : COLORS.greyScale800,
+                  },
+                ]}
+              >
+                Checking ●●●● 4679
+              </Text>
             </View>
           </View>
-          <View style={[styles.separateLine, {
-            backgroundColor: dark ? COLORS.greyscale900 : COLORS.grayscale200
-          }]} />
-          <View style={[styles.viewContainer, {
-            backgroundColor: dark ? COLORS.dark2 : "#FAFAFA",
-          }]}>
+          <View
+            style={[
+              styles.separateLine,
+              {
+                backgroundColor: dark
+                  ? COLORS.greyscale900
+                  : COLORS.grayscale200,
+              },
+            ]}
+          />
+          <View
+            style={[
+              styles.viewContainer,
+              {
+                backgroundColor: dark ? COLORS.dark2 : '#FAFAFA',
+              },
+            ]}
+          >
             <View style={styles.view}>
-              <Text style={[styles.viewLeft, {
-                color: dark ? COLORS.greyscale300 : COLORS.grayscale700
-              }]}>Transfer Amount (USD)</Text>
-              <Text style={[styles.viewRight, {
-                color: dark ? COLORS.white : COLORS.greyscale900
-              }]}>$1,000</Text>
+              <Text
+                style={[
+                  styles.viewLeft,
+                  {
+                    color: dark ? COLORS.greyscale300 : COLORS.grayscale700,
+                  },
+                ]}
+              >
+                Transfer Amount (NGN)
+              </Text>
+              <Text
+                style={[
+                  styles.viewRight,
+                  {
+                    color: dark ? COLORS.white : COLORS.greyscale900,
+                  },
+                ]}
+              >
+                ${amount}
+              </Text>
             </View>
             <View style={styles.view}>
-              <Text style={[styles.viewLeft, {
-                color: dark ? COLORS.greyscale300 : COLORS.grayscale700
-              }]}>Fee</Text>
-              <Text style={[styles.viewRight, {
-                color: dark ? COLORS.white : COLORS.greyscale900
-              }]}>Free</Text>
+              <Text
+                style={[
+                  styles.viewLeft,
+                  {
+                    color: dark ? COLORS.greyscale300 : COLORS.grayscale700,
+                  },
+                ]}
+              >
+                Fee
+              </Text>
+              <Text
+                style={[
+                  styles.viewRight,
+                  {
+                    color: dark ? COLORS.white : COLORS.greyscale900,
+                  },
+                ]}
+              >
+                Free
+              </Text>
             </View>
-            <View style={[styles.separateLine, {
-              backgroundColor: dark ? COLORS.greyScale800 : COLORS.grayscale200
-            }]} />
+            <View
+              style={[
+                styles.separateLine,
+                {
+                  backgroundColor: dark
+                    ? COLORS.greyScale800
+                    : COLORS.grayscale200,
+                },
+              ]}
+            />
             <View style={styles.view}>
-              <Text style={[styles.viewLeft, {
-                color: dark ? COLORS.greyscale300 : COLORS.grayscale700
-              }]}>You will get:</Text>
-              <Text style={[styles.viewRight, {
-                color: dark ? COLORS.white : COLORS.greyscale900
-              }]}>$1,000.00</Text>
+              <Text
+                style={[
+                  styles.viewLeft,
+                  {
+                    color: dark ? COLORS.greyscale300 : COLORS.grayscale700,
+                  },
+                ]}
+              >
+                Total Amount:
+              </Text>
+              <Text
+                style={[
+                  styles.viewRight,
+                  {
+                    color: dark ? COLORS.white : COLORS.greyscale900,
+                  },
+                ]}
+              >
+                ${amount}
+              </Text>
             </View>
           </View>
-          <Text style={[styles.amountDate, {
-            color: dark ? COLORS.greyscale300 : COLORS.grayscale700,
-            marginTop: 12
-          }]}>Estimated arrival: 3 business days</Text>
-          <Text style={[styles.amountTime, {
-            color: dark ? COLORS.greyscale300 : COLORS.grayscale700
-          }]}>Transfers made after 7.00 PM ET or on weekends or holidays take longer. All transfers are subject to review & could be delayed or stopped if we identify an issue.</Text>
+          <Text
+            style={[
+              styles.amountDate,
+              {
+                color: dark ? COLORS.greyscale300 : COLORS.grayscale700,
+                marginTop: 12,
+              },
+            ]}
+          >
+            Estimated arrival: 3 business days
+          </Text>
+          <Text
+            style={[
+              styles.amountTime,
+              {
+                color: dark ? COLORS.greyscale300 : COLORS.grayscale700,
+              },
+            ]}
+          >
+            Transfers made after 7.00 PM ET or on weekends or holidays take
+            longer. All transfers are subject to review & could be delayed or
+            stopped if we identify an issue.
+          </Text>
         </ScrollView>
       </View>
       <View style={styles.bottomContainer}>
         <Button
           title="Continue"
           style={styles.sendBtn}
-          onPress={() => navigate("transfertobanksuccessful")}
+          onPress={() => navigate('transfertobanksuccessful')}
           filled
         />
       </View>
     </SafeAreaView>
-  )
+  );
 };
 
 const styles = StyleSheet.create({
   area: {
     flex: 1,
-    backgroundColor: COLORS.white
+    backgroundColor: COLORS.white,
   },
   container: {
     flex: 1,
@@ -131,94 +289,94 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   separateLine: {
-    width: "100%",
+    width: '100%',
     height: 1,
     backgroundColor: COLORS.grayscale200,
-    marginVertical: 12
+    marginVertical: 12,
   },
   amount: {
     fontSize: 48,
-    fontFamily: "bold",
+    fontFamily: 'bold',
     color: COLORS.greyscale900,
     marginVertical: 12,
-    textAlign: "center"
+    textAlign: 'center',
   },
   reviewText: {
     fontSize: 16,
-    fontFamily: "medium",
+    fontFamily: 'medium',
     color: COLORS.greyScale800,
     marginVertical: 12,
   },
   bankContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginVertical: 4
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 4,
   },
   logoIcon: {
     height: 60,
     width: 60,
     marginRight: 16,
-    tintColor: COLORS.primary
+    tintColor: COLORS.primary,
   },
   bankName: {
     fontSize: 20,
-    fontFamily: "bold",
+    fontFamily: 'bold',
     color: COLORS.greyscale900,
     marginBottom: 6,
   },
   bankAmount: {
     fontSize: 16,
-    fontFamily: "medium",
-    color: COLORS.greyScale800
+    fontFamily: 'medium',
+    color: COLORS.greyScale800,
   },
   viewContainer: {
     width: SIZES.width - 32,
-    backgroundColor: "#FAFAFA",
+    backgroundColor: '#FAFAFA',
     borderRadius: 16,
     paddingVertical: 16,
     paddingHorizontal: 6,
-    marginVertical: 2
+    marginVertical: 2,
   },
   view: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginVertical: 6
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginVertical: 6,
   },
   viewLeft: {
     fontSize: 14,
-    fontFamily: "medium",
-    color: COLORS.grayscale700
+    fontFamily: 'medium',
+    color: COLORS.grayscale700,
   },
   viewRight: {
     fontSize: 16,
-    fontFamily: "bold",
-    color: COLORS.greyscale900
+    fontFamily: 'bold',
+    color: COLORS.greyscale900,
   },
   amountDate: {
     fontSize: 13,
-    fontFamily: "medium",
+    fontFamily: 'medium',
     color: COLORS.grayscale700,
-    marginBottom: 8
+    marginBottom: 8,
   },
   amountTime: {
     fontSize: 12,
-    fontFamily: "medium",
+    fontFamily: 'medium',
     color: COLORS.grayscale700,
   },
   bottomContainer: {
-    position: "absolute",
+    position: 'absolute',
     bottom: 28,
     right: 0,
     left: 0,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 16
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
   },
   sendBtn: {
-    width: SIZES.width - 32
+    width: SIZES.width - 32,
   },
-})
+});
 
-export default TransferToBankReviewSummary
+export default TransferToBankReviewSummary;

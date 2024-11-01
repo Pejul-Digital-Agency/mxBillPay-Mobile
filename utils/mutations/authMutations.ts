@@ -7,7 +7,9 @@ export const signUpUser = async (data: SignUpProps): Promise<any> => {
   return await apiCall(API_ENDPOINTS.AUTH.Register, 'POST', data);
 };
 
-export const loginUser = async (data: LoginProps): Promise<any> => {
+export const loginUser = async (
+  data: LoginProps
+): Promise<IUserLoginResponse> => {
   return await apiCall(API_ENDPOINTS.AUTH.Login, 'POST', data);
 };
 
@@ -64,3 +66,22 @@ export const generateBvnLink = async ({
     token
   );
 };
+
+export interface IUserProfile {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  profilePicture: string;
+  accountNumber: string;
+  accountBalance: string;
+  created_at: string; // or Date if parsed as a Date object
+  updated_at: string; // or Date if parsed as a Date object
+}
+
+interface IUserLoginResponse {
+  message: string;
+  user: IUserProfile;
+  token: string;
+  status: string;
+}

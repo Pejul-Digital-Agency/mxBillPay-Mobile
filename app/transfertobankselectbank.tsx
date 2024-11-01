@@ -18,13 +18,20 @@ const TransferToBankSelectBank = () => {
   if (!route.params) {
     return goBack();
   }
-  console.log(route.params);
+  // console.log(route.params);
   const { data } = route.params as { data: IBankDetails[] };
   const { colors, dark } = useTheme();
-  const [selectedBankId, setSelectedBankId] = useState<number | null>(null);
+  const [selectedBank, setSelectedBank] = useState<IBankDetails | null>(null);
 
-  const handleSelect = (id: number) => {
-    setSelectedBankId(id);
+  const handleSelect = (bank: IBankDetails) => {
+    setSelectedBank(bank);
+  };
+  const handleClickContinue = () => {
+    if (!selectedBank) {
+      return;
+    }
+
+    navigate('transfertobankamountform', selectedBank);
   };
 
   return (
@@ -40,8 +47,8 @@ const TransferToBankSelectBank = () => {
                 bankName={bank.name}
                 // type={bank.type}
                 // lastCardNumber={bank.lastCardNumber}
-                selected={bank.id === selectedBankId}
-                onSelect={() => handleSelect(bank.id)}
+                selected={bank.id === selectedBank?.id}
+                onSelect={() => handleSelect(bank)}
               />
             ))}
           </View>
@@ -62,8 +69,9 @@ const TransferToBankSelectBank = () => {
         <Button
           title="Continue"
           style={styles.sendBtn}
-          onPress={() => navigate('transfertobankamountform')}
+          onPress={handleClickContinue}
           filled
+          disabled={!selectedBank}
         />
       </View>
     </SafeAreaView>

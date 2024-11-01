@@ -5,7 +5,7 @@ export const getBillerCategories = async ({
   token,
 }: {
   token: string;
-}): Promise<IBillerCategories> => {
+}): Promise<IBillerCategoriesResponse> => {
   return await apiCall(
     API_ENDPOINTS.BILL_MANAGEMENT.GetBillerCategories,
     'GET',
@@ -68,16 +68,15 @@ export const getTransactionStatus = async ({
   );
 };
 
-interface IBillerCategories {
+interface IBillerCategoriesResponse {
   message: string;
-  data: [
-    {
-      id: number;
-      category: string;
-      icon?: string;
-      iconColor?: string;
-    }
-  ];
+  data: IBillerCategory[];
+}
+export interface IBillerCategory {
+  id: number;
+  category: string;
+  icon?: string;
+  iconColor?: string;
 }
 
 export interface IBillerItemsList {
