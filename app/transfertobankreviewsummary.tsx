@@ -10,8 +10,12 @@ import Button from '@/components/Button';
 import { useNavigation } from 'expo-router';
 import { NavigationProp, useRoute } from '@react-navigation/native';
 import { IBankDetails } from '@/utils/queries/billPayment';
-import { IRecepeintDetails } from '@/utils/mutations/paymentMutations';
+import {
+  IRecepeintDetails,
+  transferMoney,
+} from '@/utils/mutations/paymentMutations';
 import { useAppSelector } from '@/store/slices/authSlice';
+import { useMutation } from '@tanstack/react-query';
 
 type Nav = {
   navigate: (value: string) => void;
@@ -31,7 +35,28 @@ const TransferToBankReviewSummary = () => {
   }
   const { selectedBank, receipientDetails, amount } = route.params as IParams;
   const { token, userProfile } = useAppSelector((state) => state.auth);
+  const { mutate, isPending } = useMutation({
+    mutationKey: ['transferPayment'],
+    mutationFn: transferMoney,
+    onSuccess: (data) => {
+      console.log(data);
+    },
+    onError: (error) => {
+      console.log(error);
+    },
+  });
+  console.log(userProfile?.profilePicture);
 
+  const handleTransferPayment = () => {
+    // mutate({
+    //   token,
+    //   data: {
+    //     fromAccount: userProfile?.accountNumber as string,
+    //     fromClientId: user
+    //   }
+    // })
+    // navigate('transfertobanksuccessful')
+  };
   return (
     <SafeAreaView style={[styles.area, { backgroundColor: colors.background }]}>
       <View style={[styles.container, { backgroundColor: colors.background }]}>
@@ -55,7 +80,7 @@ const TransferToBankReviewSummary = () => {
               },
             ]}
           >
-            $1,000
+            ₦{amount}
           </Text>
           <View
             style={[
@@ -102,7 +127,7 @@ const TransferToBankReviewSummary = () => {
                   },
                 ]}
               >
-                Available: $
+                Available: ₦
                 {Number(userProfile?.accountBalance).toFixed(2).toString()}
               </Text>
             </View>
@@ -183,7 +208,7 @@ const TransferToBankReviewSummary = () => {
                   },
                 ]}
               >
-                ${amount}
+                ₦{amount}
               </Text>
             </View>
             <View style={styles.view}>
@@ -237,7 +262,7 @@ const TransferToBankReviewSummary = () => {
                   },
                 ]}
               >
-                ${amount}
+                ₦{amount}
               </Text>
             </View>
           </View>
@@ -270,7 +295,7 @@ const TransferToBankReviewSummary = () => {
         <Button
           title="Continue"
           style={styles.sendBtn}
-          onPress={() => navigate('transfertobanksuccessful')}
+          onPress={handleTransferPayment}
           filled
         />
       </View>
@@ -316,7 +341,8 @@ const styles = StyleSheet.create({
     height: 60,
     width: 60,
     marginRight: 16,
-    tintColor: COLORS.primary,
+    // tintColor: COLORS.primary,
+    borderRadius: 50,
   },
   bankName: {
     fontSize: 20,

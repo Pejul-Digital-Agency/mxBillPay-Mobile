@@ -118,6 +118,10 @@ const HomeScreen = () => {
     setIsSelectedBankPayment(true);
   };
 
+  const handleWalletTransfer = () => {
+    navigate('wallettransfer');
+  };
+
   // useEffect(() => {
   //   console.log(userDetailsRes?.data?.data?.profileP);
   // }, []);
@@ -214,7 +218,8 @@ const HomeScreen = () => {
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
-            onPress={() => navigate('sendmoney')}
+            // onPress={() => navigate('sendmoney')}
+            onPress={handleWalletTransfer}
             style={styles.categoryContainer}
           >
             <View style={styles.categoryIconContainer}>

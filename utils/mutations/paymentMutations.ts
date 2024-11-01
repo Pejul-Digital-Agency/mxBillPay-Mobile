@@ -56,19 +56,14 @@ type IRecepeintDetailsResponse = {
   data: IRecepeintDetails;
 };
 
-interface ITransferRequest {
-  fromAccount: string;
-  fromClientId: string;
-  fromClient: string;
-  fromSavingsId: string;
-  fromBvn: string;
+export interface ITransferRequest {
   toClientId: string;
   toClient: string; // Beneficiary's client name
   toClientName: string;
   toSavingsId: string;
   toBvn: string;
   toAccount: string; // Beneficiary's account number
-  toBank: string; // Beneficiary's bank name
+  toBank: string; // Beneficiary's bank code, its 9999
   amount: string; // Amount to transfer
   remark: string; // Transaction remark
   transferType: 'intra' | 'inter'; // Specify transfer type (intra or inter)

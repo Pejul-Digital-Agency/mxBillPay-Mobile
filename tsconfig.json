@@ -2,6 +2,9 @@
   "extends": "expo/tsconfig.base",
   "compilerOptions": {
     "strict": true,
+      // ... other options ...
+      "esModuleInterop": true,
+      // ... other options ...
     "jsx": "react-jsx", // or "react-jsxdev" for development mode
     "paths": {
       "@/*": [

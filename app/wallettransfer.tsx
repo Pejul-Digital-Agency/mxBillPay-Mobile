@@ -2,7 +2,7 @@ import { View, StyleSheet, Text, TextInput } from 'react-native';
 import React, { useRef } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '@/theme/ThemeProvider';
-import { COLORS, icons, SIZES } from '@/constants';
+import { COLORS, icons, images, SIZES } from '@/constants';
 import Header from '@/components/Header';
 import { ScrollView } from 'react-native-virtualized-view';
 import Button from '@/components/Button';
@@ -50,12 +50,9 @@ type Nav = {
   navigate: (value: string) => void;
 };
 
-const TransferToBankAmountForm = () => {
+const WalletTransfer = () => {
   const refRBSheet = useRef<any>(null);
   const { navigate, goBack } = useNavigation<NavigationProp<any>>();
-  const route = useRoute();
-  if (!route.params) return goBack();
-  const selectedBank = route.params as IBankDetails;
   const { token, userProfile } = useAppSelector((state) => state.auth);
   const [formState, dispatchFormState] = React.useReducer(
     reducer,
@@ -66,18 +63,17 @@ const TransferToBankAmountForm = () => {
     mutationFn: getReceipientDetails,
     onSuccess: (data) => {
       if (data?.data) {
-        navigate('transfertobankreviewsummary', {
-          selectedBank,
+        navigate('sendmoneyreviewsummary', {
           receipientDetails: data?.data,
           amount: formState.inputValues.amount as string,
         });
       }
     },
-    onError: (error: ApiError) => {
-      console.log(error);
+    onError: (error: { data: ApiError }) => {
+      console.log(error.data);
       showToast({
         type: 'error',
-        text1: error.message,
+        text1: error.data.message,
       });
     },
   });
@@ -103,6 +99,7 @@ const TransferToBankAmountForm = () => {
       });
       return;
     }
+
     // if (
     //   Number(formState.inputValues.amount) > Number(userProfile?.accountBalance)
     // ) {
@@ -116,8 +113,8 @@ const TransferToBankAmountForm = () => {
     const { amount, accountNo } = formState.inputValues;
     const reqData = {
       accountNo: accountNo as string,
-      bank: selectedBank.code,
-      transfer_type: 'inter',
+      bank: '999999',
+      transfer_type: 'intra',
     };
 
     mutate({
@@ -140,11 +137,16 @@ const TransferToBankAmountForm = () => {
           }}
         >
           <Image
-            source={selectedBank.logo || icons.bank}
+            source={images.logo}
             contentFit="contain"
-            style={{ height: 60, width: 60, borderRadius: 50 }}
+            style={{
+              height: 80,
+              width: 80,
+              borderRadius: 50,
+              tintColor: COLORS.primary,
+            }}
           />
-          <Text
+          {/* <Text
             style={{
               color: dark ? COLORS.white : COLORS.greyscale900,
               fontSize: 20,
@@ -152,7 +154,7 @@ const TransferToBankAmountForm = () => {
             }}
           >
             {selectedBank.name}
-          </Text>
+          </Text> */}
         </View>
 
         <View
@@ -183,7 +185,7 @@ const TransferToBankAmountForm = () => {
           Enter the amount to transfer
         </Text>
         <TextInput
-          placeholder="$1000"
+          placeholder="₦1000"
           keyboardType="numeric"
           onChangeText={(text) => inputChangedHandler('amount', text)}
           placeholderTextColor={dark ? COLORS.white : COLORS.greyscale900}
@@ -202,7 +204,7 @@ const TransferToBankAmountForm = () => {
             },
           ]}
         >
-          Available balance: $
+          Available balance:
           {Number(userProfile?.accountBalance).toFixed(2).toString()}
         </Text>
         <View
@@ -441,4 +443,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default TransferToBankAmountForm;
+export default WalletTransfer;

@@ -1,4 +1,11 @@
-import { View, Text, StyleSheet, ScrollView, TouchableWithoutFeedback, Modal } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableWithoutFeedback,
+  Modal,
+} from 'react-native';
 import React, { useEffect, useState } from 'react';
 import { COLORS, SIZES, illustrations } from '../constants';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -10,8 +17,8 @@ import { useNavigation } from 'expo-router';
 import { Image } from 'expo-image';
 
 type Nav = {
-  navigate: (value: string) => void
-}
+  navigate: (value: string) => void;
+};
 
 // Fingerprint screen
 const Fingerprint = () => {
@@ -21,9 +28,9 @@ const Fingerprint = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const { colors, dark } = useTheme();
 
- useEffect(() => {
-   checkDeviceForFingerprint();
- }, []);
+  useEffect(() => {
+    checkDeviceForFingerprint();
+  }, []);
 
   const checkDeviceForFingerprint = async () => {
     const isCompatible = await LocalAuthentication.hasHardwareAsync();
@@ -51,42 +58,51 @@ const Fingerprint = () => {
   // Render modal
   const renderModal = () => {
     return (
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={modalVisible}>
-        <TouchableWithoutFeedback
-          onPress={() => setModalVisible(false)}>
+      <Modal animationType="slide" transparent={true} visible={modalVisible}>
+        <TouchableWithoutFeedback onPress={() => setModalVisible(false)}>
           <View style={[styles.modalContainer]}>
-            <View style={[styles.modalSubContainer, {
-              backgroundColor: dark ? COLORS.dark2 : COLORS.secondaryWhite
-            }]}>
+            <View
+              style={[
+                styles.modalSubContainer,
+                {
+                  backgroundColor: dark ? COLORS.dark2 : COLORS.secondaryWhite,
+                },
+              ]}
+            >
               <Image
                 source={illustrations.passwordSuccess}
-                contentFit='contain'
+                contentFit="contain"
                 style={styles.modalIllustration}
               />
               <Text style={styles.modalTitle}>Congratulations!</Text>
-              <Text style={[styles.modalSubtitle, {
-                color: dark ? COLORS.grayTie : COLORS.greyscale900
-              }]}>Your account is ready to use. You will be redirected to the Home page in a few seconds..</Text>
+              <Text
+                style={[
+                  styles.modalSubtitle,
+                  {
+                    color: dark ? COLORS.grayTie : COLORS.greyscale900,
+                  },
+                ]}
+              >
+                Your account is ready to use. You will be redirected to the Home
+                page in a few seconds..
+              </Text>
               <Button
                 title="Continue"
                 filled
                 onPress={() => {
-                  setModalVisible(false)
-                  navigate("facerecognitionwalkthrough")
+                  setModalVisible(false);
+                  navigate('facerecognitionwalkthrough');
                 }}
                 style={{
-                  width: "100%",
-                  marginTop: 12
+                  width: '100%',
+                  marginTop: 12,
                 }}
               />
             </View>
           </View>
         </TouchableWithoutFeedback>
       </Modal>
-    )
+    );
   };
 
   return (
@@ -95,20 +111,33 @@ const Fingerprint = () => {
         <Header title="Set Your Fingerprint" />
         <ScrollView
           contentContainerStyle={{ alignItems: 'center' }}
-          showsVerticalScrollIndicator={false}>
-          <Text style={[styles.title, {
-            color: dark ? COLORS.white : COLORS.greyscale900
-          }]}>Add a fingerprint to make your account
-            more secure.</Text>
+          showsVerticalScrollIndicator={false}
+        >
+          <Text
+            style={[
+              styles.title,
+              {
+                color: dark ? COLORS.white : COLORS.greyscale900,
+              },
+            ]}
+          >
+            Add a fingerprint to make your account more secure.
+          </Text>
           <Image
             source={illustrations.fingerprint}
-            contentFit='contain'
+            contentFit="contain"
             style={styles.fingerprint}
           />
-          <Text style={[styles.title, {
-            color: dark ? COLORS.white : COLORS.greyscale900
-          }]}>Please put your finger on the fingerprint
-            scanner to get started.</Text>
+          <Text
+            style={[
+              styles.title,
+              {
+                color: dark ? COLORS.white : COLORS.greyscale900,
+              },
+            ]}
+          >
+            Please put your finger on the fingerprint scanner to get started.
+          </Text>
         </ScrollView>
       </View>
       <View style={styles.bottomContainer}>
@@ -118,10 +147,10 @@ const Fingerprint = () => {
             width: (SIZES.width - 32) / 2 - 8,
             borderRadius: 32,
             backgroundColor: dark ? COLORS.dark3 : COLORS.tansparentPrimary,
-            borderColor: dark ? COLORS.dark3 : COLORS.tansparentPrimary
+            borderColor: dark ? COLORS.dark3 : COLORS.tansparentPrimary,
           }}
           textColor={dark ? COLORS.white : COLORS.primary}
-          onPress={() => navigate("login")}
+          onPress={() => navigate('login')}
         />
         <Button
           title="Continue"
@@ -132,87 +161,87 @@ const Fingerprint = () => {
       </View>
       {renderModal()}
     </SafeAreaView>
-  )
+  );
 };
 
 const styles = StyleSheet.create({
   area: {
     flex: 1,
-    backgroundColor: COLORS.white
+    backgroundColor: COLORS.white,
   },
   container: {
     flex: 1,
     backgroundColor: COLORS.white,
-    padding: 16
+    padding: 16,
   },
   title: {
     fontSize: 18,
-    fontFamily: "medium",
+    fontFamily: 'medium',
     color: COLORS.greyscale900,
-    textAlign: "center",
-    marginVertical: 54
+    textAlign: 'center',
+    marginVertical: 54,
   },
   fingerprint: {
     width: 300,
     height: 300,
-    marginVertical: 24
+    marginVertical: 24,
   },
   bottomContainer: {
-    position: "absolute",
+    position: 'absolute',
     bottom: 32,
     right: 16,
     left: 16,
-    flexDirection: "row",
-    justifyContent: "space-between",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     width: SIZES.width - 32,
-    alignItems: "center"
+    alignItems: 'center',
   },
   skipButton: {
     width: (SIZES.width - 32) / 2 - 8,
     borderRadius: 32,
-    backgroundColor: "#F5E7FF",
-    borderColor: "#F5E7FF"
+    backgroundColor: '#F5E7FF',
+    borderColor: '#F5E7FF',
   },
   continueButton: {
     width: (SIZES.width - 32) / 2 - 8,
     borderRadius: 32,
     backgroundColor: COLORS.primary,
-    borderColor: COLORS.primary
+    borderColor: COLORS.primary,
   },
   modalTitle: {
     fontSize: 24,
-    fontFamily: "bold",
+    fontFamily: 'bold',
     color: COLORS.primary,
-    textAlign: "center",
-    marginVertical: 12
+    textAlign: 'center',
+    marginVertical: 12,
   },
   modalSubtitle: {
     fontSize: 16,
-    fontFamily: "regular",
+    fontFamily: 'regular',
     color: COLORS.black2,
-    textAlign: "center",
-    marginVertical: 12
+    textAlign: 'center',
+    marginVertical: 12,
   },
   modalContainer: {
     flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "rgba(0,0,0,0.6)"
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(0,0,0,0.6)',
   },
   modalSubContainer: {
     height: 494,
     width: SIZES.width * 0.9,
     backgroundColor: COLORS.white,
     borderRadius: 12,
-    alignItems: "center",
-    justifyContent: "center",
-    padding: 16
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 16,
   },
   modalIllustration: {
     height: 180,
     width: 180,
-    marginVertical: 22
-  }
+    marginVertical: 22,
+  },
 });
 
-export default Fingerprint
+export default Fingerprint;
