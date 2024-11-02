@@ -171,12 +171,12 @@ const FillYourProfile = () => {
     });
   };
   useEffect(() => {
+    console.log('event listener being resigtered');
     if (channel && channel.onEvent) {
       setModalVisible(true);
-      console.log('event listener being resigtered');
       //binding of channel
       channel.onEvent((event: PusherEvent) => {
-        if (event.userId === 'account.released') {
+        if (event.eventName === 'account.released') {
           console.log('account released');
           // setModalVisible(false);
           setWebView({
@@ -302,7 +302,7 @@ const FillYourProfile = () => {
 
       // set the image
       setImage({ ...imageData });
-    } catch (error) {}
+    } catch (error) { }
   };
 
   //check if the keyBoard is open
@@ -404,6 +404,7 @@ const FillYourProfile = () => {
             { backgroundColor: colors.background },
             { display: webView.isVisible ? 'none' : 'flex' },
           ]}
+
         >
           <Header title="Fill Your Profile" />
           <ScrollView showsVerticalScrollIndicator={false}>
@@ -484,8 +485,8 @@ const FillYourProfile = () => {
               >
                 <TouchableOpacity
                   style={styles.selectFlagContainer}
-                  onPress={() => {}}
-                  //setModalVisible to true if want to show flags selection
+                  onPress={() => { }}
+                //setModalVisible to true if want to show flags selection
                 >
                   <View style={{ justifyContent: 'center' }}>
                     <Image
@@ -593,16 +594,20 @@ const FillYourProfile = () => {
           title="Generating your link requires your BVN consent. Please click below to get your bvn consent link"
         />
         {webView.isVisible && (
-          <WebView
-            source={{ uri: webView.url }}
-            style={{
-              flex: 1,
-              zIndex: 9999,
-              position: 'absolute',
-              width: '100%',
-              height: '100%',
-            }}
-          />
+          <View
+            style={{ flex: 1, width: '100%', height: '100%' }}
+          >
+            <WebView
+              source={{ uri: webView.url }}
+              style={{
+                flex: 1,
+                zIndex: 9999,
+                position: 'absolute',
+                width: '100%',
+                height: '100%',
+              }}
+            />
+          </View>
         )}
       </SafeAreaView>
     </>

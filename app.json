@@ -1,14 +1,14 @@
 {
   "expo": {
-    "name": "AllPay",
+    "name": "Mx Bill Pay",
     "slug": "AllPay",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/images/logo2.png",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "splash": {
-      "image": "./assets/images/splash.png",
+      "image": "./assets/images/logo2.png",
       "resizeMode": "contain",
       "backgroundColor": "#246BFD"
     },
@@ -21,7 +21,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "foregroundImage": "./assets/images/logo2.png",
         "backgroundColor": "#246BFD"
       },
       "permissions": [
@@ -51,8 +51,9 @@
     },
     "extra": {
       "eas": {
-        "projectId": "cbc05dfd-da38-4d26-b0e4-9d71fe95b4ef"
+        "projectId": "88bdb823-65a7-44d3-8f4d-3dfc380fec5e"
       }
-    }
+    },
+    "owner": "hmstech11"
   }
 }

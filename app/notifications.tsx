@@ -32,7 +32,7 @@ const Notifications = () => {
                         color: dark ? COLORS.white : COLORS.black
                     }]}>Notification</Text>
                 </View>
-                <TouchableOpacity>
+                {/* <TouchableOpacity>
                     <Image
                         source={icons.setting2Outline}
                         contentFit='contain'
@@ -40,7 +40,7 @@ const Notifications = () => {
                             tintColor: dark ? COLORS.secondaryWhite : COLORS.black
                         }]}
                     />
-                </TouchableOpacity>
+                </TouchableOpacity> */}
             </View>
         )
     }

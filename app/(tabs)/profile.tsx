@@ -1,5 +1,6 @@
-import { View, Text, StyleSheet, TouchableOpacity, Switch } from 'react-native';
-import React, { useState, useRef } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Switch,useColorScheme  } from 'react-native';
+// import React, { useState, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ScrollView } from 'react-native-virtualized-view';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -11,6 +12,11 @@ import { Image } from 'expo-image';
 import SettingsItem from '@/components/SettingsItem';
 import { launchImagePicker } from '@/utils/ImagePickerHelper';
 import { useNavigation } from 'expo-router';
+import {
+  getUserProfile,
+  IUserProfileData,
+} from '@/utils/queries/accountQueries';
+import { useAppSelector } from '@/store/slices/authSlice';
 
 type Nav = {
   navigate: (value: string) => void
@@ -20,6 +26,7 @@ const Profile = () => {
   const refRBSheet = useRef<any>(null);
   const { dark, colors, setScheme } = useTheme();
   const { navigate } = useNavigation<Nav>();
+  const { token, userProfile } = useAppSelector((state) => state.auth);
 
   /**
    * Render header
@@ -37,7 +44,8 @@ const Profile = () => {
             color: dark ? COLORS.white : COLORS.greyscale900
           }]}>Profile</Text>
         </View>
-        <TouchableOpacity>
+        {/* removing three dots */}
+        {/* <TouchableOpacity>
           <Image
             source={icons.moreCircle}
             contentFit='contain'
@@ -45,7 +53,7 @@ const Profile = () => {
               tintColor: dark ? COLORS.secondaryWhite : COLORS.greyscale900
             }]}
           />
-        </TouchableOpacity>
+        </TouchableOpacity> */}
       </TouchableOpacity>
     )
   }
@@ -69,18 +77,18 @@ const Profile = () => {
       <View style={styles.profileContainer}>
         <View>
           <Image
-            source={image}
+            source={userProfile?.profilePicture || icons.profile}
             contentFit='cover'
             style={styles.avatar}
           />
-          <TouchableOpacity
+          {/* <TouchableOpacity
             onPress={pickImage}
             style={styles.picContainer}>
             <MaterialIcons name="edit" size={16} color={COLORS.white} />
-          </TouchableOpacity>
+          </TouchableOpacity> */}
         </View>
-        <Text style={[styles.title, { color: dark ? COLORS.secondaryWhite : COLORS.greyscale900 }]}>Nathalie Erneson</Text>
-        <Text style={[styles.subtitle, { color: dark ? COLORS.secondaryWhite : COLORS.greyscale900 }]}>nathalie_erneson@gmail.com</Text>
+        <Text style={[styles.title, { color: dark ? COLORS.secondaryWhite : COLORS.greyscale900 }]}>{userProfile?.firstName} {userProfile?.lastName}</Text>
+        <Text style={[styles.subtitle, { color: dark ? COLORS.secondaryWhite : COLORS.greyscale900 }]}>{userProfile?.email}</Text>
       </View>
     )
   }
@@ -88,8 +96,14 @@ const Profile = () => {
    * Render Settings
    */
   const renderSettings = () => {
-    const [isDarkMode, setIsDarkMode] = useState(false);
-
+    // const [isDarkMode, setIsDarkMode] = useState(false);
+    const systemTheme = useColorScheme();
+    const [isDarkMode, setIsDarkMode] = useState(systemTheme === 'dark');
+  
+    // Sync the switch with the system theme on initial load
+    useEffect(() => {
+        setIsDarkMode(systemTheme === 'dark');
+    }, [systemTheme]);
     const toggleDarkMode = () => {
       setIsDarkMode((prev) => !prev);
       dark ? setScheme('light') : setScheme('dark')
@@ -102,11 +116,11 @@ const Profile = () => {
           name="My Notification"
           onPress={() => navigate("notifications")}
         />
-        <SettingsItem
+        {/* <SettingsItem
           icon={icons.location2Outline}
           name="Address"
           onPress={() => navigate("address")}
-        />
+        /> */}
         <SettingsItem
           icon={icons.userOutline}
           name="Edit Profile"
@@ -117,17 +131,17 @@ const Profile = () => {
           name="Notification"
           onPress={() => navigate("settingsnotifications")}
         />
-        <SettingsItem
+        {/* <SettingsItem
           icon={icons.wallet2Outline}
           name="Payment"
           onPress={() => navigate("settingspayment")}
-        />
+        /> */}
         <SettingsItem
           icon={icons.shieldOutline}
           name="Security"
           onPress={() => navigate("settingssecurity")}
         />
-        <TouchableOpacity
+        {/* <TouchableOpacity
           onPress={() => navigate("settingslanguage")}
           style={styles.settingsItemContainer}>
           <View style={styles.leftContainer}>
@@ -154,7 +168,7 @@ const Profile = () => {
               }]}
             />
           </View>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
         <TouchableOpacity
           style={styles.settingsItemContainer}>
           <View style={styles.leftContainer}>
@@ -190,11 +204,11 @@ const Profile = () => {
           name="Help Center"
           onPress={() => navigate("settingshelpcenter")}
         />
-        <SettingsItem
+        {/* <SettingsItem
           icon={icons.people4}
           name="Invite Friends"
           onPress={() => navigate("settingsinvitefriends")}
-        />
+        /> */}
         <TouchableOpacity
           onPress={() => refRBSheet.current.open()}
           style={styles.logoutContainer}>

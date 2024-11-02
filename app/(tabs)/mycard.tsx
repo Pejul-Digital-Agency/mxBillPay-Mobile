@@ -8,6 +8,7 @@ import { COLORS, SIZES, icons } from '@/constants';
 import Card from '@/components/Card';
 import { userCards } from '@/data';
 import { useTheme } from '@/theme/ThemeProvider';
+import { Screen } from 'expo-router/build/views/Screen';
 
 type Nav = {
   navigate: (value: string) => void
@@ -22,8 +23,9 @@ const MyCard = () => {
     return (
       <ScrollView
         showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ flexGrow: 1 }} // Ensures ScrollView takes full heigh
         style={{ paddingHorizontal: 16 }}>
-        <FlatList
+        {/* <FlatList
           data={userCards}
           showsVerticalScrollIndicator={false}
           keyExtractor={(item, index) => index.toString()}
@@ -55,13 +57,31 @@ const MyCard = () => {
             }}
           />
           <Text style={styles.btnText}>Add X - Card</Text>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
+        <View style={{ 
+          minHeight: SIZES.height - 100,
+          // minHeight: S - 100,
+          flex: 1, justifyContent: 'center', alignItems: 'center' ,
+        
+        }}>
+          <Text style={{
+            fontSize: 24,
+            
+            fontWeight: 'bold',
+            color: COLORS.primary,
+            textAlign: 'center',
+            opacity: 0.8
+          }}>
+            Coming Soon
+          </Text>
+        </View>
       </ScrollView>
     )
   }
   return (
-    <SafeAreaView style={[styles.area, { 
-      backgroundColor: dark? COLORS.dark1 : COLORS.white }]}>
+    <SafeAreaView style={[styles.area, {
+      backgroundColor: dark ? COLORS.dark1 : COLORS.white
+    }]}>
       <View style={styles.container}>
         {renderAllUserCard()}
       </View>

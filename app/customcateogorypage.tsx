@@ -25,44 +25,9 @@ import Loader from './loader';
 import { IBillerItemsList } from '@/utils/queries/billPayment';
 import { Route } from 'expo-router/build/Route';
 import { useAppSelector } from '@/store/slices/authSlice';
+import { darkColors } from '@/theme/colors';
 
-// const dummy = [
-//   'Electricity',
-//   'Water',
-//   'Gas',
-//   'Internet',
-//   'Electricity',
-//   'Water',
-//   'Gas',
-//   'Internet',
-// ];
 
-// const dummyParams = {
-//   category: {
-//     id: 1,
-//     category: 'Electricity',
-//     icon: icons.electricity,
-//     iconColor: COLORS.primary,
-//   },
-//   itemList: [
-//     {
-//       id: 1,
-//       paymentitemname: 'Fesco',
-//     },
-//     {
-//       id: 2,
-//       paymentitemname: 'Safaricom',
-//     },
-//     {
-//       id: 3,
-//       paymentitemname: 'Airtel',
-//     },
-//     {
-//       id: 4,
-//       paymentitemname: 'MTN',
-//     },
-//   ],
-// };
 
 type Nav = {
   navigate: (value: number) => void;
@@ -146,9 +111,10 @@ const CustomCategoryPage = () => {
           <View style={styles.viewContainer}>
             <View style={styles.iconContainer}>
               <Image
-                source={icons.electricity}
+                source={billerItems?.category?.icon || icons.send}
                 contentFit="contain"
                 style={styles.icon}
+                tintColor={billerItems?.category?.iconColor}
               />
             </View>
             <Text
@@ -248,12 +214,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 8,
-    backgroundColor: 'rgba(255, 211, 0, .12)',
+    backgroundColor: darkColors ? COLORS.greyScale800 : COLORS.grayscale100,
   },
   icon: {
     height: 60,
     width: 60,
-    tintColor: '#FFD300',
+    // tintColor: '#FFD300',
   },
   viewContainer: {
     alignItems: 'center',

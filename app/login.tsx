@@ -117,13 +117,7 @@ const Login = () => {
     });
 
   const handleLogin = async () => {
-    if (!isChecked) {
-      showToast({
-        type: 'error',
-        text1: 'Please accept the terms and conditions',
-      });
-      return;
-    }
+   
     if (!formState.formIsValid) {
       showToast({
         type: 'error',
@@ -336,7 +330,7 @@ const Login = () => {
                 Forgot the password?
               </Text>
             </TouchableOpacity>
-            <View>
+            {/* <View>
               <OrSeparator text="or continue with" />
               <View style={styles.socialBtnContainer}>
                 <SocialButton
@@ -350,7 +344,7 @@ const Login = () => {
                 />
                 <SocialButton icon={icons.google} onPress={googleAuthHandler} />
               </View>
-            </View>
+            </View> */}
           </ScrollView>
           {!keyboardVisible && (
             <View style={styles.bottomContainer}>

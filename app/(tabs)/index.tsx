@@ -150,7 +150,7 @@ const HomeScreen = () => {
           </View>
         </View>
         <View style={styles.viewRight}>
-          <TouchableOpacity onPress={() => navigate('promoanddiscount')}>
+          {/* <TouchableOpacity onPress={() => navigate('promoanddiscount')}>
             <Image
               source={icons.discount3}
               contentFit="contain"
@@ -159,7 +159,7 @@ const HomeScreen = () => {
                 { tintColor: dark ? COLORS.white : COLORS.greyscale900 },
               ]}
             />
-          </TouchableOpacity>
+          </TouchableOpacity> */}
           <TouchableOpacity onPress={() => navigate('notifications')}>
             <Image
               source={icons.notificationBell2}

@@ -84,6 +84,7 @@ export interface IBillerItemsList {
     id: number;
     category: string;
     icon?: string;
+    iconColor?: string;
   };
   itemList: [
     {
@@ -119,6 +120,8 @@ export type IBillerItemDetails = {
   created_at: string;
   updated_at: string;
   billerId: string;
+  icon?: string;
+  iconColor?: string;
 };
 
 interface IBillerItemDetailsData {

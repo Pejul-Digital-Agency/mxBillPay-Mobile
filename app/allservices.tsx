@@ -1,18 +1,107 @@
 import { View, Text, StyleSheet, FlatList } from 'react-native';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Header from '@/components/Header';
 import { ScrollView } from 'react-native-virtualized-view';
 import { useTheme } from '@/theme/ThemeProvider';
-import { COLORS } from '@/constants';
+import { COLORS, icons } from '@/constants';
+import {
+    getBanks,
+    getBillerCategories,
+    getBillerItems,
+} from '@/utils/queries/billPayment';
 import { billServices, insuranceServices, optionServices } from '@/data';
 import Category from '@/components/Category';
 import { useNavigation } from 'expo-router';
 import { NavigationProp } from '@react-navigation/native';
+import { useAppSelector } from '@/store/slices/authSlice';
+import { useQuery } from '@tanstack/react-query';
 
 const AllServices = () => {
-    const { colors, dark } = useTheme();
+    const { navigate, setParams } = useNavigation<NavigationProp<any>>();
+    const [categoryId, setCategoryId] = React.useState('');
+    //   const { colors, dark } = useTheme();
     const navigation = useNavigation<NavigationProp<any>>();
+    const [isSelectedBankPayment, setIsSelectedBankPayment] =
+        React.useState(false);
+    const { token, userProfile } = useAppSelector((state) => state.auth);
+
+    const {
+        data: billerCategories,
+        error: errorCategories,
+        isLoading: isLoadingCategories,
+    } = useQuery({
+        queryKey: ['billCategories'],
+        queryFn: () => getBillerCategories({ token }),
+        enabled: !!token,
+    });
+    const {
+        data: billerItemsData,
+        isLoading: isPendingItems,
+        error: errorItems,
+    } = useQuery({
+        queryKey: ['billCategories', categoryId],
+        queryFn: () =>
+            getBillerItems({
+                categoryId: categoryId,
+                token,
+            }),
+        enabled: categoryId != '',
+    });
+    const {
+        data: banksData,
+        isLoading: isLoadingBanks,
+        error: isErrorBanks,
+    } = useQuery({
+        queryKey: ['billerMethod'],
+        queryFn: () => {
+            if (isSelectedBankPayment) {
+                return getBanks(token);
+            }
+        },
+        enabled: isSelectedBankPayment,
+    });
+
+    const { dark, colors } = useTheme();
+
+    useEffect(() => {
+        if (billerItemsData?.data) {
+            // console.log('index page', billerItemsData?.data);
+            // setParams({
+            //   billerItems: billerItemsData?.data,
+            // });
+            navigate('customcateogorypage', { billerItems: billerItemsData?.data });
+        }
+    }, [billerItemsData]);
+
+    useEffect(() => {
+        if (banksData?.data) {
+            console.log('index page', banksData?.data);
+            navigate('transfertobankselectbank', { data: banksData?.data });
+        }
+    }, [banksData]);
+
+    const handleClickCategory = (id: string) => {
+        if (categoryId == id && billerItemsData?.data) {
+            navigate('customcateogorypage', { billerItems: billerItemsData?.data });
+            return;
+        }
+        setCategoryId(id);
+    };
+
+    const handleNavigateToBankTransfer = () => {
+        if (banksData?.data) {
+            navigate('transfertobankselectbank', { data: banksData?.data });
+            return;
+        }
+        console.log('reached');
+        setIsSelectedBankPayment(true);
+    };
+
+    const handleWalletTransfer = () => {
+        navigate('wallettransfer');
+    };
+
 
     return (
         <SafeAreaView style={[styles.area, { backgroundColor: colors.background }]}>
@@ -24,72 +113,27 @@ const AllServices = () => {
                     <Text style={[styles.subtitle, {
                         color: dark ? COLORS.white : COLORS.greyscale900
                     }]}>Bill</Text>
-                    <FlatList
-                        data={billServices}
-                        keyExtractor={(item, index) => index.toString()}
-                        horizontal={false}
-                        numColumns={4} // Render two items per row
-                        style={{ marginTop: 0 }}
-                        renderItem={({ item, index }) => (
-                            <Category
-                                name={item.name}
-                                icon={item.icon}
-                                iconColor={item.iconColor}
-                                backgroundColor={item.backgroundColor}
-                                onPress={() => {
-                                    if (item.onPress !== "") {
-                                        navigation.navigate(item.onPress);
+                    {billerCategories?.data && (
+                        <FlatList
+                            data={billerCategories?.data}
+                            keyExtractor={(item, index) => index.toString()}
+                            horizontal={false}
+                            numColumns={4} // Render four items per row
+                            style={{ marginTop: 0 }}
+                            renderItem={({ item, index }) => (
+                                <Category
+                                    key={item.id}
+                                    name={item.category}
+                                    icon={item?.icon || icons.send}
+                                    iconColor={item?.iconColor || colors.primary}
+                                    backgroundColor={
+                                        dark ? COLORS.greyScale800 : COLORS.grayscale100
                                     }
-                                }}
-                            />
-                        )}
-                    />
-                    <Text style={[styles.subtitle, {
-                        color: dark ? COLORS.white : COLORS.greyscale900
-                    }]}>insurance</Text>
-                    <FlatList
-                        data={insuranceServices}
-                        keyExtractor={(item, index) => index.toString()}
-                        horizontal={false}
-                        numColumns={4} // Render two items per row
-                        style={{ marginTop: 0 }}
-                        renderItem={({ item, index }) => (
-                            <Category
-                                name={item.name}
-                                icon={item.icon}
-                                iconColor={item.iconColor}
-                                backgroundColor={item.backgroundColor}
-                                onPress={() => {
-                                    if (item.onPress !== "") {
-                                        navigation.navigate(item.onPress);
-                                    }
-                                }}
-                            />
-                        )}
-                    />
-                    <Text style={[styles.subtitle, {
-                        color: dark ? COLORS.white : COLORS.greyscale900
-                    }]}>Option</Text>
-                    <FlatList
-                        data={optionServices}
-                        keyExtractor={(item, index) => index.toString()}
-                        horizontal={false}
-                        numColumns={4} // Render two items per row
-                        style={{ marginTop: 0 }}
-                        renderItem={({ item, index }) => (
-                            <Category
-                                name={item.name}
-                                icon={item.icon}
-                                iconColor={item.iconColor}
-                                backgroundColor={item.backgroundColor}
-                                onPress={() => {
-                                    if (item.onPress !== "") {
-                                        navigation.navigate(item.onPress);
-                                    }
-                                }}
-                            />
-                        )}
-                    />
+                                    onPress={() => handleClickCategory(item.id.toString())}
+                                />
+                            )}
+                        />
+                    )}
                 </ScrollView>
             </View>
         </SafeAreaView>
