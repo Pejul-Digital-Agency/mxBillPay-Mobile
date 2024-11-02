@@ -182,9 +182,7 @@ const HomeScreen = () => {
       <View style={styles.cardContainer}>
         <View style={styles.topCardContainer}>
           <View>
-            <Text style={styles.username}>
-              {userProfile?.firstName + ' ' + userProfile?.lastName}
-            </Text>
+            <Text style={styles.username}>{'Account No'}</Text>
             <Text style={styles.cardNum}>{userProfile?.accountNumber}</Text>
           </View>
           <Image
@@ -380,8 +378,8 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   username: {
-    fontSize: 20,
-    fontFamily: 'bold',
+    fontSize: 16,
+    fontFamily: 'regular',
     color: COLORS.white,
     marginBottom: 8,
   },

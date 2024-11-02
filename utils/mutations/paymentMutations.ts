@@ -49,7 +49,12 @@ export interface IRecepeintDetails {
   status: string;
   currency: string;
   bank: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  profilePicture: string;
 }
+
 type IRecepeintDetailsResponse = {
   status: string;
   message: string;

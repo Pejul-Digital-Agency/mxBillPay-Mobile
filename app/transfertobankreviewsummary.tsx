@@ -7,7 +7,7 @@ import { useTheme } from '@/theme/ThemeProvider';
 import { ScrollView } from 'react-native-virtualized-view';
 import { Image } from 'expo-image';
 import Button from '@/components/Button';
-import { useNavigation } from 'expo-router';
+import { router, useNavigation } from 'expo-router';
 import { NavigationProp, useRoute } from '@react-navigation/native';
 import { IBankDetails } from '@/utils/queries/billPayment';
 import {
@@ -16,6 +16,8 @@ import {
 } from '@/utils/mutations/paymentMutations';
 import { useAppSelector } from '@/store/slices/authSlice';
 import { useMutation } from '@tanstack/react-query';
+import { getFullName } from '@/utils/customuntilities';
+import Loader from './loader';
 
 type Nav = {
   navigate: (value: string) => void;
@@ -40,21 +42,34 @@ const TransferToBankReviewSummary = () => {
     mutationFn: transferMoney,
     onSuccess: (data) => {
       console.log(data);
+      // navigate('transfertobanksuccessful');
+      navigate('sendmoneysuccessful', {
+        recepientName: receipientDetails.name,
+      });
     },
     onError: (error) => {
       console.log(error);
     },
   });
-  console.log(userProfile?.profilePicture);
+  // console.log(userProfile?.profilePicture);
+  console.log(receipientDetails);
 
   const handleTransferPayment = () => {
-    // mutate({
-    //   token,
-    //   data: {
-    //     fromAccount: userProfile?.accountNumber as string,
-    //     fromClientId: user
-    //   }
-    // })
+    mutate({
+      token,
+      data: {
+        amount,
+        toAccount: receipientDetails?.account.number,
+        toBank: selectedBank?.code,
+        transferType: 'inter',
+        toClient: receipientDetails?.name,
+        toClientId: receipientDetails?.clientId,
+        toSavingsId: receipientDetails?.account.id,
+        toBvn: receipientDetails?.bvn,
+        toClientName: receipientDetails?.name,
+        remark: 'transfer payment',
+      },
+    });
     // navigate('transfertobanksuccessful')
   };
   return (
@@ -167,7 +182,7 @@ const TransferToBankReviewSummary = () => {
                   },
                 ]}
               >
-                Checking ●●●● 4679
+                {receipientDetails?.name}
               </Text>
             </View>
           </View>
@@ -293,12 +308,14 @@ const TransferToBankReviewSummary = () => {
       </View>
       <View style={styles.bottomContainer}>
         <Button
-          title="Continue"
+          title="Transfer"
           style={styles.sendBtn}
+          disabled={isPending}
           onPress={handleTransferPayment}
           filled
         />
       </View>
+      {isPending && <Loader />}
     </SafeAreaView>
   );
 };

@@ -72,6 +72,7 @@ const Signup = () => {
   const [userBvn, setUserBvn] = useState('');
   const { navigate } = useNavigation<Nav>();
   const [formState, dispatchFormState] = useReducer(reducer, initialState);
+  const [isPasswordsEqual, setIsPasswordsEqual] = useState(true);
   const [isChecked, setChecked] = useState(false);
   const { colors, dark } = useTheme();
   const dispatch = useDispatch();
@@ -111,9 +112,23 @@ const Signup = () => {
         validationResult: result,
         inputValue,
       });
+      console.log(formState.inputValues);
     },
     [dispatchFormState]
   );
+
+  useEffect(() => {
+    if (
+      formState.inputValues.password === formState.inputValues.confirmPassword
+    ) {
+      console.log(true);
+      setIsPasswordsEqual(true);
+    } else {
+      console.log('falase');
+      setIsPasswordsEqual(false);
+    }
+  }, [formState.inputValues.password, formState.inputValues.confirmPassword]);
+  // console.log(formState.inputValues);
 
   const handleSignUp = async () => {
     // console.log(formState.formIsValid);
@@ -231,7 +246,13 @@ const Signup = () => {
           />
           <Input
             onInputChanged={inputChangedHandler}
-            errorText={formState.inputValidities['confirmPassword']}
+            errorText={
+              formState.inputValues['confirmPassword'].trim() == ''
+                ? 'confirm password is required'
+                : !isPasswordsEqual
+                ? 'both passwords should match'
+                : ''
+            }
             autoCapitalize="none"
             id="confirmPassword"
             placeholder="Confirm Password"

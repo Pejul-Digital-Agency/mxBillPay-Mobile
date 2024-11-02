@@ -46,10 +46,10 @@ export const validateInput = (
     return validateEmail(inputId, inputValue);
   } else if (
     inputId === 'password' ||
-    inputId === 'confirmPassword' ||
+    // inputId === 'confirmPassword' ||
     inputId === 'currentPassword' ||
-    inputId === 'newPassword' ||
-    inputId === 'confirmNewPassword'
+    inputId === 'newPassword'
+    // inputId === 'confirmNewPassword'
   ) {
     return validatePassword(inputId, inputValue);
   } else if (inputId === 'phoneNumber') {

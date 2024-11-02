@@ -18,6 +18,8 @@ const API_ENDPOINTS = {
     CreateCoorporateAccount: API_DOMAIN + '/accounts/coorporate',
     ReleaseAccount: API_DOMAIN + '/accounts/release',
     DeleteAccount: API_DOMAIN + '/accounts',
+    UpdatePassword: API_DOMAIN + '/update-password',
+    UpdateEmail: API_DOMAIN + '/update-email',
   },
   BILL_MANAGEMENT: {
     GetBillerCategories: API_DOMAIN + '/biller-categories-fetch',
