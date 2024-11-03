@@ -28,8 +28,6 @@ import * as LocalAuthentication from 'expo-local-authentication';
 import { useDispatch } from 'react-redux';
 import { authSliceActions, useAppSelector } from '@/store/slices/authSlice';
 import WebView from 'react-native-webview';
-import { getBillerCategories } from '@/utils/queries/billPayment';
-import { getUserProfile } from '@/utils/queries/accountQueries';
 import Loader from './loader';
 import { NavigationProp } from '@react-navigation/native';
 
@@ -324,6 +322,7 @@ const Login = () => {
             <Button
               title={isPendingLogin ? 'Logging In...' : 'Login'}
               filled
+              isLoading={isPendingLogin}
               disabled={isPendingLogin}
               onPress={handleLogin}
               style={styles.button}

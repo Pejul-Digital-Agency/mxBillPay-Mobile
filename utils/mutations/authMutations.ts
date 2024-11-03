@@ -75,8 +75,8 @@ export interface IUserProfile {
   profilePicture: string;
   accountNumber: string;
   accountBalance: string;
-  created_at: string; // or Date if parsed as a Date object
-  updated_at: string; // or Date if parsed as a Date object
+  created_at: string;
+  updated_at: string;
 }
 
 interface IUserLoginResponse {

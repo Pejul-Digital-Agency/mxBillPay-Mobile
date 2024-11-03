@@ -287,6 +287,7 @@ const Signup = () => {
           <Button
             title={signingUp ? 'Signing Up...' : 'Sign Up'}
             filled
+            isLoading={signingUp}
             disabled={signingUp}
             onPress={handleSignUp}
             style={[styles.button, { opacity: signingUp ? 0.5 : 1 }]}

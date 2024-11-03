@@ -26,7 +26,7 @@ import Button from '../components/Button';
 import { useTheme } from '../theme/ThemeProvider';
 import { Image } from 'expo-image';
 import { router, useNavigation } from 'expo-router';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { createIndividualAccount } from '@/utils/mutations/accountMutations';
 import showToast from '@/utils/showToast';
 import { useAppSelector } from '@/store/slices/authSlice';
@@ -36,6 +36,7 @@ import { PusherEvent } from '@pusher/pusher-websocket-react-native';
 import CustomModal from './custommodal';
 import { generateBvnLink } from '@/utils/mutations/authMutations';
 import WebView from 'react-native-webview';
+import { checkBvnStatus } from '@/utils/queries/accountQueries';
 
 type imageType = {
   name: string;
@@ -151,6 +152,23 @@ const FillYourProfile = () => {
       console.log(data);
     },
   });
+
+  const { data: bvnStatus, refetch } = useQuery({
+    queryKey: ['bvnConsentStatus'],
+    queryFn: () => checkBvnStatus(token),
+    // refetchInterval: 1000,
+    refetchInterval: (data) => {
+      // return 1000;
+      // console.log(data);
+      if (data.state.data?.status == 'active') {
+        console.log('activated');
+        return false;
+      } else {
+        console.log('pending');
+        return 1000;
+      }
+    },
+  });
   //handle go to bvn consent
   const handleGoToBVNConsent = async () => {
     //naivgate to the URL received for consent page
@@ -158,6 +176,16 @@ const FillYourProfile = () => {
     router.push('/(tabs)');
     // navigate('')
   };
+  // console.log(bvnStatus);
+  // console.log(token);
+  // refetch();
+  useEffect(() => {
+    console.log(bvnStatus);
+    if (bvnStatus?.status == 'active') {
+      console.log('accepted');
+      router.push('/login');
+    }
+  }, [bvnStatus]);
 
   const handleGenerateLink = async () => {
     console.log('generating link');
@@ -176,7 +204,10 @@ const FillYourProfile = () => {
       console.log('event listener being resigtered');
       //binding of channel
       channel.onEvent((event: PusherEvent) => {
-        if (event.userId === 'account.released') {
+        if (
+          event.eventName === 'account.released' ||
+          event.userId === 'account-released'
+        ) {
           console.log('account released');
           // setModalVisible(false);
           setWebView({
@@ -569,6 +600,7 @@ const FillYourProfile = () => {
         /> */}
             <Button
               title={isPending ? 'Submitting...' : 'Submit'}
+              isLoading={isPending}
               filled
               disabled={isPending}
               style={styles.continueButton}
@@ -593,16 +625,25 @@ const FillYourProfile = () => {
           title="Generating your link requires your BVN consent. Please click below to get your bvn consent link"
         />
         {webView.isVisible && (
-          <WebView
-            source={{ uri: webView.url }}
+          <View
             style={{
+              position: 'relative',
               flex: 1,
-              zIndex: 9999,
-              position: 'absolute',
               width: '100%',
               height: '100%',
             }}
-          />
+          >
+            <WebView
+              source={{ uri: webView.url }}
+              style={{
+                flex: 1,
+                zIndex: 9999,
+                position: 'absolute',
+                width: '100%',
+                height: '100%',
+              }}
+            />
+          </View>
         )}
       </SafeAreaView>
     </>

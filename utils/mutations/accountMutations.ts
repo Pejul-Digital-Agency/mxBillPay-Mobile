@@ -49,6 +49,21 @@ export const updatePassword = async ({
   );
 };
 
+export const updateProfile = async ({
+  data,
+  token,
+}: {
+  data: FormData;
+  token: string;
+}): Promise<IUpdateProfileResponse> => {
+  return await apiCall(
+    API_ENDPOINTS.ACCOUNT_MANAGEMENT.UpdateProfile,
+    'POST',
+    data,
+    token
+  );
+};
+
 // export const updateEmail = async({})
 export const validateCustomer = async ({
   data,
@@ -94,3 +109,39 @@ interface IUpdatePassword {
   password: string;
   confirmPassword: string;
 }
+
+interface IUpdateProfileResponse {
+  data: {
+    accountBalance: string;
+    accountId: string;
+    account_number: string;
+    account_type: string;
+    bvn: string;
+    client: string;
+    clientId: string;
+    created_at: string; // ISO date string
+    firstName: string;
+    gender: string;
+    id: number;
+    lastName: string;
+    nickName: string | null;
+    occupation: string | null;
+    phone: string;
+    profile_picture: string;
+    savingsProductName: string;
+    status: string;
+    updated_at: string; // ISO date string
+    user_id: number;
+  };
+  message: string;
+}
+
+// interface IUpdateProfileRequest {
+//   firstName?: string;
+//   lastName?: string;
+//   phone?: string;
+//   gender?: string | null;
+//   occupation?: string;
+//   dob?: string; // Date in ISO format (e.g., "1990-01-01")
+//   profilePicture?: string | null;
+// }

@@ -11,8 +11,8 @@ import { Image } from 'expo-image';
 import { useNavigation } from 'expo-router';
 
 type Nav = {
-  navigate: (value: string) => void
-}
+  navigate: (value: string) => void;
+};
 
 // Settings for security
 const SettingsSecurity = () => {
@@ -38,8 +38,10 @@ const SettingsSecurity = () => {
     <SafeAreaView style={[styles.area, { backgroundColor: colors.background }]}>
       <View style={[styles.container, { backgroundColor: colors.background }]}>
         <Header title="Security" />
-        <ScrollView style={styles.scrollView}
-          showsVerticalScrollIndicator={false}>
+        <ScrollView
+          style={styles.scrollView}
+          showsVerticalScrollIndicator={false}
+        >
           <GlobalSettingsItem
             title="Remember me"
             isNotificationEnabled={isRememberMeEnabled}
@@ -55,13 +57,23 @@ const SettingsSecurity = () => {
             isNotificationEnabled={isBiometricIDEnabled}
             toggleNotificationEnabled={toggleBiometricID}
           />
-          
+
           <TouchableOpacity style={styles.view}>
-            <Text style={[styles.viewLeft, { color: dark ? COLORS.white : COLORS.greyscale900 }]}>Google Authenticator</Text>
+            <Text
+              style={[
+                styles.viewLeft,
+                { color: dark ? COLORS.white : COLORS.greyscale900 },
+              ]}
+            >
+              Google Authenticator
+            </Text>
             <Image
               source={icons.arrowRight}
-              contentFit='contain'
-              style={[styles.arrowRight, { tintColor: dark ? COLORS.primary : COLORS.greyscale900 }]}
+              contentFit="contain"
+              style={[
+                styles.arrowRight,
+                { tintColor: dark ? COLORS.primary : COLORS.greyscale900 },
+              ]}
             />
           </TouchableOpacity>
 
@@ -71,10 +83,12 @@ const SettingsSecurity = () => {
               backgroundColor: dark ? COLORS.dark3 : COLORS.tansparentPrimary,
               borderRadius: 32,
               borderColor: dark ? COLORS.dark3 : COLORS.tansparentPrimary,
-              marginTop: 22
+              marginTop: 22,
             }}
             textColor={dark ? COLORS.white : COLORS.primary}
-            onPress={() => { navigate("changepin") }}
+            onPress={() => {
+              navigate('changepin');
+            }}
           />
           <Button
             title="Change Password"
@@ -82,10 +96,12 @@ const SettingsSecurity = () => {
               backgroundColor: dark ? COLORS.dark3 : COLORS.tansparentPrimary,
               borderRadius: 32,
               borderColor: dark ? COLORS.dark3 : COLORS.tansparentPrimary,
-              marginTop: 22
+              marginTop: 22,
             }}
             textColor={dark ? COLORS.white : COLORS.primary}
-            onPress={() => { navigate("changepassword") }}
+            onPress={() => {
+              navigate('changepassword');
+            }}
           />
           <Button
             title="Change Email"
@@ -93,52 +109,54 @@ const SettingsSecurity = () => {
               backgroundColor: dark ? COLORS.dark3 : COLORS.tansparentPrimary,
               borderRadius: 32,
               borderColor: dark ? COLORS.dark3 : COLORS.tansparentPrimary,
-              marginTop: 22
+              marginTop: 22,
             }}
             textColor={dark ? COLORS.white : COLORS.primary}
-            onPress={() => { navigate("changeemail") }}
+            onPress={() => {
+              navigate('changeemail');
+            }}
           />
         </ScrollView>
       </View>
     </SafeAreaView>
-  )
+  );
 };
 
 const styles = StyleSheet.create({
   area: {
     flex: 1,
-    backgroundColor: COLORS.white
+    backgroundColor: COLORS.white,
   },
   container: {
     flex: 1,
     backgroundColor: COLORS.white,
-    padding: 16
+    padding: 16,
   },
   scrollView: {
-    marginVertical: 22
+    marginVertical: 22,
   },
   arrowRight: {
     height: 24,
     width: 24,
-    tintColor: COLORS.greyscale900
+    tintColor: COLORS.greyscale900,
   },
   view: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginVertical: 16
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginVertical: 16,
   },
   viewLeft: {
     fontSize: 18,
-    fontFamily: "semiBold",
+    fontFamily: 'semiBold',
     color: COLORS.greyscale900,
-    marginRight: 8
+    marginRight: 8,
   },
   button: {
     backgroundColor: COLORS.tansparentPrimary,
     borderRadius: 32,
     borderColor: COLORS.tansparentPrimary,
-    marginTop: 22
-  }
-})
+    marginTop: 22,
+  },
+});
 
-export default SettingsSecurity
+export default SettingsSecurity;

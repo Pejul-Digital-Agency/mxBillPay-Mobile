@@ -10,9 +10,10 @@ const API_ENDPOINTS = {
     ForgotPassword: API_DOMAIN + '/auth/forget-password',
     VerifyPasswordOtp: API_DOMAIN + '/auth/reset-password-otp-verification',
     ResetPassword: API_DOMAIN + '/auth/reset-password',
+    CheckBvnStatus: API_DOMAIN + '/check-user-status',
   },
   ACCOUNT_MANAGEMENT: {
-    GetUserProfileData: API_DOMAIN + '/profile-detail',
+    GetUserProfileData: API_DOMAIN + '/edit-profile-details',
     RequestBvnConsent: API_DOMAIN + '/accounts/bvn-consent',
     CreateIndividualAccount: API_DOMAIN + '/accounts/individual',
     CreateCoorporateAccount: API_DOMAIN + '/accounts/coorporate',
@@ -23,6 +24,7 @@ const API_ENDPOINTS = {
     GetNotifications: API_DOMAIN + '/unread-notifications',
     GetBillPaymentHistory: API_DOMAIN + '/get-billpayments',
     GetTransferHistory: API_DOMAIN + '/get-transfer',
+    UpdateProfile: API_DOMAIN + '/update-profile',
   },
   BILL_MANAGEMENT: {
     GetBillerCategories: API_DOMAIN + '/biller-categories-fetch',
