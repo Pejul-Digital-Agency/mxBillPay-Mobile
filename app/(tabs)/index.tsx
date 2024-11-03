@@ -21,19 +21,15 @@ import { router, useNavigation } from 'expo-router';
 import SubHeaderItem from '@/components/SubHeaderItem';
 import { invoiceItems, services } from '@/data';
 import Category from '@/components/Category';
-import { useQueries, useQuery } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import {
   getBanks,
   getBillerCategories,
   getBillerItems,
+  IBillerCategory,
 } from '@/utils/queries/billPayment';
 import Loader from '../loader';
 import { useAppSelector } from '@/store/slices/authSlice';
-import { IBillerCategory } from '@/utils/queries/billPayment';
-import {
-  getUserProfile,
-  IUserProfileData,
-} from '@/utils/queries/accountQueries';
 
 type Nav = {
   navigate: (value: string) => void;
@@ -41,7 +37,8 @@ type Nav = {
 
 const HomeScreen = () => {
   const { navigate, setParams } = useNavigation<NavigationProp<any>>();
-  const [categoryId, setCategoryId] = React.useState('');
+  const [selectedCategory, setSelectedCategory] =
+    React.useState<IBillerCategory | null>(null);
   const [isSelectedBankPayment, setIsSelectedBankPayment] =
     React.useState(false);
   const { token, userProfile } = useAppSelector((state) => state.auth);
@@ -60,13 +57,13 @@ const HomeScreen = () => {
     isLoading: isPendingItems,
     error: errorItems,
   } = useQuery({
-    queryKey: ['billCategories', categoryId],
+    queryKey: ['billCategories', selectedCategory?.category],
     queryFn: () =>
       getBillerItems({
-        categoryId: categoryId,
+        categoryId: selectedCategory?.id.toString() as string,
         token,
       }),
-    enabled: categoryId != '',
+    enabled: selectedCategory != null,
   });
   const {
     data: banksData,
@@ -115,12 +112,15 @@ const HomeScreen = () => {
     }
   }, [banksData]);
 
-  const handleClickCategory = (id: string) => {
-    if (categoryId == id && billerItemsData?.data) {
-      navigate('customcateogorypage', { billerItems: billerItemsData?.data });
+  const handleClickCategory = (category: IBillerCategory) => {
+    if (selectedCategory == category && billerItemsData?.data) {
+      navigate('customcateogorypage', {
+        billerCategory: selectedCategory,
+        billerItems: billerItemsData?.data,
+      });
       return;
     }
-    setCategoryId(id);
+    setSelectedCategory(category);
   };
 
   const handleNavigateToBankTransfer = () => {
@@ -301,7 +301,7 @@ const HomeScreen = () => {
                 backgroundColor={
                   dark ? COLORS.greyScale800 : COLORS.grayscale100
                 }
-                onPress={() => handleClickCategory(item.id.toString())}
+                onPress={() => handleClickCategory(item)}
               />
             )}
           />

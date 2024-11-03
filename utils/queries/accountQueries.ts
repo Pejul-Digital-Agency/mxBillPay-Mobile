@@ -32,6 +32,17 @@ export const markAllRead=async(token:string)=>{
   );
 }
 
+export const checkBvnStatus = async (
+  token: string
+): Promise<{ status: 'active' | 'pending' }> => {
+  return await apiCall(
+    API_ENDPOINTS.AUTH.CheckBvnStatus,
+    'GET',
+    undefined,
+    token
+  );
+};
+
 export const getBillPaymentHistory = async (
   token: string
 ): Promise<IBillTransactionResponse> => {
@@ -59,28 +70,38 @@ interface IUserProfileResponse {
 }
 
 export interface IUserProfileData {
-  id: number;
-  user_id: number;
-  account_number: string;
-  profile_picture: string;
-  account_type: string;
-  status: string;
-  bvn: string;
-  created_at: string;
-  updated_at: string;
   firstName: string;
   lastName: string;
   phone: string;
-  accountBalance: string;
-  accountId: string;
-  client: string;
-  clientId: string;
-  savingsProductName: string;
-  nickName: string | null;
+  profilPicture: string | null;
   gender: string | null;
   occupation: string | null;
-  user: User;
+  dob: string | null;
+  email: string;
 }
+// export interface IUserProfileData {
+//   id: number;
+//   user_id: number;
+//   account_number: string;
+//   profile_picture: string;
+//   account_type: string;
+//   status: string;
+//   bvn: string;
+//   created_at: string;
+//   updated_at: string;
+//   firstName: string;
+//   lastName: string;
+//   phone: string;
+//   accountBalance: string;
+//   accountId: string;
+//   client: string;
+//   clientId: string;
+//   savingsProductName: string;
+//   nickName: string | null;
+//   gender: string | null;
+//   occupation: string | null;
+//   user: User;
+// }
 
 interface User {
   id: number;

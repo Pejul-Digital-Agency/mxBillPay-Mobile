@@ -19,6 +19,7 @@ import { useQuery } from '@tanstack/react-query';
 import {
   getBillerItemDetails,
   getBillerItems,
+  IBillerCategory,
 } from '@/utils/queries/billPayment';
 import { NavigationProp, RouteProp, useRoute } from '@react-navigation/native';
 import Loader from './loader';
@@ -34,9 +35,13 @@ type Nav = {
 };
 const CustomCategoryPage = () => {
   const route = useRoute<RouteProp<any>>();
-  if (!route.params) return router.push('/(tabs)');
+  if (!route.params || Object.keys(route.params).length == 0)
+    return router.push('/(tabs)');
   const { token } = useAppSelector((state) => state.auth);
-  const { billerItems }: { billerItems: IBillerItemsList } =
+  const {
+    billerItems,
+    billerCategory,
+  }: { billerCategory: IBillerCategory; billerItems: IBillerItemsList } =
     route.params as any;
   // if (!params) {
   //   return router.push('/(tabs)');
