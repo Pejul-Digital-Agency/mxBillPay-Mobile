@@ -1,5 +1,11 @@
 import React, { useState, FC } from 'react';
-import { View, Text, StyleSheet, TextInput, TextInputProps } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TextInput,
+  TextInputProps,
+} from 'react-native';
 import { COLORS, SIZES } from '../constants';
 import { useTheme } from '../theme/ThemeProvider';
 import { Image } from 'expo-image';
@@ -7,7 +13,7 @@ import { Image } from 'expo-image';
 interface InputProps extends TextInputProps {
   id: string;
   icon?: string;
-  errorText?: string[];
+  errorText?: string;
   onInputChanged: (id: string, text: string) => void;
 }
 
@@ -33,8 +39,16 @@ const Input: FC<InputProps> = (props) => {
         style={[
           styles.inputContainer,
           {
-            borderColor: isFocused ? COLORS.primary : dark ? COLORS.dark2 : COLORS.greyscale500,
-            backgroundColor: isFocused ? COLORS.tansparentPrimary : dark ? COLORS.dark2 : COLORS.greyscale500,
+            borderColor: isFocused
+              ? COLORS.primary
+              : dark
+              ? COLORS.dark2
+              : COLORS.greyscale500,
+            backgroundColor: isFocused
+              ? COLORS.tansparentPrimary
+              : dark
+              ? COLORS.dark2
+              : COLORS.greyscale500,
           },
         ]}
       >
@@ -60,7 +74,7 @@ const Input: FC<InputProps> = (props) => {
           autoCapitalize="none"
         />
       </View>
-      {props.errorText && (
+      {isFocused && props.errorText && (
         <View style={styles.errorContainer}>
           <Text style={styles.errorText}>{props.errorText}</Text>
         </View>

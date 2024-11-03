@@ -19,10 +19,30 @@ import Checkbox from 'expo-checkbox';
 import Button from '../components/Button';
 import { useTheme } from '../theme/ThemeProvider';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
+import { Keyboard } from 'react-native';
+import { useMutation } from '@tanstack/react-query';
+import { updatePassword } from '@/utils/mutations/accountMutations';
+import { ApiError } from '@/utils/customApiCall';
+import { showErrorCSS } from 'react-native-svg/lib/typescript/deprecated';
+import showToast from '@/utils/showToast';
+import { useAppSelector } from '@/store/slices/authSlice';
 
 const isTestMode = true;
+interface InitialState {
+  inputValues: {
+    password: string;
+    newPassword: string;
+    confirmNewPassword: string;
+  };
+  inputValidities: {
+    password: boolean;
+    newPassword: boolean;
+    confirmNewPassword: boolean;
+  };
+  formIsValid: boolean;
+}
 
-const initialState = {
+const initialState: InitialState = {
   inputValues: {
     password: isTestMode ? '**********' : '',
     newPassword: isTestMode ? '**********' : '',
@@ -39,11 +59,28 @@ const initialState = {
 const ChangePassword = () => {
   const navigation = useNavigation<NavigationProp<any>>();
   const [formState, dispatchFormState] = useReducer(reducer, initialState);
-  const [isLoading, setIsLoading] = useState(false);
+  const [keyboardVisible, setKeyboardVisible] = useState(false);
+  const [isPasswordsEqual, setIsPasswordsEqual] = useState(true);
   const [error, setError] = useState(null);
-  const [isChecked, setChecked] = useState(false);
+  const { token } = useAppSelector((state) => state.auth);
+  // const [isChecked, setChecked] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const { colors, dark } = useTheme();
+  const { mutate, isPending } = useMutation({
+    mutationKey: ['changePassword'],
+    mutationFn: updatePassword,
+    onSuccess: (data) => {
+      console.log(data);
+      setModalVisible(true);
+    },
+    onError: (error: ApiError) => {
+      console.log(error);
+      showToast({
+        type: 'error',
+        text1: error.message,
+      });
+    },
+  });
 
   const inputChangedHandler = useCallback(
     (inputId: string, inputValue: string) => {
@@ -57,11 +94,74 @@ const ChangePassword = () => {
     [dispatchFormState]
   );
 
+  const handleChangePassword = () => {
+    if (!formState.formIsValid) {
+      console.log('Password changed successfully');
+      showToast({
+        type: 'error',
+        text1: 'Please fill in all the required fields with valid data',
+      });
+      return;
+    }
+    if (!isPasswordsEqual) {
+      showToast({
+        type: 'error',
+        text1: 'Both passwords should match',
+      });
+      return;
+    }
+    const reqData = {
+      oldPassword: formState.inputValues.password,
+      password: formState.inputValues.newPassword,
+      confirmPassword: formState.inputValues.confirmNewPassword,
+    };
+    mutate({
+      token,
+      data: reqData,
+    });
+  };
+
+  useEffect(() => {
+    console.log(formState.inputValidities['newPassword']);
+    if (
+      formState.inputValues.newPassword !==
+      formState.inputValues.confirmNewPassword
+    ) {
+      setIsPasswordsEqual(false);
+    } else {
+      setIsPasswordsEqual(true);
+    }
+  }, [
+    formState.inputValues.newPassword,
+    formState.inputValues.confirmNewPassword,
+  ]);
+
   useEffect(() => {
     if (error) {
       Alert.alert('An error occured', error);
     }
   }, [error]);
+
+  useEffect(() => {
+    const keyboardDidShowListener = Keyboard.addListener(
+      'keyboardDidShow',
+      () => {
+        setKeyboardVisible(true); // Keyboard is open
+      }
+    );
+    const keyboardDidHideListener = Keyboard.addListener(
+      'keyboardDidHide',
+      () => {
+        setKeyboardVisible(false); // Keyboard is closed
+      }
+    );
+
+    // Cleanup the listeners on unmount
+    return () => {
+      keyboardDidHideListener.remove();
+      keyboardDidShowListener.remove();
+    };
+  }, []);
 
   // render modal
   const renderModal = () => {
@@ -157,7 +257,13 @@ const ChangePassword = () => {
           />
           <Input
             onInputChanged={inputChangedHandler}
-            errorText={formState.inputValidities['confirmNewPassword']}
+            errorText={
+              formState.inputValues['confirmNewPassword'].trim() == ''
+                ? 'confirm password is required'
+                : !isPasswordsEqual
+                ? 'both passwords should match'
+                : ''
+            }
             autoCapitalize="none"
             id="confirmNewPassword"
             placeholder="Confirm New Password"
@@ -165,7 +271,7 @@ const ChangePassword = () => {
             icon={icons.padlock}
             secureTextEntry={true}
           />
-          <View style={styles.checkBoxContainer}>
+          {/* <View style={styles.checkBoxContainer}>
             <View style={{ flexDirection: 'row' }}>
               <Checkbox
                 style={styles.checkbox}
@@ -186,15 +292,18 @@ const ChangePassword = () => {
                 </Text>
               </View>
             </View>
-          </View>
+          </View> */}
           <View></View>
         </ScrollView>
-        <Button
-          title="Continue"
-          filled
-          onPress={() => setModalVisible(true)}
-          style={styles.button}
-        />
+        {!keyboardVisible && (
+          <Button
+            title={isPending ? 'Updating...' : 'Update Password'}
+            disabled={isPending}
+            filled
+            onPress={handleChangePassword}
+            style={styles.button}
+          />
+        )}
         {renderModal()}
       </View>
     </SafeAreaView>

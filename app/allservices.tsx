@@ -66,20 +66,17 @@ const AllServices = () => {
 
     useEffect(() => {
         if (billerItemsData?.data) {
-            // console.log('index page', billerItemsData?.data);
-            // setParams({
-            //   billerItems: billerItemsData?.data,
-            // });
+    
             navigate('customcateogorypage', { billerItems: billerItemsData?.data });
         }
     }, [billerItemsData]);
 
-    useEffect(() => {
-        if (banksData?.data) {
-            console.log('index page', banksData?.data);
-            navigate('transfertobankselectbank', { data: banksData?.data });
-        }
-    }, [banksData]);
+    // useEffect(() => {
+    //     if (banksData?.data) {
+    //         console.log('index page', banksData?.data);
+    //         // navigate('transfertobankselectbank', { data: banksData?.data });
+    //     }
+    // }, [banksData]);
 
     const handleClickCategory = (id: string) => {
         if (categoryId == id && billerItemsData?.data) {

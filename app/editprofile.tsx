@@ -16,6 +16,7 @@ import { useTheme } from '../theme/ThemeProvider';
 import { Image } from 'expo-image';
 import { useNavigation } from 'expo-router';
 import { NavigationProp } from '@react-navigation/native';
+import { useAppSelector } from '@/store/slices/authSlice';
 
 interface Item {
   flag: string;
@@ -56,6 +57,7 @@ const EditProfile = () => {
   const [openStartDatePicker, setOpenStartDatePicker] = useState(false);
   const [selectedGender, setSelectedGender] = useState('');
   const { dark } = useTheme();
+  const { token, userProfile } = useAppSelector((state) => state.auth);
 
   const genderOptions = [
     { label: 'Male', value: 'male' },
@@ -216,20 +218,23 @@ const EditProfile = () => {
           <View>
             <Input
               id="fullName"
+              value={userProfile?.firstName}
               onInputChanged={inputChangedHandler}
               errorText={formState.inputValidities['fullName']}
               placeholder="Full Name"
               placeholderTextColor={dark ? COLORS.grayTie : COLORS.black}
             />
             <Input
-              id="nickname"
+              id="lastName"
+              value={userProfile?.lastName}
               onInputChanged={inputChangedHandler}
-              errorText={formState.inputValidities['nickname']}
-              placeholder="Nickname"
+              errorText={formState.inputValidities['lastName']}
+              placeholder="Last Name"
               placeholderTextColor={dark ? COLORS.grayTie : COLORS.black}
             />
             <Input
               id="email"
+              value={userProfile?.email}
               onInputChanged={inputChangedHandler}
               errorText={formState.inputValidities['email']}
               placeholder="Email"

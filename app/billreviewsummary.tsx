@@ -20,6 +20,7 @@ import Input from '@/components/Input';
 import { reducer } from '@/utils/reducers/formReducers';
 import { validateInput } from '@/utils/actions/formActions';
 import showToast from '@/utils/showToast';
+import { billServices } from '@/data';
 
 interface InputValues {
   customerId: string;
@@ -60,6 +61,8 @@ const BillReviewSummary = () => {
   const [modalOpen, setModalOpen] = React.useState(false);
   const [value, setValue] = React.useState('');
   const { userId } = useAppSelector((state) => state.auth);
+  const [errorModal, setErrorModal] = React.useState(false);
+  const [errorModalText, setErrorModalText] = React.useState('');
   if (!route.params) return navigate('/(tabs)');
   const { billerItemDetails }: { billerItemDetails: IBillerItemDetails } =
     route.params as any;
@@ -71,6 +74,8 @@ const BillReviewSummary = () => {
     },
     onError: (error) => {
       console.log(error.message);
+      setErrorModalText(error.message);
+      setErrorModal(true);
     },
   });
   const { mutate: payBill, isPending: isBillPaying } = useMutation({
@@ -81,6 +86,7 @@ const BillReviewSummary = () => {
       navigate('paybillssuccessful');
     },
     onError: (error) => {
+      console.log(errorModalText);
       console.log(error.message);
     },
   });
@@ -106,7 +112,9 @@ const BillReviewSummary = () => {
       return;
     }
     const reqData = {
-      amount: billerItemDetails?.itemFee,
+      amount: billerItemDetails?.itemFee !== null && billerItemDetails?.itemFee !== "0.00"
+      ? billerItemDetails.itemFee
+      : formState.inputValues.amount,
       billerId: billerItemDetails?.billerId,
       billerItemId: billerItemDetails?.id.toString(),
       customerId: formState.inputValues.customerId,
@@ -120,8 +128,18 @@ const BillReviewSummary = () => {
       token,
     });
   };
+  const handleErrorModal = () => {
+    setErrorModal(false);
+  };
 
   const handleValidateCustomer = () => {
+    if (!formState.formIsValid) {
+      showToast({
+        type: 'error',
+        text1: 'Fill all fields with valid data',
+      });
+      return;
+    }
     validate({
       data: {
         customerId: formState.inputValues.customerId,
@@ -147,18 +165,21 @@ const BillReviewSummary = () => {
           disabled={isBillPaying}
           onPress={handlePaymentClick}
         />
+      }{
+        <CustomModal
+          btnText={'Error'}
+          modalVisible={errorModal}
+          setModalVisible={setErrorModal}
+          title={errorModalText}
+          disabled={isBillPaying}
+          onPress={handleErrorModal}
+        />
       }
+
       <View style={[styles.container, { backgroundColor: colors.background }]}>
-        <Header title="Electricity" />
+        {/* <Header title={billerItemDetails} /> */}
         {/* <ScrollView showsVerticalScrollIndicator={false}> */}
         <View style={styles.viewViewContainer}>
-          {/* <View style={styles.iconContainer}>
-              <Image
-                source={icons.electricity}
-                contentFit="contain"
-                style={styles.icon}
-              />
-            </View> */}
           <Text
             style={[
               styles.title,
@@ -248,7 +269,7 @@ const BillReviewSummary = () => {
               {billerItemDetails?.itemFee}
             </Text>
           </View>
-          <View style={styles.view}>
+          {/* <View style={styles.view}>
             <Text
               style={[
                 styles.viewLeft,
@@ -291,7 +312,7 @@ const BillReviewSummary = () => {
             >
               {billerItemDetails?.percentage_commission}
             </Text>
-          </View>
+          </View> */}
           <View
             style={[
               styles.separateLine,
@@ -342,6 +363,19 @@ const BillReviewSummary = () => {
           icon={icons.mobile}
           keyboardType="number-pad"
         />
+        <Input
+          id="amount"
+          value={billerItemDetails?.itemFee !== null && billerItemDetails?.itemFee !== "0.00"
+            ? billerItemDetails.itemFee
+            : formState.inputValues.amount}
+          onInputChanged={inputChangedHandler}
+          errorText={formState.inputValidities['amount']}
+          placeholder="Amount"
+          editable={billerItemDetails?.itemFee === null || billerItemDetails?.itemFee === "0.00"}
+          placeholderTextColor={dark ? COLORS.grayTie : COLORS.black}
+          icon={icons.wallet}
+          keyboardType="number-pad"
+        />
 
         <Button
           title={isValidating ? 'Verifying...' : 'Confirm & Verify Bill'}
@@ -349,7 +383,7 @@ const BillReviewSummary = () => {
           disabled={isValidating}
           style={styles.continueBtn}
           onPress={handleValidateCustomer}
-          // onPress={() => navigate('paybillssuccessful')}
+        // onPress={() => navigate('paybillssuccessful')}
         />
         {/* </ScrollView> */}
       </View>
@@ -382,7 +416,7 @@ const styles = StyleSheet.create({
   },
   viewViewContainer: {
     alignItems: 'center',
-    marginTop: 22,
+    marginTop: 5,
   },
   title: {
     fontSize: 24,

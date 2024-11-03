@@ -16,8 +16,6 @@ interface BankItemProps {
 const BankItem: React.FC<BankItemProps> = ({
   icon,
   bankName,
-  // type,
-  // lastCardNumber,
   selected,
   onSelect,
 }) => {
@@ -47,6 +45,7 @@ const BankItem: React.FC<BankItemProps> = ({
                   color: dark ? COLORS.white : COLORS.greyscale900,
                 },
               ]}
+              // numberOfLines={2}
             >
               {bankName}
             </Text>
@@ -82,12 +81,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   icon: {
-    height: 60,
-    width: 60,
+    height: 50,
+    width: 50,
     marginRight: 16,
+    borderRadius: 50,
   },
   bankName: {
-    fontSize: 20,
+    fontSize: 18,
     fontFamily: 'bold',
     color: COLORS.greyscale900,
     marginBottom: 6,

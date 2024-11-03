@@ -45,7 +45,7 @@ const SettingsSecurity = () => {
             isNotificationEnabled={isRememberMeEnabled}
             toggleNotificationEnabled={toggleRememberMe}
           />
-          <GlobalSettingsItem
+          {/* <GlobalSettingsItem
             title="Face ID"
             isNotificationEnabled={isFaceIDEnabled}
             toggleNotificationEnabled={toggleFaceID}
@@ -63,9 +63,9 @@ const SettingsSecurity = () => {
               contentFit='contain'
               style={[styles.arrowRight, { tintColor: dark ? COLORS.primary : COLORS.greyscale900 }]}
             />
-          </TouchableOpacity>
+          </TouchableOpacity> */}
 
-          <Button
+          {/* <Button
             title="Change PIN"
             style={{
               backgroundColor: dark ? COLORS.dark3 : COLORS.tansparentPrimary,
@@ -75,7 +75,7 @@ const SettingsSecurity = () => {
             }}
             textColor={dark ? COLORS.white : COLORS.primary}
             onPress={() => { navigate("changepin") }}
-          />
+          /> */}
           <Button
             title="Change Password"
             style={{

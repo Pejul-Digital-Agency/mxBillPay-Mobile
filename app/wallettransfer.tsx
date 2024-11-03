@@ -143,7 +143,7 @@ const WalletTransfer = () => {
               height: 80,
               width: 80,
               borderRadius: 50,
-              tintColor: COLORS.primary,
+ 
             }}
           />
           {/* <Text

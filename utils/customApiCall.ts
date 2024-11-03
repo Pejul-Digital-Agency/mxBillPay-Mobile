@@ -56,12 +56,12 @@ export const apiCall = async (
 
     return response?.data;
   } catch (error) {
-    console.log(error);
+    // console.log(error);
     if (axios.isAxiosError(error) && error.response) {
       throw new ApiError(
         error.response.data,
-        error.response.data?.message || 'Something Went wrong',
         error.response.data?.status || error.response.statusText,
+        error.response.data?.message || 'Something Went wrong',
         error.response.status
       );
     } else {

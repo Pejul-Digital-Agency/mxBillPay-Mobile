@@ -34,6 +34,22 @@ export const createCooperateAccount = async ({
   );
 };
 
+export const updatePassword = async ({
+  data,
+  token,
+}: {
+  data: IUpdatePassword;
+  token: string;
+}) => {
+  return await apiCall(
+    API_ENDPOINTS.ACCOUNT_MANAGEMENT.UpdatePassword,
+    'POST',
+    data,
+    token
+  );
+};
+
+// export const updateEmail = async({})
 export const validateCustomer = async ({
   data,
   token,
@@ -71,4 +87,10 @@ export interface IPayBill {
   billerItemId: string;
   phoneNumber: string;
   // paymentMethod: string;
+}
+
+interface IUpdatePassword {
+  oldPassword: string;
+  password: string;
+  confirmPassword: string;
 }

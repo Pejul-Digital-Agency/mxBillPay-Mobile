@@ -16,6 +16,7 @@ import {
 } from '@/utils/mutations/paymentMutations';
 import { useMutation } from '@tanstack/react-query';
 import { payBillFn } from '@/utils/mutations/accountMutations';
+import { getFullName } from '@/utils/customuntilities';
 import { ApiError } from '@/utils/customApiCall';
 import showToast from '@/utils/showToast';
 import { useAppSelector } from '@/store/slices/authSlice';
@@ -29,6 +30,7 @@ const SendMoneyReviewSummary = () => {
     receipientDetails: IRecepeintDetails;
     amount: string;
   };
+  //   console.log(receipientDetails);
   const { colors, dark } = useTheme();
   const [remarks, setRemarks] = useState({
     label: 'for goods and services',
@@ -40,10 +42,18 @@ const SendMoneyReviewSummary = () => {
     mutationFn: transferMoney,
     onSuccess: (data) => {
       console.log(data);
-      navigate('sendmoneysuccessful');
+      navigate('sendmoneysuccessful', {
+        recepientName: getFullName(
+          receipientDetails?.firstName,
+          receipientDetails?.lastName,
+        ),
+        amount: amount,
+      });
     },
-    onError: (error: { data: ApiError }) => {
-      console.log(error);
+    onError: (error: ApiError) => {
+      console.log(error.data);
+      //   console.log(error.message);
+      //   console.log(error.statusText);
       showToast({
         type: 'error',
         text1: error.data.message,
@@ -82,8 +92,11 @@ const SendMoneyReviewSummary = () => {
         transferType: 'intra',
         toBvn: receipientDetails?.bvn,
         toClientId: receipientDetails?.clientId,
-        toSavingsId: '1122',
-        toClientName: receipientDetails?.name,
+        toSavingsId: receipientDetails?.account.id,
+        toClientName: getFullName(
+          receipientDetails?.firstName,
+          receipientDetails?.lastName
+        ),
       },
     });
   };
@@ -93,177 +106,180 @@ const SendMoneyReviewSummary = () => {
       {isPending && <Loader />}
       <View style={[styles.container, { backgroundColor: colors.background }]}>
         <Header title="Review Summary" />
-        <ScrollView showsVerticalScrollIndicator={false}>
-          <View style={styles.profileContainer}>
-            <Image
-              //   source={receipientDetails?.profilePicture || images.profile}
-              source={icons.profile}
-              contentFit="contain"
-              style={styles.avatar}
-            />
-            <Text
-              style={[
-                styles.username,
-                { color: dark ? COLORS.white : COLORS.black },
-              ]}
-            >
-              {receipientDetails?.name}
-            </Text>
-            <Text
-              style={[
-                styles.useremail,
-                { color: dark ? COLORS.grayscale200 : COLORS.grayscale700 },
-              ]}
-            >
-              christian_dawson@gmail.com
-            </Text>
-            <View
-              style={[
-                styles.viewContainer,
-                {
-                  backgroundColor: dark ? COLORS.dark2 : '#FAFAFA',
-                },
-              ]}
-            >
-              <View style={styles.view}>
-                <Text
-                  style={[
-                    styles.viewLeft,
-                    { color: dark ? COLORS.grayscale400 : COLORS.grayscale700 },
-                  ]}
-                >
-                  Amount (NGN)
-                </Text>
-                <Text
-                  style={[
-                    styles.viewRight,
-                    { color: dark ? COLORS.white : COLORS.greyscale900 },
-                  ]}
-                >
-                  ₦{amount}
-                </Text>
-              </View>
-              <View style={styles.view}>
-                <Text
-                  style={[
-                    styles.viewLeft,
-                    { color: dark ? COLORS.grayscale400 : COLORS.grayscale700 },
-                  ]}
-                >
-                  Tax
-                </Text>
-                <Text
-                  style={[
-                    styles.viewRight,
-                    { color: dark ? COLORS.white : COLORS.greyscale900 },
-                  ]}
-                >
-                  - ₦{'0.00'}
-                </Text>
-              </View>
-              <View
-                style={[
-                  styles.separateLine,
-                  {
-                    backgroundColor: dark
-                      ? COLORS.grayscale700
-                      : COLORS.grayscale200,
-                  },
-                ]}
-              />
-              <View style={styles.view}>
-                <Text
-                  style={[
-                    styles.viewLeft,
-                    { color: dark ? COLORS.grayscale400 : COLORS.grayscale700 },
-                  ]}
-                >
-                  Total
-                </Text>
-                <Text
-                  style={[
-                    styles.viewRight,
-                    { color: dark ? COLORS.white : COLORS.greyscale900 },
-                  ]}
-                >
-                  ${(Number(amount) - 0.0).toFixed(2).toString()}
-                </Text>
-              </View>
-            </View>
-          </View>
-          <Text
-            style={[
-              styles.reviewTitle,
-              {
-                color: dark ? COLORS.white : COLORS.greyscale900,
-              },
-            ]}
-          >
-            Payment Type
-          </Text>
-          <RNPickerSelect
-            placeholder={{
-              label: 'For goods and services',
-              value: 'for goods and services',
-            }}
-            items={paymentOptions}
-            onValueChange={(value) => handlePaymentTypeChange(value)}
-            value={remarks.label}
-            style={{
-              inputIOS: {
-                fontSize: 16,
-                paddingHorizontal: 10,
-                borderRadius: 12,
-                color: COLORS.greyscale600,
-                paddingRight: 30,
-                height: 52,
-                width: SIZES.width - 32,
-                alignItems: 'center',
-                backgroundColor: dark ? COLORS.dark2 : COLORS.greyscale500,
-                fontFamily: 'regular',
-              },
-              inputAndroid: {
-                fontSize: 16,
-                paddingHorizontal: 10,
-                borderRadius: 12,
-                color: COLORS.greyscale600,
-                paddingRight: 30,
-                height: 52,
-                width: SIZES.width - 32,
-                alignItems: 'center',
-                backgroundColor: dark ? COLORS.dark2 : COLORS.greyscale500,
-                fontFamily: 'regular',
-              },
-            }}
+        {/* <ScrollView showsVerticalScrollIndicator={false}> */}
+        <View style={styles.profileContainer}>
+          <Image
+            //   source={receipientDetails?.profilePicture || images.profile}
+            source={receipientDetails?.profilePicture || icons.profile}
+            contentFit="contain"
+            style={styles.avatar}
           />
           <Text
             style={[
-              styles.reviewTitle,
-              {
-                color: dark ? COLORS.white : COLORS.greyscale900,
-              },
+              styles.username,
+              { color: dark ? COLORS.white : COLORS.black },
             ]}
           >
-            Notes
+            {getFullName(
+              receipientDetails?.firstName,
+              receipientDetails?.lastName
+            )}
           </Text>
-          <TextInput
-            placeholder="Add a note (optional)"
-            multiline={true}
-            onChangeText={(value) => {
-              setRemarks((prev) => ({ ...prev, optionalNote: value }));
-            }}
-            placeholderTextColor={
-              dark ? COLORS.grayscale400 : COLORS.greyscale900
-            }
+          <Text
             style={[
-              styles.noteInput,
+              styles.useremail,
+              { color: dark ? COLORS.grayscale200 : COLORS.grayscale700 },
+            ]}
+          >
+            {receipientDetails?.email}
+          </Text>
+          <View
+            style={[
+              styles.viewContainer,
               {
                 backgroundColor: dark ? COLORS.dark2 : '#FAFAFA',
-                color: dark ? COLORS.white : COLORS.greyscale900,
               },
             ]}
-          />
-        </ScrollView>
+          >
+            <View style={styles.view}>
+              <Text
+                style={[
+                  styles.viewLeft,
+                  { color: dark ? COLORS.grayscale400 : COLORS.grayscale700 },
+                ]}
+              >
+                Amount (NGN)
+              </Text>
+              <Text
+                style={[
+                  styles.viewRight,
+                  { color: dark ? COLORS.white : COLORS.greyscale900 },
+                ]}
+              >
+                ₦{amount}
+              </Text>
+            </View>
+            <View style={styles.view}>
+              <Text
+                style={[
+                  styles.viewLeft,
+                  { color: dark ? COLORS.grayscale400 : COLORS.grayscale700 },
+                ]}
+              >
+                Tax
+              </Text>
+              <Text
+                style={[
+                  styles.viewRight,
+                  { color: dark ? COLORS.white : COLORS.greyscale900 },
+                ]}
+              >
+                - ₦{'0.00'}
+              </Text>
+            </View>
+            <View
+              style={[
+                styles.separateLine,
+                {
+                  backgroundColor: dark
+                    ? COLORS.grayscale700
+                    : COLORS.grayscale200,
+                },
+              ]}
+            />
+            <View style={styles.view}>
+              <Text
+                style={[
+                  styles.viewLeft,
+                  { color: dark ? COLORS.grayscale400 : COLORS.grayscale700 },
+                ]}
+              >
+                Total
+              </Text>
+              <Text
+                style={[
+                  styles.viewRight,
+                  { color: dark ? COLORS.white : COLORS.greyscale900 },
+                ]}
+              >
+                ${(Number(amount) - 0.0).toFixed(2).toString()}
+              </Text>
+            </View>
+          </View>
+        </View>
+        <Text
+          style={[
+            styles.reviewTitle,
+            {
+              color: dark ? COLORS.white : COLORS.greyscale900,
+            },
+          ]}
+        >
+          Payment Type
+        </Text>
+        <RNPickerSelect
+          // placeholder={{
+          //   label: 'For goods and services',
+          //   value: 'for goods and services',
+          // }}
+          items={paymentOptions}
+          onValueChange={(value) => handlePaymentTypeChange(value)}
+          value={remarks.label}
+          style={{
+            inputIOS: {
+              fontSize: 16,
+              paddingHorizontal: 10,
+              borderRadius: 12,
+              color: COLORS.greyscale600,
+              paddingRight: 30,
+              height: 52,
+              width: SIZES.width - 32,
+              alignItems: 'center',
+              backgroundColor: dark ? COLORS.dark2 : COLORS.greyscale500,
+              fontFamily: 'regular',
+            },
+            inputAndroid: {
+              fontSize: 16,
+              paddingHorizontal: 10,
+              borderRadius: 12,
+              color: COLORS.greyscale600,
+              paddingRight: 30,
+              height: 52,
+              width: SIZES.width - 32,
+              alignItems: 'center',
+              backgroundColor: dark ? COLORS.dark2 : COLORS.greyscale500,
+              fontFamily: 'regular',
+            },
+          }}
+        />
+        <Text
+          style={[
+            styles.reviewTitle,
+            {
+              color: dark ? COLORS.white : COLORS.greyscale900,
+            },
+          ]}
+        >
+          Notes
+        </Text>
+        <TextInput
+          placeholder="Add a note (optional)"
+          multiline={true}
+          onChangeText={(value) => {
+            setRemarks((prev) => ({ ...prev, optionalNote: value }));
+          }}
+          placeholderTextColor={
+            dark ? COLORS.grayscale400 : COLORS.greyscale900
+          }
+          style={[
+            styles.noteInput,
+            {
+              backgroundColor: dark ? COLORS.dark2 : '#FAFAFA',
+              color: dark ? COLORS.white : COLORS.greyscale900,
+            },
+          ]}
+        />
+        {/* </ScrollView> */}
       </View>
       <View style={styles.bottomContainer}>
         <Button

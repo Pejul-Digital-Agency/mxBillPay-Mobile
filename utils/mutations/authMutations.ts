@@ -23,6 +23,7 @@ export const verifyEmailOTP = async ({
   return await apiCall(API_ENDPOINTS.AUTH.VerfiyEmailOtp, 'POST', data, token);
 };
 
+
 export const verifyPasswordOTP = async (data: {
   otp: string;
   userId: string;

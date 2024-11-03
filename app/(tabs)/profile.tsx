@@ -35,11 +35,11 @@ const Profile = () => {
     return (
       <TouchableOpacity style={styles.headerContainer}>
         <View style={styles.headerLeft}>
-          <Image
+          {/* <Image
             source={images.logo}
             contentFit='contain'
             style={styles.logo}
-          />
+          /> */}
           <Text style={[styles.headerTitle, {
             color: dark ? COLORS.white : COLORS.greyscale900
           }]}>Profile</Text>

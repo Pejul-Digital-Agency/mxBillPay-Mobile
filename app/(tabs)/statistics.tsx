@@ -60,17 +60,17 @@ const Statistics = () => {
     return (
       <View style={styles.headerContainer}>
         <View style={styles.headerLeft}>
-          <Image
+          {/* <Image
             source={images.logo}
             contentFit='contain'
             style={styles.headerLogo}
-          />
+          /> */}
           <Text style={[styles.headerTitle, {
             color: dark ? COLORS.white : COLORS.greyscale900
           }]}>Analytics</Text>
         </View>
         <View style={styles.headerRight}>
-          <TouchableOpacity
+          {/* <TouchableOpacity
             onPress={() => navigate("invoicesettings")}>
             <Image
               source={icons.moreCircle}
@@ -79,7 +79,7 @@ const Statistics = () => {
                 tintColor: dark ? COLORS.secondaryWhite : COLORS.greyscale900
               }]}
             />
-          </TouchableOpacity>
+          </TouchableOpacity> */}
         </View>
       </View>
     )

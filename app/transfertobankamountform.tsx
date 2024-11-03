@@ -66,6 +66,7 @@ const TransferToBankAmountForm = () => {
     mutationFn: getReceipientDetails,
     onSuccess: (data) => {
       if (data?.data) {
+        console.log(data.data);
         navigate('transfertobankreviewsummary', {
           selectedBank,
           receipientDetails: data?.data,
@@ -74,7 +75,7 @@ const TransferToBankAmountForm = () => {
       }
     },
     onError: (error: ApiError) => {
-      console.log(error);
+      console.log(error.data);
       showToast({
         type: 'error',
         text1: error.message,
@@ -119,6 +120,7 @@ const TransferToBankAmountForm = () => {
       bank: selectedBank.code,
       transfer_type: 'inter',
     };
+    console.log(reqData);
 
     mutate({
       data: reqData,
@@ -183,7 +185,7 @@ const TransferToBankAmountForm = () => {
           Enter the amount to transfer
         </Text>
         <TextInput
-          placeholder="$1000"
+          placeholder="₦1000"
           keyboardType="numeric"
           onChangeText={(text) => inputChangedHandler('amount', text)}
           placeholderTextColor={dark ? COLORS.white : COLORS.greyscale900}

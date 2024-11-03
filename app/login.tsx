@@ -105,7 +105,12 @@ const Login = () => {
             userId: data.user_id,
           })
         );
-        router.push('/forgotpasswordmethods');
+        router.push({
+          pathname: '/otpverification',
+          params: {
+            type: 'password',
+          },
+        });
       },
       onError: (error) => {
         console.log(error);
@@ -133,14 +138,22 @@ const Login = () => {
   };
 
   const handleForgotPassword = async () => {
-    if (!formState.inputValidities.email) {
-      return;
-    }
-    mutateForgotPassword({
-      email: formState.inputValues.email as string,
-    });
-  };
+    console.log("Forgot Password Clicked");
+    console.log("Email Validity:", formState.inputValidities.email);
+    console.log("Entered Email:", formState.inputValues.email);
 
+    if (!formState.inputValues.email) {
+        // Show a modal for entering their email
+        console.log("Email is not valid or not provided");
+        // setModalVisible(true);
+        return;
+    }
+
+    // Proceed if email is valid
+    mutateForgotPassword({
+        email: formState.inputValues.email as string,
+    });
+};
   const inputChangedHandler = useCallback(
     (inputId: string, inputValue: string) => {
       const result = validateInput(inputId, inputValue);
@@ -364,6 +377,7 @@ const Login = () => {
             </View>
           )}
         </View>
+        
         {/* <WebView
           source={{ uri: 'https://services.vfdtech.ng/' }}
           style={{
@@ -377,6 +391,7 @@ const Login = () => {
             height: '100%',
           }}
         /> */}
+        
       </SafeAreaView>
     </>
   );
@@ -395,7 +410,8 @@ const styles = StyleSheet.create({
   logo: {
     width: 100,
     height: 100,
-    tintColor: COLORS.primary,
+    // tintColor: COLORS.primary,
+    borderRadius: 50,
   },
   logoContainer: {
     alignItems: 'center',
