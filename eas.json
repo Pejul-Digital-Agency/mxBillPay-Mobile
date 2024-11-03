@@ -23,8 +23,7 @@
     "production": {
       "android": {
         "image": "latest",
-        "buildType": "apk",
-        "resourceClass": "large"
+        "buildType": "apk"
       },
       "ios": {
         "image": "latest"
