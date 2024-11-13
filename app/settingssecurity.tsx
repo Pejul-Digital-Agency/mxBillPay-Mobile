@@ -101,7 +101,7 @@ const SettingsSecurity = () => {
               navigate('changepassword');
             }}
           />
-          <Button
+          {/* <Button
             title="Change Email"
             style={{
               backgroundColor: dark ? COLORS.dark3 : COLORS.tansparentPrimary,
@@ -113,7 +113,7 @@ const SettingsSecurity = () => {
             onPress={() => {
               navigate('changeemail');
             }}
-          />
+          /> */}
         </ScrollView>
       </View>
     </SafeAreaView>

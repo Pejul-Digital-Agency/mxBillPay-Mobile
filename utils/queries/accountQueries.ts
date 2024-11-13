@@ -42,6 +42,16 @@ export const checkBvnStatus = async (
     token
   );
 };
+export const verifyBvnStatus = async (
+  token: string
+): Promise<{ status: 'checked' | 'unchecked' }> => {
+  return await apiCall(
+    API_ENDPOINTS.AUTH.CheckBvnVerified,
+    'GET',
+    undefined,
+    token
+  );
+};
 
 export const getBillPaymentHistory = async (
   token: string
@@ -63,7 +73,19 @@ export const getTransferHistory = async (
     token
   );
 };
-
+export const generateBvnLinkAgain = async ({
+  token,
+}: {
+ 
+  token: string;
+}) => {
+  return await apiCall(
+    API_ENDPOINTS.ACCOUNT_MANAGEMENT.RequestBvnConsent,
+    'POST',
+undefined,
+    token
+  );
+};
 interface IUserProfileResponse {
   status: string;
   data: IUserProfileData;

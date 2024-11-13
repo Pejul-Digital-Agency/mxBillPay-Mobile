@@ -11,6 +11,7 @@ const API_ENDPOINTS = {
     VerifyPasswordOtp: API_DOMAIN + '/auth/reset-password-otp-verification',
     ResetPassword: API_DOMAIN + '/auth/reset-password',
     CheckBvnStatus: API_DOMAIN + '/check-user-status',
+    CheckBvnVerified:API_DOMAIN+'/check-bvn-status'
   },
   ACCOUNT_MANAGEMENT: {
     GetUserProfileData: API_DOMAIN + '/edit-profile-details',

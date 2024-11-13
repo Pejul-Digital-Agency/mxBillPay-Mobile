@@ -136,7 +136,7 @@ const TokenExpiryModal = () => {
       title="Sorry, your session has been expired, please login again to continue."
       onPress={() => {
         setVisible(false);
-        router.push('/login');
+        router.replace('/login'); 
       }}
     />
   );

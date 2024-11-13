@@ -165,13 +165,13 @@ const Login = () => {
   );
 
   // check if hardware supports biometric authentication
-  useEffect(() => {
-    const checkBiometric = async () => {
-      const check = await LocalAuthentication.hasHardwareAsync();
-      setIsBiometricAvailable(check);
-    };
-    checkBiometric();
-  }, []);
+  // useEffect(() => {
+  //   const checkBiometric = async () => {
+  //     const check = await LocalAuthentication.hasHardwareAsync();
+  //     setIsBiometricAvailable(check);
+  //   };
+  //   checkBiometric();
+  // }, []);
 
   //control keyboard opening
   useEffect(() => {

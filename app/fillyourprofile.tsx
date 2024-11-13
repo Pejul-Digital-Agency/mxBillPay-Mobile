@@ -29,13 +29,13 @@ import { router, useNavigation } from 'expo-router';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { createIndividualAccount } from '@/utils/mutations/accountMutations';
 import showToast from '@/utils/showToast';
-import { useAppSelector } from '@/store/slices/authSlice';
+import { authSliceActions, useAppSelector } from '@/store/slices/authSlice';
 import { initializePusher } from '@/store/slices/pusherSlice';
 import { useDispatch } from 'react-redux';
 import { PusherEvent } from '@pusher/pusher-websocket-react-native';
 import CustomModal from './custommodal';
 import { generateBvnLink } from '@/utils/mutations/authMutations';
-import WebView from 'react-native-webview';
+import * as Linking from 'expo-linking';
 import { checkBvnStatus } from '@/utils/queries/accountQueries';
 
 type imageType = {
@@ -94,8 +94,6 @@ type Nav = {
 const FillYourProfile = () => {
   const { navigate } = useNavigation<Nav>();
   const dispatch = useDispatch();
-  // const [selectedArea, setSelectedArea] = useState<any>(null);
-  // const [modalVisible, setModalVisible] = useState(false);
   const { token, userId } = useAppSelector((state) => state.auth);
   const { channel } = useAppSelector((state) => state.pusher);
   const [userBvn, setUserBvn] = useState('');
@@ -104,10 +102,6 @@ const FillYourProfile = () => {
   const [redirectModalVisible, setRedirectModalVisible] = useState(false);
   const [image, setImage] = useState<any>(null);
   const [modalVisible, setModalVisible] = useState(false);
-  const [webView, setWebView] = useState({
-    isVisible: false,
-    url: '',
-  });
   const [formState, dispatchFormState] = useReducer(reducer, initialState);
   const [areas, setAreas] = useState<any[]>([]);
   const [openStartDatePicker, setOpenStartDatePicker] = useState(false);
@@ -121,8 +115,7 @@ const FillYourProfile = () => {
       console.log(data);
       setUserBvn(data?.data?.bvn);
       setGenerateModalVisible(true);
-      // @ts-ignore
-      dispatch(initializePusher(userId || data?.data.user_id));
+      // dispatch(initializePusher(userId || data?.data.user_id));
     },
     onError: (error) => {
       console.log(error);
@@ -141,11 +134,7 @@ const FillYourProfile = () => {
       if (bvnUrl) {
         setRedirectURL(bvnUrl);
         setGenerateModalVisible(false);
-        // setRedirectModalVisible(true);
-        setWebView({
-          isVisible: true,
-          url: bvnUrl,
-        });
+        openInExternalBrowserAndLogout(bvnUrl); // Redirect to browser and logout
       }
     },
     onError: (data) => {
@@ -156,10 +145,7 @@ const FillYourProfile = () => {
   const { data: bvnStatus, refetch } = useQuery({
     queryKey: ['bvnConsentStatus'],
     queryFn: () => checkBvnStatus(token),
-    // refetchInterval: 1000,
     refetchInterval: (data) => {
-      // return 1000;
-      // console.log(data);
       if (data.state.data?.status == 'active') {
         console.log('activated');
         return false;
@@ -169,23 +155,13 @@ const FillYourProfile = () => {
       }
     },
   });
-  //handle go to bvn consent
-  const handleGoToBVNConsent = async () => {
-    //naivgate to the URL received for consent page
-    console.log('clicked url');
-    router.push('/(tabs)');
-    // navigate('')
+//call the api for checking bvn status
+
+  // Redirect to external browser and log out
+  const openInExternalBrowserAndLogout = async (url: string) => {
+    dispatch(authSliceActions.clearToken()); // Clear token and log out user
+    await Linking.openURL(url); // Open the external browser
   };
-  // console.log(bvnStatus);
-  // console.log(token);
-  // refetch();
-  useEffect(() => {
-    console.log(bvnStatus);
-    if (bvnStatus?.status == 'active') {
-      console.log('accepted');
-      router.push('/login');
-    }
-  }, [bvnStatus]);
 
   const handleGenerateLink = async () => {
     console.log('generating link');
@@ -198,28 +174,16 @@ const FillYourProfile = () => {
       token,
     });
   };
+
   useEffect(() => {
-    console.log('event listener being resigtered');
-    if (channel && channel.onEvent) {
-      setModalVisible(true);
-      //binding of channel
-      channel.onEvent((event: PusherEvent) => {
-        if (
-          event.eventName === 'account.released' ||
-          event.userId === 'account-released'
-        ) {
-          console.log('account released');
-          // setModalVisible(false);
-          setWebView({
-            isVisible: false,
-            url: '',
-          });
-          return router.push('/login');
-        }
-      });
+    console.log(bvnStatus);
+    if (bvnStatus?.status == 'active') {
+      console.log('accepted');
+      router.push('/login');
+      
     }
-  }, [dispatch, channel]);
-  // console.log(image);
+  }, [bvnStatus]);
+
   const today = new Date();
   const endData = getFormatedDate(
     new Date(today.setDate(today.getDate() + 1)),
@@ -242,7 +206,6 @@ const FillYourProfile = () => {
     [dispatchFormState]
   );
 
-  // console.log(image);
   const handleSubmit = async () => {
     console.log('readchec');
     if (!formState.formIsValid) {
@@ -260,12 +223,9 @@ const FillYourProfile = () => {
       return;
     }
     const { firstName, lastName, bvn, phoneNumber } = formState.inputValues;
-    // const base64 = image?.base64;
     const extension = image?.fileName.split('.').pop();
     console.log(extension);
-    // console.log(base64);
     const data = {
-      // userId: userId.toString(),
       userId,
       firstName: firstName as string,
       lastName: lastName as string,
@@ -280,7 +240,6 @@ const FillYourProfile = () => {
     };
 
     const formData = new FormData();
-
     formData.append('userId', userId);
     formData.append('firstName', data.firstName);
     formData.append('lastName', data.lastName);
@@ -299,12 +258,11 @@ const FillYourProfile = () => {
       token,
     });
   };
-  // Fetch codes from rescountries api
+
   useEffect(() => {
     fetch('https://restcountries.com/v2/name/Nigeria')
       .then((response) => response.json())
       .then((data) => {
-        // console.log('countries', data);
         let areaData = data.map((item: any) => {
           return {
             code: item.alpha2Code,
@@ -313,30 +271,17 @@ const FillYourProfile = () => {
             flag: `https://flagsapi.com/${item.alpha2Code}/flat/64.png`,
           };
         });
-        // console.log('AreaDta', areaData);
         setAreas(areaData);
-        // if (areaData.length > 0) {
-        //   let defaultData = areaData.filter((a: any) => a.code == 'US');
-
-        //   if (defaultData.length > 0) {
-        //     setSelectedArea(defaultData[0]);
-        //   }
-        // }
       });
   }, []);
 
   const pickImage = async () => {
     try {
       const imageData = await launchImagePicker();
-
       if (!imageData) return;
-
-      // set the image
       setImage({ ...imageData });
-    } catch (error) { }
+    } catch (error) {}
   };
-
-  //check if the keyBoard is open
 
   useEffect(() => {
     const keyboardDidShowListener = Keyboard.addListener(
@@ -357,73 +302,6 @@ const FillYourProfile = () => {
     };
   });
 
-  // render countries codes modal
-  // function RenderAreasCodesModal() {
-  //   const renderItem = ({ item }: { item: any }) => {
-  //     return (
-  //       <TouchableOpacity
-  //         style={{
-  //           padding: 10,
-  //           flexDirection: 'row',
-  //         }}
-  //         onPress={() => {
-  //           setSelectedArea(item), setModalVisible(false);
-  //         }}
-  //       >
-  //         <Image
-  //           source={{ uri: item.flag }}
-  //           contentFit="contain"
-  //           style={{
-  //             height: 30,
-  //             width: 30,
-  //             marginRight: 10,
-  //           }}
-  //         />
-  //         <Text style={{ fontSize: 16, color: '#fff' }}>{item.item}</Text>
-  //       </TouchableOpacity>
-  //     );
-  //   };
-  //   return (
-  //     <Modal animationType="slide" transparent={true} visible={modalVisible}>
-  //       <TouchableWithoutFeedback onPress={() => setModalVisible(false)}>
-  //         <View
-  //           style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}
-  //         >
-  //           <View
-  //             style={{
-  //               height: SIZES.height,
-  //               width: SIZES.width,
-  //               backgroundColor: COLORS.primary,
-  //               borderRadius: 12,
-  //             }}
-  //           >
-  //             <TouchableOpacity
-  //               onPress={() => setModalVisible(false)}
-  //               style={styles.closeBtn}
-  //             >
-  //               <Ionicons
-  //                 name="close-outline"
-  //                 size={24}
-  //                 color={COLORS.primary}
-  //               />
-  //             </TouchableOpacity>
-  //             <FlatList
-  //               data={areas}
-  //               renderItem={renderItem}
-  //               horizontal={false}
-  //               keyExtractor={(item) => item.code}
-  //               style={{
-  //                 padding: 20,
-  //                 marginBottom: 20,
-  //               }}
-  //             />
-  //           </View>
-  //         </View>
-  //       </TouchableWithoutFeedback>
-  //     </Modal>
-  //   );
-  // }
-
   return (
     <>
       <SafeAreaView
@@ -433,9 +311,7 @@ const FillYourProfile = () => {
           style={[
             styles.container,
             { backgroundColor: colors.background },
-            { display: webView.isVisible ? 'none' : 'flex' },
           ]}
-
         >
           <Header title="Fill Your Profile" />
           <ScrollView showsVerticalScrollIndicator={false}>
@@ -516,8 +392,7 @@ const FillYourProfile = () => {
               >
                 <TouchableOpacity
                   style={styles.selectFlagContainer}
-                  onPress={() => { }}
-                //setModalVisible to true if want to show flags selection
+                  onPress={() => {}}
                 >
                   <View style={{ justifyContent: 'center' }}>
                     <Image
@@ -528,7 +403,6 @@ const FillYourProfile = () => {
                   </View>
                   <View style={{ justifyContent: 'center', marginLeft: 5 }}>
                     <Image
-                      //in source, use the flag of the selected area if want to use all flags
                       source={{ uri: areas.length > 0 && areas[0].flag }}
                       contentFit="contain"
                       style={styles.flagIcon}
@@ -545,7 +419,6 @@ const FillYourProfile = () => {
                     </Text>
                   </View>
                 </TouchableOpacity>
-                {/* Phone Number Text Input */}
                 <TextInput
                   style={styles.input}
                   placeholder="Enter your phone number"
@@ -576,7 +449,6 @@ const FillYourProfile = () => {
           onClose={() => setOpenStartDatePicker(false)}
           onChangeStartDate={(date) => setStartedDate(date)}
         />
-        {/* {RenderAreasCodesModal()} */}
         {!keyboardVisible && (
           <View style={styles.bottomContainer}>
             <Text
@@ -588,17 +460,6 @@ const FillYourProfile = () => {
             >
               Please fill your credentials as per your legal documents.
             </Text>
-            {/* <Button
-          title="Skip"
-          style={{
-            width: (SIZES.width - 32) / 2 - 8,
-            borderRadius: 32,
-            backgroundColor: dark ? COLORS.dark3 : COLORS.tansparentPrimary,
-            borderColor: dark ? COLORS.dark3 : COLORS.tansparentPrimary,
-          }}
-          textColor={dark ? COLORS.white : COLORS.primary}
-          onPress={() => navigate('createnewpin')}
-        /> */}
             <Button
               title={isPending ? 'Submitting...' : 'Submit'}
               isLoading={isPending}
@@ -609,14 +470,13 @@ const FillYourProfile = () => {
             />
           </View>
         )}
-        <CustomModal
+        {/* <CustomModal
           btnText="Go to URL"
           modalVisible={redirectModalVisible}
           setModalVisible={setRedirectModalVisible}
           onPress={handleGoToBVNConsent}
           title={`${redirectURL}`}
-        />
-        {/* modal for generating link for bvn consent */}
+        /> */}
         <CustomModal
           btnText={generatingURL ? 'Generating...' : 'Generate Link'}
           modalVisible={generateModalVisible}
@@ -625,27 +485,6 @@ const FillYourProfile = () => {
           onPress={handleGenerateLink}
           title="Generating your link requires your BVN consent. Please click below to get your bvn consent link"
         />
-        {webView.isVisible && (
-          <View
-            style={{
-              position: 'relative',
-              flex: 1,
-              width: '100%',
-              height: '100%',
-            }}
-          >
-            <WebView
-              source={{ uri: webView.url }}
-              style={{
-                flex: 1,
-                zIndex: 9999,
-                position: 'absolute',
-                width: '100%',
-                height: '100%',
-              }}
-            />
-          </View>
-        )}
       </SafeAreaView>
     </>
   );

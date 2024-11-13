@@ -31,23 +31,15 @@ const DatePickerModal: FC<DatePickerModalProps> = ({
     onChangeStartDate(date);
   };
 
-  const handleOnPressStartDate = () => {
-    onClose();
-  };
-
-  const modalVisible = open;
-
   return (
-    <Modal animationType="slide" transparent={true} visible={modalVisible}>
+    <Modal animationType="slide" transparent={true} visible={open}>
       <View style={styles.centeredView}>
         <View style={styles.modalView}>
           <DatePicker
-            mode="calendar"
+            mode="calendar" // Changed from "calendar" to "datepicker"
             maximumDate={endDate}
-            // maximumDate={}
             selected={selectedStartDate}
             onDateChange={handleDateChange}
-            onSelectedChange={(date) => setSelectedStartDate(date)}
             options={{
               backgroundColor: COLORS.primary,
               textHeaderColor: COLORS.white,
@@ -58,7 +50,7 @@ const DatePickerModal: FC<DatePickerModalProps> = ({
               borderColor: COLORS.primary,
             }}
           />
-          <TouchableOpacity onPress={handleOnPressStartDate}>
+          <TouchableOpacity onPress={onClose}>
             <Text style={{ color: 'white' }}>Close</Text>
           </TouchableOpacity>
         </View>
@@ -74,12 +66,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   modalView: {
-    margin: 20,
+    margin: 0,
     backgroundColor: COLORS.primary,
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 20,
-    padding: 35,
+    padding: 15,
     width: '90%',
     shadowColor: '#000',
     shadowOffset: {

@@ -116,6 +116,11 @@ const EditProfile = () => {
     mutationFn: updateProfile,
     onSuccess: (data) => {
       console.log(data);
+      //show toaster
+      showToast({
+        type: 'success',
+        text1: 'Profile updated successfully',
+      });
       queryClient.invalidateQueries({ queryKey: ['profileDetails'] });
       dispatch(
         authSliceActions.setUser({

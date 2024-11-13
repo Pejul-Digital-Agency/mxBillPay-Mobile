@@ -1,4 +1,4 @@
-import { Tabs } from 'expo-router';
+import { Tabs, useNavigation } from 'expo-router';
 import { View, Text, Platform, BackHandler } from 'react-native';
 import { Image } from 'expo-image';
 import { COLORS, icons, FONTS } from '../../constants';
@@ -6,10 +6,21 @@ import { useTheme } from '@/theme/ThemeProvider';
 import { useAppSelector } from '@/store/slices/authSlice';
 import TokenExpiryModal from '../tokenexpirymodal';
 import { useEffect } from 'react';
-import { useRoute } from '@react-navigation/native';
+import { NavigationProp, useRoute } from '@react-navigation/native';
 
 const TabLayout: React.FC = () => {
+  const { token, userProfile } = useAppSelector((state) => state.auth);
+  const { navigate, setParams } = useNavigation<NavigationProp<any>>();
   const { dark } = useTheme();
+  useEffect(() => {
+    if (!token) {
+      // Redirect to login if no token
+      navigate('login');
+    }else if(!userProfile?.firstName){
+      // Redirect to dashboard if user is logged in
+      navigate('fillyourprofile');
+    }
+  }, [token, navigate]);
 
   return (
     <>

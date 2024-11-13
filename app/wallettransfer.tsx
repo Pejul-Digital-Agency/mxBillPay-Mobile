@@ -302,7 +302,7 @@ const WalletTransfer = () => {
               },
             ]}
           >
-            $1000.00
+            {formState.inputValues.amount} NGN
           </Text>
         </View>
         <Text

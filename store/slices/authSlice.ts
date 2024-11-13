@@ -3,6 +3,7 @@ import { createSlice } from '@reduxjs/toolkit';
 import type { RootState, AppDispatch } from '../store';
 import { IUserProfile } from '@/utils/mutations/authMutations';
 
+
 // Define a type for the slice state
 interface IUserAction {
   type: string;
