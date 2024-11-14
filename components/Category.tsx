@@ -46,10 +46,12 @@ const Category: React.FC<CategoryProps> = ({
         />
       </TouchableOpacity>
       <Text
+        numberOfLines={1}
         style={[
           styles.name,
           {
-            color: dark ? COLORS.white : COLORS.greyscale900,
+            color: COLORS.white,
+            // color: dark ? COLORS.white : COLORS.greyscale900,
           },
         ]}
       >
@@ -65,6 +67,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 12,
     width: (SIZES.width - 32) / 4,
+    backgroundColor: COLORS.primary,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 12,
   },
   iconContainer: {
     width: 54,
@@ -79,9 +85,8 @@ const styles = StyleSheet.create({
     width: 24,
   },
   name: {
-    fontSize: 14,
+    fontSize: 12,
     fontFamily: 'semiBold',
-    color: COLORS.black,
   },
 });
 

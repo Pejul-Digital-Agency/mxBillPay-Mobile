@@ -31,11 +31,18 @@ import {
 } from '@/utils/queries/billPayment';
 import Loader from '../loader';
 import { useAppSelector } from '@/store/slices/authSlice';
-import { checkBvnStatus, generateBvnLinkAgain, verifyBvnStatus } from '@/utils/queries/accountQueries';
+import {
+  checkBvnStatus,
+  generateBvnLinkAgain,
+  getTransferHistory,
+  verifyBvnStatus,
+} from '@/utils/queries/accountQueries';
 import CustomModal from '../custommodal';
 import * as Linking from 'expo-linking';
 import { authSliceActions } from '@/store/slices/authSlice';
 import { useDispatch } from 'react-redux';
+import AccountOption from '@/components/AccountOption';
+import TransferHistory from '@/tabs/TransferPaymentHistory';
 
 type Nav = {
   navigate: (value: string) => void;
@@ -59,6 +66,16 @@ const HomeScreen = () => {
   const { data: billerCategories, isLoading: isLoadingCategories } = useQuery({
     queryKey: ['billCategories'],
     queryFn: () => getBillerCategories({ token }),
+    enabled: !!token,
+  });
+
+  const {
+    data: transferData,
+    isLoading: loadingTransfer,
+    error: errorTransfer,
+  } = useQuery({
+    queryKey: ['transferHistory'],
+    queryFn: () => getTransferHistory(token),
     enabled: !!token,
   });
 
@@ -95,11 +112,13 @@ const HomeScreen = () => {
         try {
           const response = await checkBvnStatus(token);
           if (response?.status === 'active') {
-            setModalTitle("Your BVN is verified! Enjoy full access.");
+            setModalTitle('Your BVN is verified! Enjoy full access.');
             setBtnText('Close');
             setGenerateModalVisible(true);
           } else {
-            setModalTitle("Generating your link requires your BVN consent. Please click below to get your BVN consent link");
+            setModalTitle(
+              'Generating your link requires your BVN consent. Please click below to get your BVN consent link'
+            );
             setBtnText('Generate Link');
             setGenerateModalVisible(true);
           }
@@ -121,8 +140,8 @@ const HomeScreen = () => {
       setGeneratingURL(false);
 
       if (response?.data?.url) {
-        setBtnText("Open in Browser");
-        setModalTitle("Click below to review and consent.");
+        setBtnText('Open in Browser');
+        setModalTitle('Click below to review and consent.');
         setGenerateModalVisible(true);
 
         // Function to open in external browser and clear token
@@ -130,7 +149,7 @@ const HomeScreen = () => {
           await Linking.openURL(response.data.url);
           dispatch(authSliceActions.clearToken()); // Clear token for logout
         };
-        setBtnText("Open in Browser");
+        setBtnText('Open in Browser');
       } else {
         console.log('Failed to generate consent link');
       }
@@ -192,7 +211,7 @@ const HomeScreen = () => {
       console.error('Error opening browser:', error);
     }
   };
-  
+
   const handleWalletTransfer = () => {
     navigate('wallettransfer');
   };
@@ -245,7 +264,7 @@ const HomeScreen = () => {
             <Text style={styles.cardNum}>{userProfile?.accountNumber}</Text>
           </View>
           <Image
-            source={icons.mastercard}
+            source={images.mxlogo}
             contentFit="contain"
             style={styles.cardIcon}
           />
@@ -253,53 +272,27 @@ const HomeScreen = () => {
         <View style={styles.balanceContainer}>
           <Text style={styles.balanceText}>Your balance</Text>
           <Text style={styles.balanceAmount}>
-            $
+            ₦
             {Number(userProfile?.accountBalance).toFixed(2).toString() ||
               '0.00'}
           </Text>
         </View>
         <View style={styles.bottomCardContainer}>
-          <TouchableOpacity
+          <AccountOption
+            iconName="bank"
+            title="Bank Transfer"
             onPress={handleNavigateToBankTransfer}
-            style={styles.categoryContainer}
-          >
-            <View style={styles.categoryIconContainer}>
-              <Image
-                source={icons.send}
-                contentFit="contain"
-                style={styles.categoryIcon}
-              />
-            </View>
-            <Text numberOfLines={2} style={styles.categoryText}>
-              Bank Transfer
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
+          />
+          <AccountOption
+            iconName="wallet"
+            title="Wallet Transfer"
             onPress={handleWalletTransfer}
-            style={styles.categoryContainer}
-          >
-            <View style={styles.categoryIconContainer}>
-              <Image
-                source={icons.sendMoney}
-                contentFit="contain"
-                style={styles.categoryIcon}
-              />
-            </View>
-            <Text style={styles.categoryText}>Wallet Transfer</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
+          />
+          <AccountOption
+            iconName="swapUpDown"
+            title="Transactions"
             onPress={() => navigate('inoutpaymenthistory')}
-            style={styles.categoryContainer}
-          >
-            <View style={styles.categoryIconContainer}>
-              <Image
-                source={icons.swapUpDown}
-                contentFit="contain"
-                style={styles.categoryIcon}
-              />
-            </View>
-            <Text style={styles.categoryText}>In & Out</Text>
-          </TouchableOpacity>
+          />
         </View>
       </View>
     );
@@ -307,19 +300,27 @@ const HomeScreen = () => {
 
   const renderCategories = () => {
     return (
-      <View>
-        <SubHeaderItem
+      <View style={{ marginTop: 24, width: '100%' }}>
+        {/* <View style={styles.bottomCategoryContainer}> */}
+        {/* <SubHeaderItem
           title="Services"
           navTitle="See all"
           onPress={() => navigate('allservices')}
-        />
+        /> */}
         {billerCategories?.data && (
           <FlatList
             data={billerCategories?.data}
             keyExtractor={(item, index) => index.toString()}
             horizontal={false}
-            numColumns={4} // Render four items per row
-            style={{ marginTop: 0 }}
+            numColumns={3} // Render four items per row
+            columnWrapperStyle={{ justifyContent: 'space-evenly' }}
+            style={{
+              marginTop: 0,
+              flex: 1,
+              // columnGap: 8,
+              rowGap: 8,
+              width: '100%',
+            }}
             renderItem={({ item, index }) => (
               <Category
                 key={item.id}
@@ -338,6 +339,23 @@ const HomeScreen = () => {
     );
   };
 
+  const rederTransactionsHistory = () => {
+    return (
+      <View style={{ marginBottom: 8 }}>
+        <SubHeaderItem
+          title="Recent Transactions"
+          navTitle="See all"
+          onPress={() => navigate('inoutpaymenthistory')}
+        />
+        <View style={{ marginBottom: 12 }}>
+          <TransferHistory
+            transferData={transferData?.data.splice(0, 2) || []}
+          />
+        </View>
+      </View>
+    );
+  };
+
   return (
     <SafeAreaView style={[styles.area, { backgroundColor: colors.background }]}>
       <View style={[styles.container, { backgroundColor: colors.background }]}>
@@ -345,6 +363,7 @@ const HomeScreen = () => {
         <ScrollView showsVerticalScrollIndicator={false}>
           {renderCard()}
           {renderCategories()}
+          {rederTransactionsHistory()}
         </ScrollView>
       </View>
       {(isLoadingBanks || isPendingItems || isLoadingCategories) && <Loader />}
@@ -365,7 +384,6 @@ const HomeScreen = () => {
         }}
         title={modalTitle}
       />
-
     </SafeAreaView>
   );
 };
@@ -427,7 +445,7 @@ const styles = StyleSheet.create({
   },
   cardContainer: {
     width: SIZES.width - 32,
-    height: 340,
+    height: 250,
     borderRadius: 32,
     backgroundColor: COLORS.primary,
     marginTop: 16,
@@ -442,7 +460,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily: 'regular',
     color: COLORS.white,
-    marginBottom: 8,
+    marginBottom: 4,
   },
   cardNum: {
     fontSize: 18,
@@ -454,16 +472,16 @@ const styles = StyleSheet.create({
     width: 72,
   },
   balanceContainer: {
-    marginVertical: 32,
+    marginVertical: 16,
   },
   balanceText: {
     fontSize: 16,
     fontFamily: 'regular',
     color: COLORS.white,
-    marginBottom: 8,
+    marginBottom: 4,
   },
   balanceAmount: {
-    fontSize: 48,
+    fontSize: 20,
     fontFamily: 'extraBold',
     color: COLORS.white,
   },
@@ -476,28 +494,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 12,
-  },
-  categoryContainer: {
-    alignItems: 'center',
-  },
-  categoryIconContainer: {
-    height: 52,
-    width: 52,
-    borderRadius: 9999,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: COLORS.tansparentPrimary,
-    marginBottom: 4,
-  },
-  categoryIcon: {
-    height: 24,
-    width: 24,
-    tintColor: COLORS.primary,
-  },
-  categoryText: {
-    fontSize: 14,
-    fontFamily: 'semiBold',
-    color: COLORS.primary,
   },
 });
 

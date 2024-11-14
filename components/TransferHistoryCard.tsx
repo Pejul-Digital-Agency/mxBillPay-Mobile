@@ -47,6 +47,7 @@ const TransferHistoryCard: React.FC<TransferHistoryCardProps> = ({
         <Image
           source={type == 'inter' ? icons.bank : icons.wallet}
           contentFit="contain"
+          tintColor={COLORS.primary}
           style={styles.avatar}
         />
         <View>
