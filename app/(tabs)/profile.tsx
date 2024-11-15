@@ -17,15 +17,13 @@ import { useTheme } from '@/theme/ThemeProvider';
 import { COLORS, SIZES, icons, images } from '@/constants';
 import { Image } from 'expo-image';
 import SettingsItem from '@/components/SettingsItem';
-import { launchImagePicker } from '@/utils/ImagePickerHelper';
+// import { launchImagePicker } from '@/utils/ImagePickerHelper';
 import { useNavigation } from 'expo-router';
 import { authSliceActions, useAppDispatch } from '@/store/slices/authSlice';
-import {
-  getUserProfile,
-  IUserProfileData,
-} from '@/utils/queries/accountQueries';
 import { useAppSelector } from '@/store/slices/authSlice';
 import { NavigationProp } from '@react-navigation/native';
+import { StatusBar } from 'expo-status-bar';
+import { LinearGradient } from 'expo-linear-gradient';
 
 type Nav = {
   navigate: (value: string) => void;
@@ -48,91 +46,167 @@ const Profile = () => {
       routes: [{ name: 'login' }],
     });
   };
+
+  const renderTopContainer = () => {
+    return (
+      <>
+        <View
+          style={{
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginVertical: 12,
+          }}
+        >
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+            <Image
+              source={userProfile?.profilePicture || icons.profile}
+              contentFit="cover"
+              style={{ width: 48, height: 48, borderRadius: 50 }}
+            />
+            <Text
+              style={{
+                color: COLORS.greyscale900,
+                fontSize: 18,
+                fontWeight: 'bold',
+              }}
+            >
+              {'Hi, ' + userProfile?.firstName + ' ' + userProfile?.lastName}
+            </Text>
+          </View>
+          <Image
+            source={icons.settingOutline}
+            contentFit="contain"
+            tintColor={COLORS.dark2}
+            style={{ width: 28, height: 28 }}
+          />
+        </View>
+        <View
+          style={{
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            marginVertical: 12,
+          }}
+        >
+          <View
+            style={{
+              alignItems: 'flex-start',
+              justifyContent: 'center',
+              gap: 1,
+            }}
+          >
+            <Text style={{ fontSize: 18, fontWeight: 'regular' }}>
+              Total Balance
+            </Text>
+            <View style={{ flexDirection: 'row', alignItems: 'baseline' }}>
+              <Text style={{ fontSize: 32, fontWeight: 'bold' }}>{`₦`}</Text>
+              <Text style={{ fontSize: 48, fontWeight: 'bold' }}>
+                {userProfile?.accountBalance}
+              </Text>
+            </View>
+          </View>
+        </View>
+        <View
+          style={{
+            backgroundColor: COLORS.white,
+            borderRadius: 50,
+            paddingVertical: 2,
+            paddingHorizontal: 10,
+            alignSelf: 'flex-start',
+            flexDirection: 'row',
+          }}
+        >
+          <Text>& Cashback</Text>
+          <Text style={{ color: COLORS.primary }}>{` ₦200.00`}</Text>
+        </View>
+      </>
+    );
+  };
   /**
    * Render header
    */
-  const renderHeader = () => {
-    return (
-      <TouchableOpacity style={styles.headerContainer}>
-        <View style={styles.headerLeft}>
-          {/* <Image
-            source={images.logo}
-            contentFit='contain'
-            style={styles.logo}
-          /> */}
-          <Text
-            style={[
-              styles.headerTitle,
-              {
-                color: dark ? COLORS.white : COLORS.greyscale900,
-              },
-            ]}
-          >
-            Profile
-          </Text>
-        </View>
-        {/* removing three dots */}
-        {/* <TouchableOpacity>
-          <Image
-            source={icons.moreCircle}
-            contentFit='contain'
-            style={[styles.headerIcon, {
-              tintColor: dark ? COLORS.secondaryWhite : COLORS.greyscale900
-            }]}
-          />
-        </TouchableOpacity> */}
-      </TouchableOpacity>
-    );
-  };
+  // const renderHeader = () => {
+  //   return (
+  //     <TouchableOpacity style={styles.headerContainer}>
+  //       <View style={styles.headerLeft}>
+  //         {/* <Image
+  //           source={images.logo}
+  //           contentFit='contain'
+  //           style={styles.logo}
+  //         /> */}
+  //         <Text
+  //           style={[
+  //             styles.headerTitle,
+  //             {
+  //               color: dark ? COLORS.white : COLORS.greyscale900,
+  //             },
+  //           ]}
+  //         >
+  //           Profile
+  //         </Text>
+  //       </View>
+  //       {/* removing three dots */}
+  //       {/* <TouchableOpacity>
+  //         <Image
+  //           source={icons.moreCircle}
+  //           contentFit='contain'
+  //           style={[styles.headerIcon, {
+  //             tintColor: dark ? COLORS.secondaryWhite : COLORS.greyscale900
+  //           }]}
+  //         />
+  //       </TouchableOpacity> */}
+  //     </TouchableOpacity>
+  //   );
+  // };
   /**
    * Render User Profile
    */
-  const renderProfile = () => {
-    const [image, setImage] = useState(images.user1);
+  // const renderProfile = () => {
+  //   const [image, setImage] = useState(images.user1);
 
-    const pickImage = async () => {
-      try {
-        const tempUri = await launchImagePicker();
+  //   const pickImage = async () => {
+  //     try {
+  //       const tempUri = await launchImagePicker();
 
-        if (!tempUri) return;
+  //       if (!tempUri) return;
 
-        // Set the image
-        setImage({ uri: tempUri });
-      } catch (error) {}
-    };
-    return (
-      <View style={styles.profileContainer}>
-        <View>
-          <Image
-            source={userProfile?.profilePicture || icons.profile}
-            contentFit="cover"
-            style={styles.avatar}
-          />
-          {/* <TouchableOpacity
-            onPress={pickImage}
-            style={styles.picContainer}>
-            <MaterialIcons name="edit" size={16} color={COLORS.white} />
-          </TouchableOpacity> */}
-        </View>
-        <Text
-          style={[
-            styles.title,
-            { color: dark ? COLORS.secondaryWhite : COLORS.greyscale900 },
-          ]}
-        >
-          {userProfile?.firstName} {userProfile?.lastName}
-        </Text>
-        <Text
-          style={[
-            styles.subtitle,
-            { color: dark ? COLORS.secondaryWhite : COLORS.greyscale900 },
-          ]}
-        >
-          {userProfile?.email}
-        </Text>
-      </View>
-    );
-  };
+  //       // Set the image
+  //       setImage({ uri: tempUri });
+  //     } catch (error) {}
+  //   };
+  //   return (
+  //     <View style={styles.profileContainer}>
+  //       <View>
+  //         <Image
+  //           source={userProfile?.profilePicture || icons.profile}
+  //           contentFit="cover"
+  //           style={styles.avatar}
+  //         />
+  //         {/* <TouchableOpacity
+  //           onPress={pickImage}
+  //           style={styles.picContainer}>
+  //           <MaterialIcons name="edit" size={16} color={COLORS.white} />
+  //         </TouchableOpacity> */}
+  //       </View>
+  //       <Text
+  //         style={[
+  //           styles.title,
+  //           { color: dark ? COLORS.secondaryWhite : COLORS.greyscale900 },
+  //         ]}
+  //       >
+  //         {userProfile?.firstName} {userProfile?.lastName}
+  //       </Text>
+  //       <Text
+  //         style={[
+  //           styles.subtitle,
+  //           { color: dark ? COLORS.secondaryWhite : COLORS.greyscale900 },
+  //         ]}
+  //       >
+  //         {userProfile?.email}
+  //       </Text>
+  //     </View>
+  //   );
+  // };
   /**
    * Render Settings
    */
@@ -154,9 +228,9 @@ const Profile = () => {
       <View
         style={[
           styles.settingsContainer,
-          dark
-            ? { backgroundColor: COLORS.greyscale900 }
-            : { backgroundColor: COLORS.white },
+          {
+            backgroundColor: dark ? COLORS.greyscale900 : COLORS.white,
+          },
         ]}
       >
         {/* <SettingsItem
@@ -251,7 +325,7 @@ const Profile = () => {
                   marginLeft: 12,
                 }}
               >
-                'Switch between light and dark mode'
+                Switch between light and dark mode
               </Text>
             </View>
           </View>
@@ -314,11 +388,28 @@ const Profile = () => {
     );
   };
   return (
-    <SafeAreaView style={[styles.area, { backgroundColor: colors.background }]}>
+    <SafeAreaView
+      style={[
+        styles.area,
+        { backgroundColor: dark ? COLORS.dark2 : COLORS.grayscale100 },
+      ]}
+    >
+      <StatusBar style={dark ? 'light' : 'dark'} backgroundColor="#79C2F8" />
       <View style={[styles.container, { backgroundColor: colors.background }]}>
-        {renderHeader()}
+        <LinearGradient
+          colors={['#79C2F8', '#B6CFE4']}
+          style={{
+            padding: 16,
+            borderBottomRightRadius: 20,
+            borderBottomLeftRadius: 20,
+          }}
+        >
+          {renderTopContainer()}
+          {/* {renderHeader()}
+          {renderProfile()} */}
+        </LinearGradient>
+
         <ScrollView showsVerticalScrollIndicator={false}>
-          {renderProfile()}
           {renderSettings()}
         </ScrollView>
       </View>
@@ -393,13 +484,14 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.white,
-    padding: 16,
+    // padding: 16,
     marginBottom: 32,
   },
   headerContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    padding: 16,
   },
   headerLeft: {
     flexDirection: 'row',
@@ -529,7 +621,7 @@ const styles = StyleSheet.create({
     tintColor: COLORS.greyscale900,
   },
   logoutName: {
-    fontSize: 18,
+    fontSize: 16,
     fontFamily: 'semiBold',
     color: COLORS.greyscale900,
     marginLeft: 12,
