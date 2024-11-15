@@ -20,16 +20,20 @@ const user11 = require('../assets/images/users/user11.jpeg');
 const elipseCard = require('../assets/images/elipse-card.png');
 const rectangleCard = require('../assets/images/rectangle-card.png');
 const mxlogo = require('../assets/images/mxlogo.png');
+const eyefill = require('../assets/images/eyefill.png');
+const infoCircleFilled = require('../assets/images/infocirclefilled.png');
 
 const images = {
   mxlogo,
   logo,
+  eyefill,
   onboardingSplash,
   onboardingSplashDark,
   idAvatar,
   avatar,
   card,
   face,
+  infoCircleFilled,
   scanCard,
   user1,
   user2,

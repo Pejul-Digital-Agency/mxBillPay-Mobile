@@ -5,74 +5,102 @@ import { useTheme } from '../theme/ThemeProvider';
 import { Image } from 'expo-image';
 
 interface SettingsItemProps {
-    icon: string;
-    name: string;
-    onPress: () => void;
-    hasArrowRight?: boolean;
+  icon: string;
+  name: string;
+  onPress: () => void;
+  hasArrowRight?: boolean;
+  subtitle?: string;
 }
 
-const SettingsItem: React.FC<SettingsItemProps> = ({ icon, name, onPress, hasArrowRight = true }) => {
-    const { dark } = useTheme();
+const SettingsItem: React.FC<SettingsItemProps> = ({
+  icon,
+  name,
+  onPress,
+  hasArrowRight = true,
+  subtitle,
+}) => {
+  const { dark } = useTheme();
 
-    return (
-        <TouchableOpacity
-            onPress={onPress}
-            style={styles.container}>
-            <View style={styles.leftContainer}>
-                <Image
-                    source={icon}
-                    contentFit='contain'
-                    style={[styles.icon, {
-                        tintColor: dark ? COLORS.white : COLORS.greyscale900
-                    }]}
-                />
-                <Text style={[styles.name, {
-                    color: dark ? COLORS.white : COLORS.greyscale900
-                }]}>{name}</Text>
-            </View>
+  return (
+    <TouchableOpacity onPress={onPress} style={styles.container}>
+      <View style={styles.leftContainer}>
+        <Image
+          source={icon}
+          contentFit="contain"
+          style={[
+            styles.icon,
             {
-                hasArrowRight && (
-                    <Image
-                        source={icons.arrowRight}
-                        contentFit='contain'
-                        style={[styles.arrowRight, {
-                            tintColor: dark ? COLORS.white : COLORS.greyscale900
-                        }]}
-                    />
-                )
-            }
-        </TouchableOpacity>
-    )
+              tintColor: COLORS.primary,
+              //   tintColor: dark ? COLORS.white : COLORS.greyscale900,
+            },
+          ]}
+        />
+        <View>
+          <Text
+            style={[
+              styles.name,
+              {
+                color: dark ? COLORS.white : COLORS.greyscale900,
+              },
+            ]}
+          >
+            {name}
+          </Text>
+          <Text
+            style={{
+              color: dark ? COLORS.white : COLORS.greyscale900,
+              fontSize: 12,
+              marginLeft: 12,
+            }}
+          >
+            {subtitle}
+          </Text>
+        </View>
+      </View>
+      {hasArrowRight && (
+        <Image
+          source={icons.arrowRight}
+          contentFit="contain"
+          style={[
+            styles.arrowRight,
+            {
+              tintColor: dark ? COLORS.white : COLORS.greyscale900,
+            },
+          ]}
+        />
+      )}
+    </TouchableOpacity>
+  );
 };
 
 const styles = StyleSheet.create({
-    container: {
-        width: SIZES.width - 32,
-        flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "space-between",
-        marginVertical: 12
-    },
-    leftContainer: {
-        flexDirection: "row",
-        alignItems: "center",
-    },
-    icon: {
-        height: 24,
-        width: 24,
-        tintColor: COLORS.greyscale900
-    },
-    name: {
-        fontSize: 18,
-        fontFamily: "semiBold",
-        color: COLORS.greyscale900,
-        marginLeft: 12
-    },
-    arrowRight: {
-        width: 24,
-        height: 24,
-        tintColor: COLORS.greyscale900
-    }
-})
+  container: {
+    width: '100%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginVertical: 12,
+  },
+  leftContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  icon: {
+    height: 24,
+    width: 24,
+    tintColor: COLORS.greyscale900,
+  },
+  name: {
+    fontSize: 16,
+    fontFamily: 'semiBold',
+    color: COLORS.greyscale900,
+    marginLeft: 12,
+  },
+  arrowRight: {
+    width: 16,
+    height: 16,
+    tintColor: COLORS.greyscale900,
+  },
+});
 
 export default SettingsItem;

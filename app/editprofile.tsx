@@ -44,6 +44,7 @@ import { ApiError } from '@/utils/customApiCall';
 import showToast from '@/utils/showToast';
 import { authSliceActions } from '@/store/slices/authSlice';
 import { useDispatch } from 'react-redux';
+import Loader from './loader';
 
 interface Item {
   flag: string;
@@ -155,6 +156,7 @@ const EditProfile = () => {
 
   useEffect(() => {
     if (profileData?.data) {
+      formState.inputValues.occupation = profileData?.data?.occupation || '';
       formState.inputValues.firstName = profileData?.data?.firstName || '';
       formState.inputValues.lastName = profileData?.data?.lastName || '';
       formState.inputValues.phoneNumber =
@@ -261,6 +263,7 @@ const EditProfile = () => {
         { backgroundColor: dark ? COLORS.dark1 : COLORS.white },
       ]}
     >
+      {isLoading && <Loader />}
       <View
         style={[
           styles.container,

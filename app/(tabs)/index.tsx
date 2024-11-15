@@ -259,10 +259,13 @@ const HomeScreen = () => {
     return (
       <View style={styles.cardContainer}>
         <View style={styles.topCardContainer}>
-          <View>
+          <TouchableOpacity
+            onPress={() => navigate('accountdetails')}
+            activeOpacity={0.7}
+          >
             <Text style={styles.username}>{'Account No'}</Text>
             <Text style={styles.cardNum}>{userProfile?.accountNumber}</Text>
-          </View>
+          </TouchableOpacity>
           <Image
             source={images.mxlogo}
             contentFit="contain"
@@ -328,7 +331,8 @@ const HomeScreen = () => {
                 icon={item?.icon || icons.send}
                 iconColor={item?.iconColor || colors.primary}
                 backgroundColor={
-                  dark ? COLORS.greyScale800 : COLORS.grayscale100
+                  COLORS.grayscale100
+                  // dark ? COLORS.greyScale800 : COLORS.grayscale100
                 }
                 onPress={() => handleClickCategory(item)}
               />
@@ -366,7 +370,10 @@ const HomeScreen = () => {
           {rederTransactionsHistory()}
         </ScrollView>
       </View>
-      {(isLoadingBanks || isPendingItems || isLoadingCategories) && <Loader />}
+      {(isLoadingBanks ||
+        isPendingItems ||
+        isLoadingCategories ||
+        loadingTransfer) && <Loader />}
       {/* Modal for requesting BVN verification or showing success */}
       <CustomModal
         btnText={generatingURL ? 'Generating...' : btnText}
