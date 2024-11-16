@@ -50,74 +50,42 @@ const Profile = () => {
   const renderTopContainer = () => {
     return (
       <>
-        <View
-          style={{
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            marginVertical: 12,
-          }}
-        >
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-            <Image
-              source={userProfile?.profilePicture || icons.profile}
-              contentFit="cover"
-              style={{ width: 48, height: 48, borderRadius: 50 }}
-            />
-            <Text
-              style={{
-                color: COLORS.greyscale900,
-                fontSize: 18,
-                fontWeight: 'bold',
-              }}
-            >
-              {'Hi, ' + userProfile?.firstName + ' ' + userProfile?.lastName}
-            </Text>
-          </View>
-          <Image
-            source={icons.settingOutline}
-            contentFit="contain"
-            tintColor={COLORS.dark2}
-            style={{ width: 28, height: 28 }}
-          />
-        </View>
-        <View
-          style={{
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            marginVertical: 12,
-          }}
-        >
-          <View
-            style={{
-              alignItems: 'flex-start',
-              justifyContent: 'center',
-              gap: 1,
-            }}
-          >
-            <Text style={{ fontSize: 18, fontWeight: 'regular' }}>
-              Total Balance
-            </Text>
-            <View style={{ flexDirection: 'row', alignItems: 'baseline' }}>
-              <Text style={{ fontSize: 32, fontWeight: 'bold' }}>{`₦`}</Text>
-              <Text style={{ fontSize: 48, fontWeight: 'bold' }}>
-                {userProfile?.accountBalance}
+        <View style={styles.topContainer}>
+          <View style={styles.userInfo}>
+            <View style={styles.userDetails}>
+              <Image
+                source={userProfile?.profilePicture || icons.profile}
+                contentFit="cover"
+                style={styles.profilePicture}
+              />
+              <Text style={styles.greetingText}>
+                {'Hi, ' + userProfile?.firstName + ' ' + userProfile?.lastName}
               </Text>
             </View>
+            <TouchableOpacity onPress={() => console.log('pressec settings')}>
+              <Image
+                source={icons.settingOutline}
+                contentFit="contain"
+                tintColor={COLORS.dark2}
+                style={styles.settingsIcon}
+              />
+            </TouchableOpacity>
           </View>
-        </View>
-        <View
-          style={{
-            backgroundColor: COLORS.white,
-            borderRadius: 50,
-            paddingVertical: 2,
-            paddingHorizontal: 10,
-            alignSelf: 'flex-start',
-            flexDirection: 'row',
-          }}
-        >
-          <Text>& Cashback</Text>
-          <Text style={{ color: COLORS.primary }}>{` ₦200.00`}</Text>
+          <View style={styles.balanceContainer}>
+            <View style={styles.balanceDetails}>
+              <Text style={styles.balanceLabel}>Total Balance</Text>
+              <View style={styles.balanceRow}>
+                <Text style={styles.currencySymbol}>{`₦`}</Text>
+                <Text style={styles.accountBalance}>
+                  {userProfile?.accountBalance}
+                </Text>
+              </View>
+            </View>
+          </View>
+          <View style={styles.cashbackContainer}>
+            <Text>& Cashback</Text>
+            <Text style={styles.cashbackText}>{` ₦200.00`}</Text>
+          </View>
         </View>
       </>
     );
@@ -547,6 +515,72 @@ const styles = StyleSheet.create({
     fontFamily: 'medium',
     marginTop: 4,
   },
+  topContainer: {
+    flexDirection: 'column',
+    // marginVertical: 12,
+  },
+  userInfo: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginVertical: 12,
+  },
+  userDetails: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  profilePicture: {
+    width: 48,
+    height: 48,
+    borderRadius: 50,
+  },
+  greetingText: {
+    color: COLORS.greyscale900,
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  settingsIcon: {
+    width: 28,
+    height: 28,
+  },
+  balanceContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginVertical: 12,
+  },
+  balanceDetails: {
+    alignItems: 'flex-start',
+    justifyContent: 'center',
+    gap: 1,
+  },
+  balanceLabel: {
+    fontSize: 18,
+    fontWeight: '400', // Use '400' for "regular" weight
+  },
+  balanceRow: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+  },
+  currencySymbol: {
+    fontSize: 32,
+    fontWeight: 'bold',
+  },
+  accountBalance: {
+    fontSize: 48,
+    fontWeight: 'bold',
+  },
+  cashbackContainer: {
+    backgroundColor: COLORS.white,
+    borderRadius: 50,
+    paddingVertical: 2,
+    paddingHorizontal: 10,
+    alignSelf: 'flex-start',
+    flexDirection: 'row',
+  },
+  cashbackText: {
+    color: COLORS.primary,
+  },
   settingsContainer: {
     marginVertical: 12,
     marginHorizontal: 6,
@@ -574,7 +608,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
-  settingsIcon: {
+  settingsIconTop: {
     height: 24,
     width: 24,
     tintColor: COLORS.greyscale900,
