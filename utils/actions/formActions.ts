@@ -35,7 +35,8 @@ export const validateInput = (
     inputId === 'about' ||
     inputId === 'creditCardHolderName' ||
     inputId === 'addressLine1' ||
-    inputId === 'addressLine2'
+    inputId === 'addressLine2' ||
+    inputId === 'companyAddress'
   ) {
     return validateString(inputId, inputValue);
   } else if (

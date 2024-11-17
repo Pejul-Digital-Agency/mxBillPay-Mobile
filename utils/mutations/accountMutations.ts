@@ -23,7 +23,7 @@ export const createCooperateAccount = async ({
   data,
   token,
 }: {
-  data: ICooperateClient;
+  data: FormData;
   token: string;
 }) => {
   return await apiCall(

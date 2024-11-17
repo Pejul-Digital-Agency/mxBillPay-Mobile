@@ -1,21 +1,14 @@
 import { useDispatch, useSelector } from 'react-redux';
 import { createSlice } from '@reduxjs/toolkit';
+import type { PayloadAction } from '@reduxjs/toolkit';
 import type { RootState, AppDispatch } from '../store';
 import { IUserProfile } from '@/utils/mutations/authMutations';
 
-
 // Define a type for the slice state
 interface IUserAction {
-  type: string;
-  payload: {
-    userProfile?: IUserProfile | null;
-    userId?: string;
-    userEmail?: string;
-  };
-}
-interface ITokenAction {
-  type: string;
-  payload: string;
+  userProfile?: IUserProfile | null;
+  userId?: string;
+  userEmail?: string;
 }
 
 type initialStateType = {
@@ -36,7 +29,7 @@ const authSlice = createSlice({
   name: 'auth',
   initialState,
   reducers: {
-    setUser: (state, action: IUserAction) => {
+    setUser: (state, action: PayloadAction<IUserAction>) => {
       if (action.payload.userId) {
         state.userId = action.payload.userId;
       }
@@ -47,7 +40,7 @@ const authSlice = createSlice({
         state.userEmail = action.payload.userEmail;
       }
     },
-    setToken: (state, action: ITokenAction) => {
+    setToken: (state, action: PayloadAction<string>) => {
       state.token = action.payload;
       state.isLoggedIn = true;
     },

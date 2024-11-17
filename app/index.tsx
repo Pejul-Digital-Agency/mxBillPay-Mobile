@@ -19,7 +19,11 @@ const Welcome = () => {
   return (
     <SafeAreaView style={[styles.area, { backgroundColor: colors.background }]}>
       <View style={[styles.container, { backgroundColor: colors.background }]}>
-        <Image source={images.logo} contentFit="contain" style={styles.logo} />
+        <Image
+          source={images.mxlogo}
+          contentFit="contain"
+          style={styles.logo}
+        />
         <Text style={[styles.title, { color: colors.text }]}>
           Welcome Back!
         </Text>

@@ -31,6 +31,8 @@ import { useMutation } from '@tanstack/react-query';
 import showToast from '@/utils/showToast';
 import { useAppSelector } from '@/store/slices/authSlice';
 import { createCooperateAccount } from '@/utils/mutations/accountMutations';
+import FileInput from '@/components/FIleInput';
+import PhoneInput from '@/components/PhoneInput';
 
 export interface ICooperateClient {
   userId: string;
@@ -38,17 +40,24 @@ export interface ICooperateClient {
   companyName: string;
   incorporationDate: string;
   bvn: string;
+  profilePicture?: string;
+  companyLogo?: string;
+  cacCertificate?: string;
 }
 type initialStateType = {
   inputValues: {
     rcNumber: string;
     companyName: string;
     bvn: string;
+    companyAddress: string;
+    phoneNumber: string;
   };
   inputValidities: {
     rcNumber: boolean;
     companyName: boolean;
     bvn: boolean;
+    companyAddress: boolean;
+    phoneNumber: boolean;
   };
   formIsValid: boolean;
 };
@@ -57,11 +66,15 @@ const initialState: initialStateType = {
     rcNumber: '',
     companyName: '',
     bvn: '',
+    companyAddress: '',
+    phoneNumber: '',
   },
   inputValidities: {
     rcNumber: false,
     companyName: false,
     bvn: false,
+    companyAddress: false,
+    phoneNumber: false,
   },
   formIsValid: false,
 };
@@ -73,7 +86,9 @@ type Nav = {
 const CreateCorporateAccount = () => {
   const { navigate } = useNavigation<Nav>();
   // const [modalVisible, setModalVisible] = useState(false);
+  const [image, setImage] = useState<any>(null);
   const [openStartDatePicker, setOpenStartDatePicker] = useState(false);
+  const [cacCertificate, setCacCertificate] = useState<any>(null);
   const { token, userId } = useAppSelector((state) => state.auth);
   const [formState, dispatchFormState] = useReducer(reducer, initialState);
   const [startedDate, setStartedDate] = useState(
@@ -108,6 +123,10 @@ const CreateCorporateAccount = () => {
     [dispatchFormState]
   );
 
+  const handlePickedDocument = (document: any) => {
+    setCacCertificate(document);
+  };
+
   const today = new Date();
   const startDate = getFormatedDate(
     new Date(today.setDate(today.getDate() + 1)),
@@ -118,6 +137,13 @@ const CreateCorporateAccount = () => {
     setOpenStartDatePicker(!openStartDatePicker);
   };
 
+  const pickImage = async () => {
+    try {
+      const imageData = await launchImagePicker();
+      if (!imageData) return;
+      setImage({ ...imageData });
+    } catch (error) {}
+  };
   // console.log(image);
   const handleSubmit = async () => {
     console.log(formState.formIsValid);
@@ -131,18 +157,29 @@ const CreateCorporateAccount = () => {
       });
       return;
     }
-    const { rcNumber, companyName, bvn } = formState.inputValues;
-    const data = {
-      // userId: userId.toString(),
-      userId: '18',
-      rcNumber: rcNumber as string,
-      companyName: companyName as string,
-      bvn: bvn as string,
-      incorporationDate: startedDate,
-    };
+    const { rcNumber, companyName, bvn, phoneNumber, companyAddress } =
+      formState.inputValues;
+    if (!image) {
+      showToast({
+        type: 'error',
+        text1: 'Upload Company Logo',
+      });
+      return;
+    }
 
-    console.log(data);
-    // mutate(data);
+    const formData = new FormData();
+    formData.append('userId', userId.toString());
+    formData.append('companyLogo', image as any);
+    formData.append('rcNumber', rcNumber as string);
+    formData.append('companyName', companyName as string);
+    formData.append('bvn', bvn as string);
+    formData.append('incorporationDate', startedDate);
+    formData.append('cacCertificate', cacCertificate as any);
+    formData.append('companyAddress', companyAddress as string);
+    formData.append('phone', phoneNumber as string);
+    console.log(formData);
+
+    mutate({ data: formData, token });
   };
 
   //check if the keyBoard is open
@@ -170,12 +207,19 @@ const CreateCorporateAccount = () => {
       <View style={[styles.container, { backgroundColor: colors.background }]}>
         <Header title="Fill your Company's Details" />
         <ScrollView showsVerticalScrollIndicator={false}>
-          <View style={styles.logoContainer}>
+          <View style={styles.avatarContainer}>
             <Image
-              source={images.logo}
-              contentFit="contain"
-              style={styles.logo}
+              source={image === null ? icons.userDefault2 : image?.uri}
+              contentFit="cover"
+              style={styles.avatar}
             />
+            <TouchableOpacity onPress={pickImage} style={styles.pickImage}>
+              <MaterialCommunityIcons
+                name="pencil-outline"
+                size={24}
+                color={COLORS.white}
+              />
+            </TouchableOpacity>
           </View>
           <View>
             <Input
@@ -199,6 +243,11 @@ const CreateCorporateAccount = () => {
               placeholder="BVN (of board of directors)"
               placeholderTextColor={COLORS.gray}
               keyboardType="numeric"
+            />
+            <PhoneInput
+              id="phoneNumber"
+              onInputChanged={inputChangedHandler}
+              errorText={formState.inputValidities['phoneNumber']}
             />
             <View
               style={{
@@ -225,12 +274,25 @@ const CreateCorporateAccount = () => {
                 />
               </TouchableOpacity>
             </View>
+            <Input
+              id="companyAddress"
+              onInputChanged={inputChangedHandler}
+              errorText={formState.inputValidities['companyAddress']}
+              placeholder="Company Address"
+              placeholderTextColor={COLORS.gray}
+            />
+            <FileInput
+              onInputChanged={handlePickedDocument}
+              placeholder="-Upload CAC Certificate-"
+              errorText="Please upload CAC Certificate"
+              icon={icons.attachFile}
+            />
           </View>
         </ScrollView>
       </View>
       <DatePickerModal
         open={openStartDatePicker}
-        startDate={startDate}
+        endDate={startDate}
         selectedDate={startedDate}
         onClose={() => setOpenStartDatePicker(false)}
         onChangeStartDate={(date) => setStartedDate(date)}
@@ -247,20 +309,11 @@ const CreateCorporateAccount = () => {
           >
             Please fill your credentials as per your legal documents.
           </Text>
-          {/* <Button
-            title="Skip"
-            style={{
-              width: (SIZES.width - 32) / 2 - 8,
-              borderRadius: 32,
-              backgroundColor: dark ? COLORS.dark3 : COLORS.tansparentPrimary,
-              borderColor: dark ? COLORS.dark3 : COLORS.tansparentPrimary,
-            }}
-            textColor={dark ? COLORS.white : COLORS.primary}
-            onPress={() => navigate('createnewpin')}
-          /> */}
+
           <Button
             title={isPending ? 'Submitting...' : 'Submit'}
             filled
+            isLoading={isPending}
             disabled={isPending}
             style={styles.continueButton}
             onPress={handleSubmit}
@@ -284,15 +337,18 @@ const styles = StyleSheet.create({
   logo: {
     width: 100,
     height: 100,
-    tintColor: COLORS.primary,
+    borderRadius: 50,
+    // tintColor: COLORS.primary,
   },
   logoContainer: {
     alignItems: 'center',
     justifyContent: 'center',
     marginVertical: 32,
+    // borderRadius: 50,
   },
   avatarContainer: {
     marginVertical: 12,
+    marginHorizontal: 'auto',
     alignItems: 'center',
     width: 130,
     height: 130,
@@ -355,7 +411,7 @@ const styles = StyleSheet.create({
     paddingLeft: 8,
     fontSize: 18,
     justifyContent: 'space-between',
-    marginTop: 4,
+    marginVertical: 4,
     backgroundColor: COLORS.greyscale500,
     flexDirection: 'row',
     alignItems: 'center',

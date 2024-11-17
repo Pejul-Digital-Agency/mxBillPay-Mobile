@@ -34,6 +34,7 @@ const Profile = () => {
   const { dark, colors, setScheme } = useTheme();
   const { navigate, reset } = useNavigation<NavigationProp<any>>();
   const { token, userProfile } = useAppSelector((state) => state.auth);
+  // const { currentPage } = useAppSelector((state) => state.currPage);
   const dispatch = useAppDispatch();
 
   const handleLogout = () => {
@@ -90,6 +91,7 @@ const Profile = () => {
       </>
     );
   };
+
   /**
    * Render header
    */
@@ -362,7 +364,9 @@ const Profile = () => {
         { backgroundColor: dark ? COLORS.dark2 : COLORS.grayscale100 },
       ]}
     >
-      <StatusBar style={dark ? 'light' : 'dark'} backgroundColor="#79C2F8" />
+      {/* {currentPage === 'profile' && (
+        <StatusBar style={dark ? 'light' : 'dark'} backgroundColor="#79C2F8" />
+      )} */}
       <View style={[styles.container, { backgroundColor: colors.background }]}>
         <LinearGradient
           colors={['#79C2F8', '#B6CFE4']}

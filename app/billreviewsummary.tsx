@@ -112,9 +112,11 @@ const BillReviewSummary = () => {
       return;
     }
     const reqData = {
-      amount: billerItemDetails?.itemFee !== null && billerItemDetails?.itemFee !== "0.00"
-      ? billerItemDetails.itemFee
-      : formState.inputValues.amount,
+      amount:
+        billerItemDetails?.itemFee !== null &&
+        billerItemDetails?.itemFee !== '0.00'
+          ? billerItemDetails.itemFee
+          : formState.inputValues.amount,
       billerId: billerItemDetails?.billerId,
       billerItemId: billerItemDetails?.id.toString(),
       customerId: formState.inputValues.customerId,
@@ -149,11 +151,6 @@ const BillReviewSummary = () => {
     });
   };
 
-  useEffect(() => {
-    console.log('rerendering..');
-  }, []);
-  // console.log(billerItemDetails);
-
   return (
     <SafeAreaView style={[styles.area, { backgroundColor: colors.background }]}>
       {
@@ -165,7 +162,8 @@ const BillReviewSummary = () => {
           disabled={isBillPaying}
           onPress={handlePaymentClick}
         />
-      }{
+      }
+      {
         <CustomModal
           btnText={'Error'}
           modalVisible={errorModal}
@@ -177,10 +175,11 @@ const BillReviewSummary = () => {
       }
 
       <View style={[styles.container, { backgroundColor: colors.background }]}>
+        <Header title={`Pay ${billerItemDetails?.paymentitemname} Bill`} />
         {/* <Header title={billerItemDetails} /> */}
         {/* <ScrollView showsVerticalScrollIndicator={false}> */}
         <View style={styles.viewViewContainer}>
-          <Text
+          {/* <Text
             style={[
               styles.title,
               {
@@ -189,7 +188,7 @@ const BillReviewSummary = () => {
             ]}
           >
             Pay {billerItemDetails?.paymentitemname} Bill
-          </Text>
+          </Text> */}
           <View style={{ marginVertical: 12 }}>
             <Text
               style={[
@@ -365,13 +364,19 @@ const BillReviewSummary = () => {
         />
         <Input
           id="amount"
-          value={billerItemDetails?.itemFee !== null && billerItemDetails?.itemFee !== "0.00"
-            ? billerItemDetails.itemFee
-            : formState.inputValues.amount}
+          value={
+            billerItemDetails?.itemFee !== null &&
+            billerItemDetails?.itemFee !== '0.00'
+              ? billerItemDetails.itemFee
+              : formState.inputValues.amount
+          }
           onInputChanged={inputChangedHandler}
           errorText={formState.inputValidities['amount']}
           placeholder="Amount"
-          editable={billerItemDetails?.itemFee === null || billerItemDetails?.itemFee === "0.00"}
+          editable={
+            billerItemDetails?.itemFee === null ||
+            billerItemDetails?.itemFee === '0.00'
+          }
           placeholderTextColor={dark ? COLORS.grayTie : COLORS.black}
           icon={icons.wallet}
           keyboardType="number-pad"
@@ -383,7 +388,7 @@ const BillReviewSummary = () => {
           disabled={isValidating}
           style={styles.continueBtn}
           onPress={handleValidateCustomer}
-        // onPress={() => navigate('paybillssuccessful')}
+          // onPress={() => navigate('paybillssuccessful')}
         />
         {/* </ScrollView> */}
       </View>

@@ -13,25 +13,24 @@ import { authSliceActions, useAppSelector } from '@/store/slices/authSlice';
 import { AppState } from 'react-native';
 import { useDispatch } from 'react-redux';
 import { useNavigation, useNavigationState } from '@react-navigation/native';
-import { act } from 'react-test-renderer';
+import { currentPageActions } from '@/store/slices/currentPageSlice';
 
 const TokenExpiryModal = () => {
   const [visible, setVisible] = useState(false);
   const { token } = useAppSelector((state) => state.auth);
-  const [currentTab, setCurrentTab] = useState('');
   const currentStateRef = useRef(AppState.currentState);
   const currentTabRef = useRef('');
-  const [backgroundTime, setBackgroundTime] = useState<number | null>(null);
+  const backGroundTimeRef = useRef<number | null>(null);
   const dispatch = useDispatch();
   const navigation = useNavigation();
 
   useEffect(() => {
-    console.log('registered');
     const naivgationListener = navigation.addListener('state', (e) => {
       const activeIndex = e.data?.state?.index;
       const acitveTabName = e.data?.state?.routes[activeIndex]?.name;
       console.log('TokenExpiryModal: ' + acitveTabName);
       currentTabRef.current = acitveTabName;
+      dispatch(currentPageActions.setCurrentPage(acitveTabName));
       // setCurrentTab(acitveTabName);
     });
 
@@ -40,10 +39,6 @@ const TokenExpiryModal = () => {
     };
   }, []);
 
-  // const currentIndex = useNavigationState(
-  //   (state) => state.routes[state.index].name
-  // );
-  console.log(currentTab);
   useEffect(() => {
     const backHandler = BackHandler.addEventListener(
       'hardwareBackPress',
@@ -85,20 +80,18 @@ const TokenExpiryModal = () => {
   const handleAppStateChange = (state: AppStateStatus) => {
     if (state === 'background' && currentStateRef.current === 'active') {
       console.log('expiry started');
-
-      setBackgroundTime((prev) => Date.now());
-      // startTokenExpiryTimer();
+      backGroundTimeRef.current = Date.now();
       currentStateRef.current = state;
     } else if (state === 'active' && currentStateRef.current === 'background') {
       // stopTokenExpiryTimer();
-      console.log(backgroundTime);
+      const backgroundTime = backGroundTimeRef.current;
       if (backgroundTime) {
-        console.log('by');
         const timeDiff = Date.now() - backgroundTime;
         console.log(timeDiff);
-        if (timeDiff > 2 * 60 * 1000) {
+        if (timeDiff > 0.1 * 60 * 1000) {
           dispatch(authSliceActions.clearToken());
-          setBackgroundTime(null);
+          console.log('token expired');
+          backGroundTimeRef.current = null;
           setVisible(true);
         }
       }
@@ -136,7 +129,7 @@ const TokenExpiryModal = () => {
       title="Sorry, your session has been expired, please login again to continue."
       onPress={() => {
         setVisible(false);
-        router.replace('/login'); 
+        router.replace('/login');
       }}
     />
   );

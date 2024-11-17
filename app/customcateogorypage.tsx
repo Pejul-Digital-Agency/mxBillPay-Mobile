@@ -28,8 +28,6 @@ import { Route } from 'expo-router/build/Route';
 import { useAppSelector } from '@/store/slices/authSlice';
 import { darkColors } from '@/theme/colors';
 
-
-
 type Nav = {
   navigate: (value: number) => void;
 };
@@ -43,9 +41,6 @@ const CustomCategoryPage = () => {
     billerCategory,
   }: { billerCategory: IBillerCategory; billerItems: IBillerItemsList } =
     route.params as any;
-  // if (!params) {
-  //   return router.push('/(tabs)');
-  // }
   const { colors, dark } = useTheme();
   const { navigate, setParams } = useNavigation<NavigationProp<any>>();
   const [itemId, setItemId] = useState('');
@@ -76,22 +71,45 @@ const CustomCategoryPage = () => {
     return (
       <TouchableOpacity
         style={{
-          backgroundColor: dark ? COLORS.dark2 : COLORS.white,
-          paddingHorizontal: SIZES.padding * 2,
-          paddingVertical: SIZES.padding * 1.5,
-          borderRadius: SIZES.radius,
-          marginBottom: SIZES.padding,
+          ...styles.itemContainer,
+          backgroundColor: dark ? COLORS.dark2 : COLORS.secondaryWhite,
         }}
         onPress={() => handleClickItem(itemId)}
       >
+        <Image
+          source={icons.electricity}
+          contentFit="cover"
+          style={{
+            ...styles.itemImage,
+            tintColor: dark ? COLORS.white : COLORS.greyscale900,
+          }}
+        />
         <Text
           style={{
+            ...styles.itemName,
             color: dark ? COLORS.white : COLORS.greyscale900,
-            fontSize: SIZES.h3,
           }}
         >
           {itemName}
         </Text>
+        <View style={styles.itemRow}>
+          <Text
+            style={{
+              ...styles.itemCashbackText,
+              color: dark ? COLORS.greyscale300 : COLORS.greyscale600,
+            }}
+          >
+            1% Cashback
+          </Text>
+          <View style={styles.itemStatRow}>
+            <Image
+              source={icons.upOutlined}
+              contentFit="contain"
+              style={styles.itemStatImage}
+            />
+            <Text style={styles.itemStatText}>5</Text>
+          </View>
+        </View>
       </TouchableOpacity>
     );
   };
@@ -102,9 +120,16 @@ const CustomCategoryPage = () => {
         renderItem={({ item }) =>
           renderListItem(item.paymentitemname, item.id.toString())
         }
+        style={{ gap: 12 }}
         keyExtractor={(item, index) => item.id.toString()}
         showsVerticalScrollIndicator={false}
-        numColumns={1}
+        numColumns={2}
+        scrollEnabled={false}
+        columnWrapperStyle={{
+          justifyContent: 'space-between',
+          gap: 12,
+          flexDirection: 'row',
+        }}
       />
     );
   };
@@ -267,6 +292,47 @@ const styles = StyleSheet.create({
   },
   continueBtn: {
     marginVertical: 22,
+  },
+  itemContainer: {
+    padding: 16, // Adjusted for SIZES.padding * 2
+    width: '48%',
+    rowGap: 8,
+    borderRadius: 12,
+    marginBottom: 16, // Adjusted for SIZES.padding
+    alignItems: 'flex-start',
+  },
+  itemImage: {
+    height: 24,
+    width: 24,
+    borderRadius: 50,
+  },
+  itemName: {
+    fontSize: 16, // Adjusted for SIZES.h4
+    fontWeight: '600',
+  },
+  itemRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    width: '100%',
+  },
+  itemCashbackText: {
+    fontSize: 12,
+  },
+  itemStatRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4, // This might require polyfilling if `gap` is not supported in your React Native version
+  },
+  itemStatImage: {
+    height: 20,
+    width: 20,
+    tintColor: '#primary', // Static color; replace with dynamic color if needed
+  },
+  itemStatText: {
+    fontSize: 12,
+    fontWeight: 'thin', // Adjusted to '100' if needed as 'thin' isn't valid for React Native
+    color: '#primary', // Static color; replace with dynamic color if needed
   },
 });
 

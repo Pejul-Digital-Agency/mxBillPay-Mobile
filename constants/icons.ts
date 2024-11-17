@@ -413,11 +413,14 @@ const mcdonalds = require('../assets/icons/mcdonalds.png') as string;
 const netflix = require('../assets/icons/netflix.png') as string;
 const airbnb = require('../assets/icons/airbnb.png') as string;
 const amazon = require('../assets/icons/amazon.png') as string;
+const upOutlined = require('../assets/icons/upoutline.png') as string;
+const attachFile = require('../assets/icons/attach-file.png') as string;
 // const eyeFill = require('../assets/icons/eyefill.png') as string;
 
 const icons = {
   addFileOutline,
   addFile,
+  attachFile,
   arrowBack,
   arrowDown,
   arrowRight,
@@ -496,6 +499,7 @@ const icons = {
   trash,
   unlock,
   upAndDownArrow,
+  upOutlined,
   userOutline,
   user,
   videoCameraOutline,

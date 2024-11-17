@@ -22,8 +22,10 @@ const rectangleCard = require('../assets/images/rectangle-card.png');
 const mxlogo = require('../assets/images/mxlogo.png');
 const eyefill = require('../assets/images/eyefill.png');
 const infoCircleFilled = require('../assets/images/infocirclefilled.png');
+const coverImage = require('../assets/images/coverImg.jpg');
 
 const images = {
+  coverImage,
   mxlogo,
   logo,
   eyefill,

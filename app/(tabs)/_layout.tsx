@@ -7,20 +7,12 @@ import { useAppSelector } from '@/store/slices/authSlice';
 import TokenExpiryModal from '../tokenexpirymodal';
 import { useEffect } from 'react';
 import { NavigationProp, useRoute } from '@react-navigation/native';
+import { StatusBar } from 'react-native';
 
 const TabLayout: React.FC = () => {
   const { token, userProfile } = useAppSelector((state) => state.auth);
   const { navigate, setParams } = useNavigation<NavigationProp<any>>();
   const { dark } = useTheme();
-  useEffect(() => {
-    if (!token) {
-      // Redirect to login if no token
-      navigate('login');
-    }else if(!userProfile?.firstName){
-      // Redirect to dashboard if user is logged in
-      navigate('fillyourprofile');
-    }
-  }, [token, navigate]);
 
   return (
     <>

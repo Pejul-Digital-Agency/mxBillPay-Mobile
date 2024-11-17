@@ -1,12 +1,14 @@
 import { configureStore } from '@reduxjs/toolkit';
 import authReducer from './slices/authSlice';
 import pusherReducer from './slices/pusherSlice';
+import currentPageReducer from './slices/currentPageSlice';
 // ...
 
 export const store = configureStore({
   reducer: {
     pusher: pusherReducer,
     auth: authReducer,
+    currPage: currentPageReducer,
   },
 });
 
