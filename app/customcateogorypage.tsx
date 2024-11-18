@@ -157,28 +157,6 @@ const CustomCategoryPage = () => {
             >
               Choose category of {billerItems?.category?.category} bills
             </Text>
-            {/* <View style={{ marginVertical: 12 }}>
-              <Text
-                style={[
-                  styles.subtitle,
-                  {
-                    color: dark ? COLORS.greyscale300 : COLORS.greyScale800,
-                  },
-                ]}
-              >
-                Pay {categoryName} bills safely, conveniently & easily.
-              </Text>
-              <Text
-                style={[
-                  styles.subtitle,
-                  {
-                    color: dark ? COLORS.greyscale300 : COLORS.greyScale800,
-                  },
-                ]}
-              >
-                You can pay anytime and anywhere!
-              </Text>
-            </View> */}
             <View
               style={[
                 styles.separateLine,
@@ -191,35 +169,6 @@ const CustomCategoryPage = () => {
             />
           </View>
           {renderList()}
-          {/* <Text
-            style={[
-              styles.idText,
-              {
-                color: dark ? COLORS.white : COLORS.greyscale900,
-              },
-            ]}
-          >
-            Customer ID
-          </Text>
-          <TextInput
-            value={value}
-            onChangeText={setValue}
-            placeholder="37173838939"
-            style={[
-              styles.idInput,
-              {
-                backgroundColor: dark ? COLORS.dark2 : '#FAFAFA',
-                color: dark ? COLORS.white : COLORS.greyscale900,
-              },
-            ]}
-            placeholderTextColor={dark ? COLORS.white : COLORS.greyscale900}
-          /> */}
-          {/* <Button
-            title="Continue"
-            filled
-            style={styles.continueBtn}
-            onPress={() => navigate('paybillselectricityreviewsummary')}
-          /> */}
         </ScrollView>
       </View>
       {isLoading && <Loader />}
@@ -327,12 +276,12 @@ const styles = StyleSheet.create({
   itemStatImage: {
     height: 20,
     width: 20,
-    tintColor: '#primary', // Static color; replace with dynamic color if needed
+    tintColor: COLORS.primary, // Static color; replace with dynamic color if needed
   },
   itemStatText: {
     fontSize: 12,
     fontWeight: 'thin', // Adjusted to '100' if needed as 'thin' isn't valid for React Native
-    color: '#primary', // Static color; replace with dynamic color if needed
+    color: COLORS.primary, // Static color; replace with dynamic color if needed
   },
 });
 

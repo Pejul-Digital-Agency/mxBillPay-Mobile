@@ -64,7 +64,7 @@ type Nav = {
 };
 
 const Login = () => {
-  const { navigate } = useNavigation<NavigationProp<any>>();
+  const { navigate, reset } = useNavigation<NavigationProp<any>>();
   const [formState, dispatchFormState] = useReducer(reducer, initialState);
   const [isChecked, setChecked] = useState(false);
   const [isBiometricAvailable, setIsBiometricAvailable] = useState(false);
@@ -82,6 +82,7 @@ const Login = () => {
           userProfile: data.user,
         })
       );
+      reset({ index: 0, routes: [{ name: '(tabs)' }] });
       navigate('(tabs)');
     },
     onError: (error) => {
@@ -120,7 +121,6 @@ const Login = () => {
     });
 
   const handleLogin = async () => {
-   
     if (!formState.formIsValid) {
       showToast({
         type: 'error',
@@ -136,22 +136,22 @@ const Login = () => {
   };
 
   const handleForgotPassword = async () => {
-    console.log("Forgot Password Clicked");
-    console.log("Email Validity:", formState.inputValidities.email);
-    console.log("Entered Email:", formState.inputValues.email);
+    console.log('Forgot Password Clicked');
+    console.log('Email Validity:', formState.inputValidities.email);
+    console.log('Entered Email:', formState.inputValues.email);
 
     if (!formState.inputValues.email) {
-        // Show a modal for entering their email
-        console.log("Email is not valid or not provided");
-        // setModalVisible(true);
-        return;
+      // Show a modal for entering their email
+      console.log('Email is not valid or not provided');
+      // setModalVisible(true);
+      return;
     }
 
     // Proceed if email is valid
     mutateForgotPassword({
-        email: formState.inputValues.email as string,
+      email: formState.inputValues.email as string,
     });
-};
+  };
   const inputChangedHandler = useCallback(
     (inputId: string, inputValue: string) => {
       const result = validateInput(inputId, inputValue);
@@ -376,7 +376,7 @@ const Login = () => {
             </View>
           )}
         </View>
-        
+
         {/* <WebView
           source={{ uri: 'https://services.vfdtech.ng/' }}
           style={{
@@ -390,7 +390,6 @@ const Login = () => {
             height: '100%',
           }}
         /> */}
-        
       </SafeAreaView>
     </>
   );
