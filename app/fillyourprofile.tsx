@@ -10,6 +10,7 @@ import {
   FlatList,
   Keyboard,
   TextInput,
+  BackHandler,
 } from 'react-native';
 import React, { useCallback, useEffect, useReducer, useState } from 'react';
 import { COLORS, SIZES, FONTS, icons } from '../constants';
@@ -37,6 +38,8 @@ import CustomModal from './custommodal';
 import { generateBvnLink } from '@/utils/mutations/authMutations';
 import * as Linking from 'expo-linking';
 import { checkBvnStatus } from '@/utils/queries/accountQueries';
+import { NavigationProp } from '@react-navigation/native';
+import SuccessModal from '@/components/SuccessModal';
 
 type imageType = {
   name: string;
@@ -92,14 +95,14 @@ type Nav = {
 };
 
 const FillYourProfile = () => {
-  const { navigate } = useNavigation<Nav>();
+  const { navigate, reset } = useNavigation<NavigationProp<any>>();
   const dispatch = useDispatch();
   const { token, userId } = useAppSelector((state) => state.auth);
   const { channel } = useAppSelector((state) => state.pusher);
-  const [userBvn, setUserBvn] = useState('');
-  const [redirectURL, setRedirectURL] = useState('');
-  const [generateModalVisible, setGenerateModalVisible] = useState(false);
-  const [redirectModalVisible, setRedirectModalVisible] = useState(false);
+  // const [userBvn, setUserBvn] = useState('');
+  // const [redirectURL, setRedirectURL] = useState('');
+  // const [generateModalVisible, setGenerateModalVisible] = useState(false);
+  // const [redirectModalVisible, setRedirectModalVisible] = useState(false);
   const [image, setImage] = useState<any>(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [formState, dispatchFormState] = useReducer(reducer, initialState);
@@ -113,8 +116,10 @@ const FillYourProfile = () => {
     mutationFn: createIndividualAccount,
     onSuccess: (data) => {
       console.log(data);
-      setUserBvn(data?.data?.bvn);
-      setGenerateModalVisible(true);
+      reset({ index: 0, routes: [{ name: 'fillyourprofile' }] });
+      setModalVisible(true);
+      // setUserBvn(data?.data?.bvn);
+      // setGenerateModalVisible(true);
       // dispatch(initializePusher(userId || data?.data.user_id));
     },
     onError: (error) => {
@@ -126,63 +131,62 @@ const FillYourProfile = () => {
     },
   });
 
-  const { mutate: generateURL, isPending: generatingURL } = useMutation({
-    mutationFn: generateBvnLink,
-    onSuccess: (data) => {
-      console.log(data);
-      const bvnUrl = data?.data?.url;
-      if (bvnUrl) {
-        setRedirectURL(bvnUrl);
-        setGenerateModalVisible(false);
-        openInExternalBrowserAndLogout(bvnUrl); // Redirect to browser and logout
-      }
-    },
-    onError: (data) => {
-      console.log(data);
-    },
-  });
+  // const { mutate: generateURL, isPending: generatingURL } = useMutation({
+  //   mutationFn: generateBvnLink,
+  //   onSuccess: (data) => {
+  //     console.log(data);
+  //     const bvnUrl = data?.data?.url;
+  //     if (bvnUrl) {
+  //       setRedirectURL(bvnUrl);
+  //       setGenerateModalVisible(false);
+  //       openInExternalBrowserAndLogout(bvnUrl); // Redirect to browser and logout
+  //     }
+  //   },
+  //   onError: (data) => {
+  //     console.log(data);
+  //   },
+  // });
 
-  const { data: bvnStatus, refetch } = useQuery({
-    queryKey: ['bvnConsentStatus'],
-    queryFn: () => checkBvnStatus(token),
-    refetchInterval: (data) => {
-      if (data.state.data?.status == 'active') {
-        console.log('activated');
-        return false;
-      } else {
-        console.log('pending');
-        return 1000;
-      }
-    },
-  });
-//call the api for checking bvn status
+  // const { data: bvnStatus, refetch } = useQuery({
+  //   queryKey: ['bvnConsentStatus'],
+  //   queryFn: () => checkBvnStatus(token),
+  //   refetchInterval: (data) => {
+  //     if (data.state.data?.status == 'active') {
+  //       console.log('activated');
+  //       return false;
+  //     } else {
+  //       console.log('pending');
+  //       return 1000;
+  //     }
+  //   },
+  // });
+  //call the api for checking bvn status
 
   // Redirect to external browser and log out
-  const openInExternalBrowserAndLogout = async (url: string) => {
-    dispatch(authSliceActions.clearToken()); // Clear token and log out user
-    await Linking.openURL(url); // Open the external browser
-  };
+  // const openInExternalBrowserAndLogout = async (url: string) => {
+  //   dispatch(authSliceActions.clearToken()); // Clear token and log out user
+  //   await Linking.openURL(url); // Open the external browser
+  // };
 
-  const handleGenerateLink = async () => {
-    console.log('generating link');
-    console.log(userId);
-    generateURL({
-      data: {
-        bvn: userBvn,
-        type: '02',
-      },
-      token,
-    });
-  };
+  // const handleGenerateLink = async () => {
+  //   console.log('generating link');
+  //   console.log(userId);
+  //   generateURL({
+  //     data: {
+  //       bvn: userBvn,
+  //       type: '02',
+  //     },
+  //     token,
+  //   });
+  // };
 
-  useEffect(() => {
-    console.log(bvnStatus);
-    if (bvnStatus?.status == 'active') {
-      console.log('accepted');
-      router.push('/login');
-      
-    }
-  }, [bvnStatus]);
+  // useEffect(() => {
+  //   console.log(bvnStatus);
+  //   if (bvnStatus?.status == 'active') {
+  //     console.log('accepted');
+  //     router.push('/login');
+  //   }
+  // }, [bvnStatus]);
 
   const today = new Date();
   const endData = getFormatedDate(
@@ -223,29 +227,15 @@ const FillYourProfile = () => {
       return;
     }
     const { firstName, lastName, bvn, phoneNumber } = formState.inputValues;
-    const extension = image?.fileName.split('.').pop();
-    console.log(extension);
-    const data = {
-      userId,
-      firstName: firstName as string,
-      lastName: lastName as string,
-      bvn: bvn as string,
-      dob: startedDate,
-      phone: phoneNumber as string,
-      profilePicture: {
-        uri: image?.uri,
-        type: image?.mimeType,
-        name: image?.fileName,
-      },
-    };
-
+    // const extension = image?.fileName.split('.').pop();
+    // console.log(extension);
     const formData = new FormData();
     formData.append('userId', userId);
-    formData.append('firstName', data.firstName);
-    formData.append('lastName', data.lastName);
-    formData.append('bvn', data.bvn);
-    formData.append('dob', data.dob);
-    formData.append('phone', data.phone);
+    formData.append('firstName', firstName);
+    formData.append('lastName', lastName);
+    formData.append('bvn', bvn);
+    formData.append('dob', startedDate);
+    formData.append('phone', phoneNumber);
     formData.append('profilePicture', {
       uri: image?.uri,
       name: image?.fileName,
@@ -308,10 +298,7 @@ const FillYourProfile = () => {
         style={[styles.area, { backgroundColor: colors.background }]}
       >
         <View
-          style={[
-            styles.container,
-            { backgroundColor: colors.background },
-          ]}
+          style={[styles.container, { backgroundColor: colors.background }]}
         >
           <Header title="Fill Your Profile" />
           <ScrollView showsVerticalScrollIndicator={false}>
@@ -470,6 +457,12 @@ const FillYourProfile = () => {
             />
           </View>
         )}
+        <SuccessModal
+          modalVisible={modalVisible}
+          setModalVisible={setModalVisible}
+          onPress={() => BackHandler.exitApp()}
+          buttonTitle="Close App"
+        />
         {/* <CustomModal
           btnText="Go to URL"
           modalVisible={redirectModalVisible}
@@ -477,14 +470,14 @@ const FillYourProfile = () => {
           onPress={handleGoToBVNConsent}
           title={`${redirectURL}`}
         /> */}
-        <CustomModal
+        {/* <CustomModal
           btnText={generatingURL ? 'Generating...' : 'Generate Link'}
           modalVisible={generateModalVisible}
           disabled={generatingURL}
           setModalVisible={setGenerateModalVisible}
           onPress={handleGenerateLink}
           title="Generating your link requires your BVN consent. Please click below to get your bvn consent link"
-        />
+        /> */}
       </SafeAreaView>
     </>
   );

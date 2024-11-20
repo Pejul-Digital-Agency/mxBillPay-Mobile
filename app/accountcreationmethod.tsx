@@ -23,7 +23,9 @@ type Nav = {
 const AccountCreationMethod = () => {
   const dispatch = useDispatch();
   const { navigate } = useNavigation<Nav>();
-  const [selectedMethod, setSelectedMethod] = useState('individual');
+  const [selectedMethod, setSelectedMethod] = useState<
+    'individual' | 'cooperate'
+  >('individual');
   const { colors, dark } = useTheme();
 
   const handleMethodPress = (method: any) => {

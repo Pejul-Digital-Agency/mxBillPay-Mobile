@@ -7,6 +7,8 @@ interface modalProps extends React.ComponentProps<typeof TouchableOpacity> {
   setModalVisible: React.Dispatch<React.SetStateAction<boolean>>;
   title: string;
   btnText: string;
+  btn2Text?: string;
+  onPress2?: () => void;
 }
 
 const CustomModal = ({
@@ -14,6 +16,8 @@ const CustomModal = ({
   setModalVisible,
   title,
   btnText,
+  btn2Text,
+  onPress2,
   ...props
 }: modalProps) => {
   return (
@@ -26,9 +30,25 @@ const CustomModal = ({
       <View style={styles.modalBackdrop}>
         <View style={styles.modalContainer}>
           <Text style={{ textAlign: 'center', ...FONTS.h3 }}>{title}</Text>
-          <TouchableOpacity style={styles.modalButton} {...props}>
-            <Text style={styles.modalButtonText}>{btnText}</Text>
-          </TouchableOpacity>
+          <View
+            style={{
+              flexDirection: 'row',
+              width: '100%',
+              justifyContent: btn2Text ? 'space-between' : 'center',
+            }}
+          >
+            <TouchableOpacity
+              style={[styles.modalButton, { width: btn2Text ? '40%' : '50%' }]}
+              {...props}
+            >
+              <Text style={styles.modalButtonText}>{btnText}</Text>
+            </TouchableOpacity>
+            {btn2Text && (
+              <TouchableOpacity style={styles.modalButton} onPress={onPress2}>
+                <Text style={styles.modalButtonText}>{btn2Text}</Text>
+              </TouchableOpacity>
+            )}
+          </View>
         </View>
       </View>
     </Modal>

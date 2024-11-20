@@ -10,6 +10,7 @@ import {
   FlatList,
   Keyboard,
   TextInput,
+  BackHandler,
 } from 'react-native';
 import React, { useCallback, useEffect, useReducer, useState } from 'react';
 import { COLORS, SIZES, FONTS, icons } from '../constants';
@@ -33,6 +34,8 @@ import { useAppSelector } from '@/store/slices/authSlice';
 import { createCooperateAccount } from '@/utils/mutations/accountMutations';
 import FileInput from '@/components/FIleInput';
 import PhoneInput from '@/components/PhoneInput';
+import SuccessModal from '@/components/SuccessModal';
+import { NavigationProp } from '@react-navigation/native';
 
 export interface ICooperateClient {
   userId: string;
@@ -84,8 +87,8 @@ type Nav = {
 };
 
 const CreateCorporateAccount = () => {
-  const { navigate } = useNavigation<Nav>();
-  // const [modalVisible, setModalVisible] = useState(false);
+  const { navigate, reset } = useNavigation<NavigationProp<any>>();
+  const [modalVisible, setModalVisible] = useState(false);
   const [image, setImage] = useState<any>(null);
   const [openStartDatePicker, setOpenStartDatePicker] = useState(false);
   const [cacCertificate, setCacCertificate] = useState<any>(null);
@@ -101,6 +104,8 @@ const CreateCorporateAccount = () => {
     mutationFn: createCooperateAccount,
     onSuccess: (data) => {
       console.log(data);
+      reset({ index: 0, routes: [{ name: 'fillyourprofile' }] });
+      setModalVisible(true);
     },
     onError: (error) => {
       console.log(error);
@@ -320,6 +325,12 @@ const CreateCorporateAccount = () => {
           />
         </View>
       )}
+      <SuccessModal
+        onPress={() => BackHandler.exitApp()}
+        buttonTitle="Close App"
+        modalVisible={modalVisible}
+        setModalVisible={setModalVisible}
+      />
     </SafeAreaView>
   );
 };

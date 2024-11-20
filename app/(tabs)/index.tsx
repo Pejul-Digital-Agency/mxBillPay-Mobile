@@ -56,7 +56,7 @@ const HomeScreen = () => {
   const [bvnStatusMessage, setBvnStatusMessage] = useState('');
   const [btnText, setBtnText] = useState('Generate Link');
   const [modalTitle, setModalTitle] = useState('');
-  const { navigate, setParams } = useNavigation<NavigationProp<any>>();
+  const { navigate, setParams  } = useNavigation<NavigationProp<any>>();
   const [selectedCategory, setSelectedCategory] =
     React.useState<IBillerCategory | null>(null);
   const [isSelectedBankPayment, setIsSelectedBankPayment] =

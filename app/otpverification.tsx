@@ -18,6 +18,7 @@ import {
 import { useAppSelector } from '@/store/slices/authSlice';
 import showToast from '@/utils/showToast';
 import { TouchableOpacity } from 'react-native-gesture-handler';
+import { NavigationProp } from '@react-navigation/native';
 
 type Nav = {
   navigate: (value: string) => void;
@@ -37,11 +38,14 @@ type EmailData = {
 };
 
 const OTPVerification = () => {
-  const { navigate } = useNavigation<Nav>();
+  const { navigate, goBack } = useNavigation<NavigationProp<any>>();
   const [timeInterval, setTimeInterval] = useState<NodeJS.Timeout | null>(null);
   const [time, setTime] = useState(45);
   const { colors, dark } = useTheme();
+  //check for params
   const { type } = useLocalSearchParams<Params>();
+  if (!type) return goBack();
+
   const [otp, setOtp] = useState('');
   const [timerOut, setTimerOut] = useState(false);
   const { userId, userEmail, token } = useAppSelector((state) => state.auth);
@@ -56,8 +60,8 @@ const OTPVerification = () => {
     onSuccess: (data) => {
       console.log('Email verified: ', data);
       type == 'email'
-        ? router.push('/accountcreationmethod')
-        : router.push('/createnewpassword');
+        ? router.replace('/accountcreationmethod')
+        : router.replace('/createnewpassword');
     },
     onError: (error) => {
       console.log(error);
@@ -141,7 +145,10 @@ const OTPVerification = () => {
   return (
     <SafeAreaView style={[styles.area, { backgroundColor: colors.background }]}>
       <View style={[styles.container, { backgroundColor: colors.background }]}>
-        <Header title={type == 'email' ? 'Verify Email' : 'Forgot Password'} />
+        <Header
+          title={type == 'email' ? 'Verify Email' : 'Forgot Password'}
+          backWarning={true}
+        />
         <ScrollView>
           <Text
             style={[
