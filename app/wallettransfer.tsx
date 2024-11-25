@@ -10,7 +10,7 @@ import { useNavigation } from 'expo-router';
 import RBSheet from 'react-native-raw-bottom-sheet';
 import { Image } from 'expo-image';
 import { NavigationProp, useRoute } from '@react-navigation/native';
-import { IBankDetails } from '@/utils/queries/billPayment';
+import { IBankDetails } from '@/utils/queries/appQueries';
 import Input from '@/components/Input';
 import { reducer } from '@/utils/reducers/formReducers';
 import { validateInput } from '@/utils/actions/formActions';
@@ -143,7 +143,6 @@ const WalletTransfer = () => {
               height: 80,
               width: 80,
               borderRadius: 50,
- 
             }}
           />
           {/* <Text

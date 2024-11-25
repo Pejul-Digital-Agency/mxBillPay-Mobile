@@ -11,7 +11,7 @@ const API_ENDPOINTS = {
     VerifyPasswordOtp: API_DOMAIN + '/auth/reset-password-otp-verification',
     ResetPassword: API_DOMAIN + '/auth/reset-password',
     CheckBvnStatus: API_DOMAIN + '/check-user-status',
-    CheckBvnVerified:API_DOMAIN+'/check-bvn-status'
+    CheckBvnVerified: API_DOMAIN + '/check-bvn-status',
   },
   ACCOUNT_MANAGEMENT: {
     GetUserProfileData: API_DOMAIN + '/edit-profile-details',
@@ -30,6 +30,7 @@ const API_ENDPOINTS = {
   },
   BILL_MANAGEMENT: {
     GetBillerCategories: API_DOMAIN + '/biller-categories-fetch',
+    GetBillerProviders: API_DOMAIN + '/get-provider',
     GetBillerItems: API_DOMAIN + '/biller-items-fetch',
     GetBillerItemDetails: API_DOMAIN + '/biller-Item-details',
     ValidateCustomer: API_DOMAIN + '/Validate-Customer',

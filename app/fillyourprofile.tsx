@@ -41,18 +41,12 @@ import { checkBvnStatus } from '@/utils/queries/accountQueries';
 import { NavigationProp } from '@react-navigation/native';
 import SuccessModal from '@/components/SuccessModal';
 
-type imageType = {
-  name: string;
-  type: string;
-  uri: string;
-};
 export interface IClientCreation {
   userId: string;
   firstName: string;
   lastName: string;
   dob: string;
   phone: string;
-  bvn: string;
   profilePicture: {
     uri: string;
     type: string;
@@ -63,13 +57,11 @@ type initialStateType = {
   inputValues: {
     firstName: string;
     lastName: string;
-    bvn: string;
     phoneNumber: string;
   };
   inputValidities: {
     firstName: boolean;
     lastName: boolean;
-    bvn: boolean;
     phoneNumber: boolean;
   };
   formIsValid: boolean;
@@ -78,13 +70,11 @@ const initialState: initialStateType = {
   inputValues: {
     firstName: '',
     lastName: '',
-    bvn: '',
     phoneNumber: '',
   },
   inputValidities: {
     firstName: false,
     lastName: false,
-    bvn: false,
     phoneNumber: false,
   },
   formIsValid: false,
@@ -99,10 +89,6 @@ const FillYourProfile = () => {
   const dispatch = useDispatch();
   const { token, userId } = useAppSelector((state) => state.auth);
   const { channel } = useAppSelector((state) => state.pusher);
-  // const [userBvn, setUserBvn] = useState('');
-  // const [redirectURL, setRedirectURL] = useState('');
-  // const [generateModalVisible, setGenerateModalVisible] = useState(false);
-  // const [redirectModalVisible, setRedirectModalVisible] = useState(false);
   const [image, setImage] = useState<any>(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [formState, dispatchFormState] = useReducer(reducer, initialState);
@@ -117,10 +103,7 @@ const FillYourProfile = () => {
     onSuccess: (data) => {
       console.log(data);
       reset({ index: 0, routes: [{ name: 'fillyourprofile' }] });
-      setModalVisible(true);
-      // setUserBvn(data?.data?.bvn);
-      // setGenerateModalVisible(true);
-      // dispatch(initializePusher(userId || data?.data.user_id));
+      navigate('login');
     },
     onError: (error) => {
       console.log(error);
@@ -130,63 +113,6 @@ const FillYourProfile = () => {
       });
     },
   });
-
-  // const { mutate: generateURL, isPending: generatingURL } = useMutation({
-  //   mutationFn: generateBvnLink,
-  //   onSuccess: (data) => {
-  //     console.log(data);
-  //     const bvnUrl = data?.data?.url;
-  //     if (bvnUrl) {
-  //       setRedirectURL(bvnUrl);
-  //       setGenerateModalVisible(false);
-  //       openInExternalBrowserAndLogout(bvnUrl); // Redirect to browser and logout
-  //     }
-  //   },
-  //   onError: (data) => {
-  //     console.log(data);
-  //   },
-  // });
-
-  // const { data: bvnStatus, refetch } = useQuery({
-  //   queryKey: ['bvnConsentStatus'],
-  //   queryFn: () => checkBvnStatus(token),
-  //   refetchInterval: (data) => {
-  //     if (data.state.data?.status == 'active') {
-  //       console.log('activated');
-  //       return false;
-  //     } else {
-  //       console.log('pending');
-  //       return 1000;
-  //     }
-  //   },
-  // });
-  //call the api for checking bvn status
-
-  // Redirect to external browser and log out
-  // const openInExternalBrowserAndLogout = async (url: string) => {
-  //   dispatch(authSliceActions.clearToken()); // Clear token and log out user
-  //   await Linking.openURL(url); // Open the external browser
-  // };
-
-  // const handleGenerateLink = async () => {
-  //   console.log('generating link');
-  //   console.log(userId);
-  //   generateURL({
-  //     data: {
-  //       bvn: userBvn,
-  //       type: '02',
-  //     },
-  //     token,
-  //   });
-  // };
-
-  // useEffect(() => {
-  //   console.log(bvnStatus);
-  //   if (bvnStatus?.status == 'active') {
-  //     console.log('accepted');
-  //     router.push('/login');
-  //   }
-  // }, [bvnStatus]);
 
   const today = new Date();
   const endData = getFormatedDate(
@@ -226,14 +152,13 @@ const FillYourProfile = () => {
       });
       return;
     }
-    const { firstName, lastName, bvn, phoneNumber } = formState.inputValues;
+    const { firstName, lastName, phoneNumber } = formState.inputValues;
     // const extension = image?.fileName.split('.').pop();
     // console.log(extension);
     const formData = new FormData();
     formData.append('userId', userId);
     formData.append('firstName', firstName);
     formData.append('lastName', lastName);
-    formData.append('bvn', bvn);
     formData.append('dob', startedDate);
     formData.append('phone', phoneNumber);
     formData.append('profilePicture', {
@@ -242,10 +167,10 @@ const FillYourProfile = () => {
       type: image?.mimeType,
     } as any);
 
-    console.log(formData);
+    console.log(token);
     mutate({
       data: formData,
-      token,
+      token: '404|cDtqU5ZpUSnuvV9aPrCS3UdySFUCqSyGgVwzssrt9d581b18',
     });
   };
 
@@ -333,14 +258,14 @@ const FillYourProfile = () => {
                 placeholder="Last Name"
                 placeholderTextColor={COLORS.gray}
               />
-              <Input
+              {/* <Input
                 id="bvn"
                 onInputChanged={inputChangedHandler}
                 errorText={formState.inputValidities['bvn']}
                 placeholder="Bank Verification Number (bvn)"
                 placeholderTextColor={COLORS.gray}
                 keyboardType="numeric"
-              />
+              /> */}
               <View
                 style={{
                   width: SIZES.width - 32,

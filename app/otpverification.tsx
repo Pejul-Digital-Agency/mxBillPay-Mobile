@@ -60,7 +60,7 @@ const OTPVerification = () => {
     onSuccess: (data) => {
       console.log('Email verified: ', data);
       type == 'email'
-        ? router.replace('/accountcreationmethod')
+        ? router.replace('/fillyourprofile')
         : router.replace('/createnewpassword');
     },
     onError: (error) => {

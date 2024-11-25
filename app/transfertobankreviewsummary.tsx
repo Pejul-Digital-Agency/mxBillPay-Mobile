@@ -9,7 +9,7 @@ import { Image } from 'expo-image';
 import Button from '@/components/Button';
 import { router, useNavigation } from 'expo-router';
 import { NavigationProp, useRoute } from '@react-navigation/native';
-import { IBankDetails } from '@/utils/queries/billPayment';
+import { IBankDetails } from '@/utils/queries/appQueries';
 import {
   IRecepeintDetails,
   transferMoney,

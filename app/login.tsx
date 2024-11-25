@@ -59,10 +59,6 @@ const initialState: FormState = {
   formIsValid: false,
 };
 
-type Nav = {
-  navigate: (value: string) => void;
-};
-
 const Login = () => {
   const { navigate, reset } = useNavigation<NavigationProp<any>>();
   const [formState, dispatchFormState] = useReducer(reducer, initialState);
@@ -70,7 +66,6 @@ const Login = () => {
   const [isBiometricAvailable, setIsBiometricAvailable] = useState(false);
   const [keyboardVisible, setKeyboardVisible] = useState(false);
   const { colors, dark } = useTheme();
-  const { token } = useAppSelector((state) => state.auth);
   const dispatch = useDispatch();
   const { isPending: isPendingLogin, mutate: mutateLogin } = useMutation({
     mutationFn: (data: InputValues) => loginUser(data),
@@ -230,21 +225,6 @@ const Login = () => {
     handleBiometricAuth();
   }, [isBiometricAvailable]);
 
-  // Implementing apple authentication
-  const appleAuthHandler = () => {
-    console.log('Apple Authentication');
-  };
-
-  // Implementing facebook authentication
-  const facebookAuthHandler = () => {
-    console.log('Facebook Authentication');
-  };
-
-  // Implementing google authentication
-  const googleAuthHandler = () => {
-    console.log('Google Authentication');
-  };
-
   return (
     <>
       <SafeAreaView
@@ -342,21 +322,6 @@ const Login = () => {
                 Forgot the password?
               </Text>
             </TouchableOpacity>
-            {/* <View>
-              <OrSeparator text="or continue with" />
-              <View style={styles.socialBtnContainer}>
-                <SocialButton
-                  icon={icons.appleLogo}
-                  onPress={appleAuthHandler}
-                  tintColor={dark ? COLORS.white : COLORS.black}
-                />
-                <SocialButton
-                  icon={icons.facebook}
-                  onPress={facebookAuthHandler}
-                />
-                <SocialButton icon={icons.google} onPress={googleAuthHandler} />
-              </View>
-            </View> */}
           </ScrollView>
           {!keyboardVisible && (
             <View style={styles.bottomContainer}>

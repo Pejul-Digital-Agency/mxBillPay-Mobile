@@ -14,15 +14,29 @@ export const getBillerCategories = async ({
   );
 };
 
+export const getBillerProviders = async (
+  categoryId: string,
+  token: string
+): Promise<IBillerProvidersResponse> => {
+  return await apiCall(
+    `${API_ENDPOINTS.BILL_MANAGEMENT.GetBillerProviders}/${categoryId}`,
+    'GET',
+    undefined,
+    token
+  );
+};
+
 export const getBillerItems = async ({
   categoryId,
+  providerId,
   token,
 }: {
   categoryId: string;
+  providerId: string;
   token: string;
 }): Promise<IBillerItemsListData> => {
   return await apiCall(
-    `${API_ENDPOINTS.BILL_MANAGEMENT.GetBillerItems}/${categoryId}`,
+    `${API_ENDPOINTS.BILL_MANAGEMENT.GetBillerItems}/${categoryId}/${providerId}`,
     'GET',
     undefined,
     token
@@ -79,6 +93,17 @@ export interface IBillerCategory {
   iconColor?: string;
 }
 
+interface IBillerProvidersResponse {
+  status: 'success' | 'error';
+  data: IProviderData[];
+}
+
+export interface IProviderData {
+  id: number;
+  title: string;
+  slug: string;
+  logo: string;
+}
 export interface IBillerItemsList {
   category: {
     id: number;
@@ -86,12 +111,13 @@ export interface IBillerItemsList {
     icon?: string;
     iconColor?: string;
   };
-  itemList: [
-    {
-      id: number;
-      paymentitemname: string;
-    }
-  ];
+  itemList: IBillerItem[];
+}
+
+export interface IBillerItem {
+  id: number;
+  paymentitemname: string;
+  logo: string;
 }
 
 interface IBillerItemsListData {

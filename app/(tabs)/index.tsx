@@ -28,7 +28,7 @@ import {
   getBillerCategories,
   getBillerItems,
   IBillerCategory,
-} from '@/utils/queries/billPayment';
+} from '@/utils/queries/appQueries';
 import Loader from '../loader';
 import { useAppSelector } from '@/store/slices/authSlice';
 import {
@@ -50,18 +50,15 @@ type Nav = {
 
 const HomeScreen = () => {
   const dispatch = useDispatch();
-  const [showModal, setShowModal] = useState(false);
   const [generateModalVisible, setGenerateModalVisible] = useState(false);
-  const [generatingURL, setGeneratingURL] = useState(false);
-  const [bvnStatusMessage, setBvnStatusMessage] = useState('');
-  const [btnText, setBtnText] = useState('Generate Link');
   const [modalTitle, setModalTitle] = useState('');
-  const { navigate, setParams  } = useNavigation<NavigationProp<any>>();
+  const { navigate, setParams } = useNavigation<NavigationProp<any>>();
   const [selectedCategory, setSelectedCategory] =
     React.useState<IBillerCategory | null>(null);
   const [isSelectedBankPayment, setIsSelectedBankPayment] =
     React.useState(false);
   const { token, userProfile } = useAppSelector((state) => state.auth);
+  const { dark, colors } = useTheme();
 
   const { data: billerCategories, isLoading: isLoadingCategories } = useQuery({
     queryKey: ['billCategories'],
@@ -79,16 +76,6 @@ const HomeScreen = () => {
     enabled: !!token,
   });
 
-  const { data: billerItemsData, isLoading: isPendingItems } = useQuery({
-    queryKey: ['billCategories', selectedCategory?.category],
-    queryFn: () =>
-      getBillerItems({
-        categoryId: selectedCategory?.id.toString() as string,
-        token,
-      }),
-    enabled: selectedCategory != null,
-  });
-
   const { data: banksData, isLoading: isLoadingBanks } = useQuery({
     queryKey: ['billerMethod'],
     queryFn: () => {
@@ -99,83 +86,6 @@ const HomeScreen = () => {
     enabled: isSelectedBankPayment,
   });
 
-  const { data: bvnCheckStatus, refetch: refetchBvnStatus } = useQuery({
-    queryKey: ['bvnVerificationStatus'],
-    queryFn: () => verifyBvnStatus(token),
-    enabled: !!token,
-  });
-
-  // This effect checks BVN status and shows the modal accordingly
-  useEffect(() => {
-    const checkBvnStatusAgain = async () => {
-      if (bvnCheckStatus?.status === 'unchecked') {
-        try {
-          const response = await checkBvnStatus(token);
-          if (response?.status === 'active') {
-            setModalTitle('Your BVN is verified! Enjoy full access.');
-            setBtnText('Close');
-            setGenerateModalVisible(true);
-          } else {
-            setModalTitle(
-              'Generating your link requires your BVN consent. Please click below to get your BVN consent link'
-            );
-            setBtnText('Generate Link');
-            setGenerateModalVisible(true);
-          }
-        } catch (error) {
-          console.error('Error checking BVN status again:', error);
-        }
-      } else if (bvnCheckStatus?.status === 'checked') {
-        console.log('BVN is checked. No further action needed.');
-      }
-    };
-
-    checkBvnStatusAgain();
-  }, [bvnCheckStatus]);
-
-  const handleGenerateLink = async () => {
-    try {
-      setGeneratingURL(true);
-      const response = await generateBvnLinkAgain({ token });
-      setGeneratingURL(false);
-
-      if (response?.data?.url) {
-        setBtnText('Open in Browser');
-        setModalTitle('Click below to review and consent.');
-        setGenerateModalVisible(true);
-
-        // Function to open in external browser and clear token
-        const openInBrowser = async () => {
-          await Linking.openURL(response.data.url);
-          dispatch(authSliceActions.clearToken()); // Clear token for logout
-        };
-        setBtnText('Open in Browser');
-      } else {
-        console.log('Failed to generate consent link');
-      }
-    } catch (error) {
-      console.error('Error generating BVN consent link:', error);
-      setGeneratingURL(false);
-    }
-  };
-
-  const { dark, colors } = useTheme();
-
-  useEffect(() => {
-    // Redirect to login if no token
-    if (!token) {
-      setParams(StackActions.replace('login'));
-    } else if (!userProfile?.firstName) {
-      setParams(StackActions.replace('fillyourprofile'));
-    }
-  }, [token, userProfile, setParams]);
-
-  useEffect(() => {
-    if (billerItemsData?.data) {
-      navigate('customcateogorypage', { billerItems: billerItemsData?.data });
-    }
-  }, [billerItemsData]);
-
   useEffect(() => {
     if (banksData?.data) {
       navigate('transfertobankselectbank', { data: banksData?.data });
@@ -183,14 +93,7 @@ const HomeScreen = () => {
   }, [banksData]);
 
   const handleClickCategory = (category: IBillerCategory) => {
-    if (selectedCategory === category && billerItemsData?.data) {
-      navigate('customcateogorypage', {
-        billerCategory: selectedCategory,
-        billerItems: billerItemsData?.data,
-      });
-      return;
-    }
-    setSelectedCategory(category);
+    navigate('billerItems', { categoryData: category });
   };
 
   const handleNavigateToBankTransfer = () => {
@@ -199,17 +102,6 @@ const HomeScreen = () => {
       return;
     }
     setIsSelectedBankPayment(true);
-  };
-  const handleOpenInBrowser = async () => {
-    try {
-      const response = await generateBvnLinkAgain({ token });
-      if (response?.data?.url) {
-        await Linking.openURL(response.data.url);
-        dispatch(authSliceActions.clearToken()); // Clear token after opening
-      }
-    } catch (error) {
-      console.error('Error opening browser:', error);
-    }
   };
 
   const handleWalletTransfer = () => {
@@ -260,11 +152,12 @@ const HomeScreen = () => {
       <View style={styles.cardContainer}>
         <View style={styles.topCardContainer}>
           <TouchableOpacity
+            style={{ flexDirection: 'row', alignItems: 'center' }}
             onPress={() => navigate('accountdetails')}
             activeOpacity={0.7}
           >
-            <Text style={styles.username}>{'Account No'}</Text>
-            <Text style={styles.cardNum}>{userProfile?.accountNumber}</Text>
+            <Text style={styles.username}>{'Fund Wallet'}</Text>
+            {/* <Text style={styles.cardNum}>{userProfile?.accountNumber}</Text> */}
           </TouchableOpacity>
           <Image
             source={images.mxlogo}
@@ -330,10 +223,7 @@ const HomeScreen = () => {
                 name={item.category}
                 icon={item?.icon || icons.send}
                 iconColor={item?.iconColor || colors.primary}
-                backgroundColor={
-                  COLORS.grayscale100
-                  // dark ? COLORS.greyScale800 : COLORS.grayscale100
-                }
+                backgroundColor={COLORS.grayscale100}
                 onPress={() => handleClickCategory(item)}
               />
             )}
@@ -370,27 +260,7 @@ const HomeScreen = () => {
           {rederTransactionsHistory()}
         </ScrollView>
       </View>
-      {(isLoadingBanks ||
-        isPendingItems ||
-        isLoadingCategories ||
-        loadingTransfer) && <Loader />}
-      {/* Modal for requesting BVN verification or showing success */}
-      <CustomModal
-        btnText={generatingURL ? 'Generating...' : btnText}
-        modalVisible={generateModalVisible}
-        disabled={generatingURL}
-        setModalVisible={setGenerateModalVisible}
-        onPress={() => {
-          if (btnText === 'Close') {
-            setGenerateModalVisible(false);
-          } else if (btnText === 'Open in Browser') {
-            handleOpenInBrowser();
-          } else {
-            handleGenerateLink();
-          }
-        }}
-        title={modalTitle}
-      />
+      {(isLoadingBanks || isLoadingCategories || loadingTransfer) && <Loader />}
     </SafeAreaView>
   );
 };
@@ -464,10 +334,10 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   username: {
-    fontSize: 16,
-    fontFamily: 'regular',
+    fontSize: 20,
+    fontFamily: 'bold',
     color: COLORS.white,
-    marginBottom: 4,
+    // marginBottom: 4,
   },
   cardNum: {
     fontSize: 18,

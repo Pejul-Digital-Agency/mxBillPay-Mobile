@@ -18,7 +18,7 @@ const ScreenStacks = () => {
         <Stack.Screen name="welcome" />
         <Stack.Screen name="login" />
         <Stack.Screen name="signup" />
-        <Stack.Screen name="accountcreationmethod" />
+        {/* <Stack.Screen name="accountcreationmethod" /> */}
         <Stack.Screen name="otpverification" />
         <Stack.Screen name="forgotpasswordmethods" />
         <Stack.Screen name="forgotpasswordphonenumber" />
@@ -34,14 +34,14 @@ const ScreenStacks = () => {
         <Stack.Screen name="scanqrcode" />
         <Stack.Screen name="fillyourprofile" />
         <Stack.Screen name="notifications" />
-        <Stack.Screen name="address" />
-        <Stack.Screen name="addnewaddress" />
+        {/* <Stack.Screen name="address" />
+        <Stack.Screen name="addnewaddress" /> */}
         <Stack.Screen name="editprofile" />
         <Stack.Screen name="settingshelpcenter" />
         <Stack.Screen name="settingssecurity" />
         <Stack.Screen name="settingslanguage" />
         <Stack.Screen name="settingsnotifications" />
-        <Stack.Screen name="addnewcard" />
+        {/* <Stack.Screen name="addnewcard" /> */}
         <Stack.Screen name="changeemail" />
         <Stack.Screen name="changepassword" />
         <Stack.Screen name="changepin" />
@@ -49,6 +49,7 @@ const ScreenStacks = () => {
         <Stack.Screen name="settingsinvitefriends" />
         <Stack.Screen name="customerservice" />
         <Stack.Screen name="allservices" />
+        <Stack.Screen name="billerItems" />
         <Stack.Screen name="promoanddiscount" />
         <Stack.Screen name="paybillselectricitycustomerid" />
         <Stack.Screen name="paybillselectricityreviewsummary" />

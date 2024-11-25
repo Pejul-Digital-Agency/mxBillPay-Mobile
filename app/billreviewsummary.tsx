@@ -9,7 +9,7 @@ import { Image } from 'expo-image';
 import Button from '@/components/Button';
 import { useNavigation } from 'expo-router';
 import { NavigationProp, useRoute } from '@react-navigation/native';
-import { IBillerItemDetails } from '@/utils/queries/billPayment';
+import { IBillerItemDetails } from '@/utils/queries/appQueries';
 import { IPayBill, payBillFn } from '@/utils/mutations/accountMutations';
 import { validateCustomer } from '@/utils/mutations/accountMutations';
 import { useMutation } from '@tanstack/react-query';

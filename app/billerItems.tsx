@@ -20,64 +20,64 @@ import {
   getBillerItemDetails,
   getBillerItems,
   IBillerCategory,
-} from '@/utils/queries/billPayment';
+  IBillerItem,
+  IBillerItemDetails,
+  IProviderData,
+} from '@/utils/queries/appQueries';
 import { NavigationProp, RouteProp, useRoute } from '@react-navigation/native';
 import Loader from './loader';
-import { IBillerItemsList } from '@/utils/queries/billPayment';
-import { Route } from 'expo-router/build/Route';
+import { IBillerItemsList } from '@/utils/queries/appQueries';
 import { useAppSelector } from '@/store/slices/authSlice';
 import { darkColors } from '@/theme/colors';
 
 type Nav = {
   navigate: (value: number) => void;
 };
-const CustomCategoryPage = () => {
+const BillerItems = () => {
   const route = useRoute<RouteProp<any>>();
   if (!route.params || Object.keys(route.params).length == 0)
     return router.push('/(tabs)');
   const { token } = useAppSelector((state) => state.auth);
   const {
-    billerItems,
-    billerCategory,
-  }: { billerCategory: IBillerCategory; billerItems: IBillerItemsList } =
+    categoryData,
+    providerData,
+  }: { categoryData: IBillerCategory; providerData: IProviderData } =
     route.params as any;
   const { colors, dark } = useTheme();
   const { navigate, setParams } = useNavigation<NavigationProp<any>>();
-  const [itemId, setItemId] = useState('');
-  const { data, error, isLoading } = useQuery({
-    queryKey: ['billerItems', itemId],
-    queryFn: () => getBillerItemDetails({ itemId, token }),
-    enabled: itemId !== '',
+  const {
+    data: billerItemsData,
+    isLoading: isPendingItems,
+    error: errorItems,
+  } = useQuery({
+    queryKey: ['billCategories', categoryData?.id],
+    queryFn: () =>
+      getBillerItems({
+        categoryId: categoryData?.id.toString() as string,
+        providerId: providerData?.id.toString() as string,
+        token,
+      }),
+    enabled: categoryData != null || providerData != null,
   });
 
-  const handleClickItem = (id: string) => {
-    if (itemId == id && data?.data) {
-      navigate('billreviewsummary', {
-        billerItemDetails: data?.data,
-      });
-      return;
-    }
-    setItemId(id);
+  const handleClickItem = (id: number) => {
+    navigate('billreviewsummary', { itemId: id.toString() });
   };
-  useEffect(() => {
-    if (data?.data) {
-      navigate('billreviewsummary', {
-        billerItemDetails: data?.data,
-      });
-    }
-  }, [data]);
 
-  const renderListItem = (itemName: string, itemId: string) => {
+  // console.log(billerItemsData);
+  // error && console.log(error);
+
+  const renderListItem = ({ id, logo, paymentitemname }: IBillerItem) => {
     return (
       <TouchableOpacity
         style={{
           ...styles.itemContainer,
           backgroundColor: dark ? COLORS.dark2 : COLORS.secondaryWhite,
         }}
-        onPress={() => handleClickItem(itemId)}
+        onPress={() => handleClickItem(id)}
       >
         <Image
-          source={icons.electricity}
+          source={logo}
           contentFit="cover"
           style={{
             ...styles.itemImage,
@@ -90,7 +90,7 @@ const CustomCategoryPage = () => {
             color: dark ? COLORS.white : COLORS.greyscale900,
           }}
         >
-          {itemName}
+          {paymentitemname}
         </Text>
         <View style={styles.itemRow}>
           <Text
@@ -113,13 +113,12 @@ const CustomCategoryPage = () => {
       </TouchableOpacity>
     );
   };
+
   const renderList = () => {
     return (
       <FlatList
-        data={billerItems?.itemList || []}
-        renderItem={({ item }) =>
-          renderListItem(item.paymentitemname, item.id.toString())
-        }
+        data={billerItemsData?.data.itemList || []}
+        renderItem={({ item }) => renderListItem(item)}
         style={{ gap: 12 }}
         keyExtractor={(item, index) => item.id.toString()}
         showsVerticalScrollIndicator={false}
@@ -133,18 +132,20 @@ const CustomCategoryPage = () => {
       />
     );
   };
+
   return (
     <SafeAreaView style={[styles.area, { backgroundColor: colors.background }]}>
+      {isPendingItems && <Loader />}
       <View style={[styles.container, { backgroundColor: colors.background }]}>
-        <Header title={billerItems?.category?.category} />
+        <Header title={billerItemsData?.data?.category.category || ''} />
         <ScrollView showsVerticalScrollIndicator={false}>
           <View style={styles.viewContainer}>
             <View style={styles.iconContainer}>
               <Image
-                source={billerItems?.category?.icon || icons.send}
+                source={billerItemsData?.data?.category?.icon || icons.send}
                 contentFit="contain"
                 style={styles.icon}
-                tintColor={billerItems?.category?.iconColor}
+                tintColor={billerItemsData?.data?.category?.iconColor}
               />
             </View>
             <Text
@@ -155,7 +156,8 @@ const CustomCategoryPage = () => {
                 },
               ]}
             >
-              Choose category of {billerItems?.category?.category} bills
+              Choose category of {billerItemsData?.data?.category?.category}{' '}
+              bills
             </Text>
             <View
               style={[
@@ -171,7 +173,7 @@ const CustomCategoryPage = () => {
           {renderList()}
         </ScrollView>
       </View>
-      {isLoading && <Loader />}
+      {isPendingItems && <Loader />}
     </SafeAreaView>
   );
 };
@@ -285,4 +287,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default CustomCategoryPage;
+export default BillerItems;

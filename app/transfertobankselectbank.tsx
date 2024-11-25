@@ -17,7 +17,7 @@ import BankItem from '@/components/BankItem';
 import Button from '@/components/Button';
 import { useNavigation } from 'expo-router';
 import { NavigationProp, useRoute } from '@react-navigation/native';
-import { IBankDetails } from '@/utils/queries/billPayment';
+import { IBankDetails } from '@/utils/queries/appQueries';
 
 const TransferToBankSelectBank = () => {
   const { navigate, goBack } = useNavigation<NavigationProp<any>>();
