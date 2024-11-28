@@ -23,14 +23,14 @@ export const getUnreadNotifications = async (
     token
   );
 };
-export const markAllRead=async(token:string)=>{
+export const markAllRead = async (token: string) => {
   return await apiCall(
     API_ENDPOINTS.ACCOUNT_MANAGEMENT.markAllNotificationsAsRead,
     'GET',
     undefined,
     token
   );
-}
+};
 
 export const checkBvnStatus = async (
   token: string
@@ -73,19 +73,26 @@ export const getTransferHistory = async (
     token
   );
 };
-export const generateBvnLinkAgain = async ({
-  token,
-}: {
- 
-  token: string;
-}) => {
+export const generateBvnLinkAgain = async ({ token }: { token: string }) => {
   return await apiCall(
     API_ENDPOINTS.ACCOUNT_MANAGEMENT.RequestBvnConsent,
     'POST',
-undefined,
+    undefined,
     token
   );
 };
+
+export const getFundAccountNo = async (
+  token: string
+): Promise<IFundAccResponse> => {
+  return await apiCall(
+    API_ENDPOINTS.MONEY_TRANSFER.GetFundAccountNo,
+    'GET',
+    undefined,
+    token
+  );
+};
+
 interface IUserProfileResponse {
   status: string;
   data: IUserProfileData;
@@ -101,29 +108,6 @@ export interface IUserProfileData {
   dob: string | null;
   email: string;
 }
-// export interface IUserProfileData {
-//   id: number;
-//   user_id: number;
-//   account_number: string;
-//   profile_picture: string;
-//   account_type: string;
-//   status: string;
-//   bvn: string;
-//   created_at: string;
-//   updated_at: string;
-//   firstName: string;
-//   lastName: string;
-//   phone: string;
-//   accountBalance: string;
-//   accountId: string;
-//   client: string;
-//   clientId: string;
-//   savingsProductName: string;
-//   nickName: string | null;
-//   gender: string | null;
-//   occupation: string | null;
-//   user: User;
-// }
 
 interface User {
   id: number;
@@ -201,4 +185,15 @@ export interface IBillTransaction {
 interface IBillTransactionResponse {
   status: 'success' | 'error';
   data: IBillTransaction[];
+}
+
+interface IFundAccResponse {
+  status: 'success' | 'error';
+  message: string;
+  data: AccData;
+}
+
+interface AccData {
+  accountNumber: string;
+  expiryDate: string;
 }

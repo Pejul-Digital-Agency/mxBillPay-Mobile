@@ -31,7 +31,6 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import { createIndividualAccount } from '@/utils/mutations/accountMutations';
 import showToast from '@/utils/showToast';
 import { authSliceActions, useAppSelector } from '@/store/slices/authSlice';
-import { initializePusher } from '@/store/slices/pusherSlice';
 import { useDispatch } from 'react-redux';
 import { PusherEvent } from '@pusher/pusher-websocket-react-native';
 import CustomModal from './custommodal';
@@ -87,8 +86,7 @@ type Nav = {
 const FillYourProfile = () => {
   const { navigate, reset } = useNavigation<NavigationProp<any>>();
   const dispatch = useDispatch();
-  const { token, userId } = useAppSelector((state) => state.auth);
-  const { channel } = useAppSelector((state) => state.pusher);
+  const { token } = useAppSelector((state) => state.auth);
   const [image, setImage] = useState<any>(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [formState, dispatchFormState] = useReducer(reducer, initialState);
@@ -97,7 +95,7 @@ const FillYourProfile = () => {
   const [keyboardVisible, setKeyboardVisible] = useState(false);
   const [startedDate, setStartedDate] = useState(`-Select your Date of Birth`);
   const { colors, dark } = useTheme();
-
+  console.log(token);
   const { mutate, isPending } = useMutation({
     mutationFn: createIndividualAccount,
     onSuccess: (data) => {
@@ -156,7 +154,6 @@ const FillYourProfile = () => {
     // const extension = image?.fileName.split('.').pop();
     // console.log(extension);
     const formData = new FormData();
-    formData.append('userId', userId);
     formData.append('firstName', firstName);
     formData.append('lastName', lastName);
     formData.append('dob', startedDate);
@@ -170,7 +167,7 @@ const FillYourProfile = () => {
     console.log(token);
     mutate({
       data: formData,
-      token: '404|cDtqU5ZpUSnuvV9aPrCS3UdySFUCqSyGgVwzssrt9d581b18',
+      token: token,
     });
   };
 

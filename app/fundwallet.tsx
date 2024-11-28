@@ -1,7 +1,10 @@
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { getTransferHistory } from '@/utils/queries/accountQueries';
+import {
+  getFundAccountNo,
+  getTransferHistory,
+} from '@/utils/queries/accountQueries';
 import { useAppSelector } from '@/store/slices/authSlice';
 import SubHeaderItem from '@/components/SubHeaderItem';
 import { useNavigation } from 'expo-router';
@@ -14,8 +17,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Loader from './loader';
 import * as ClipBoard from 'expo-clipboard';
 import showToast from '@/utils/showToast';
+import { formatDate } from '@/utils/helpers/formatDate';
 
-const accountdetails = () => {
+const FundWallet = () => {
   const { token, userProfile } = useAppSelector((state) => state.auth);
   const { navigate, goBack } = useNavigation<NavigationProp<any>>();
   const { dark, colors } = useTheme();
@@ -30,10 +34,20 @@ const accountdetails = () => {
     enabled: !!token,
   });
 
+  const {
+    data: fundData,
+    isLoading: loadingFund,
+    error: errorFund,
+  } = useQuery({
+    queryKey: ['fundWallet'],
+    queryFn: () => getFundAccountNo(token),
+    enabled: !!token,
+  });
+
   const handleCopyAccountNo = async () => {
     try {
-      if (userProfile?.accountNumber) {
-        await ClipBoard.setStringAsync(userProfile?.accountNumber);
+      if (fundData?.data?.accountNumber) {
+        await ClipBoard.setStringAsync(fundData.data.accountNumber);
         showToast({
           type: 'success',
           text1: 'Account number copied to clipboard',
@@ -74,17 +88,6 @@ const accountdetails = () => {
             In & Out Payment
           </Text>
         </View>
-        {/* <View style={styles.headerRight}>
-          <TouchableOpacity>
-            <Image
-              source={icons.moreCircle}
-              contentFit='contain'
-              style={[styles.searchIcon, {
-                tintColor: dark ? COLORS.secondaryWhite : COLORS.greyscale900
-              }]}
-            />
-          </TouchableOpacity>
-        </View> */}
       </View>
     );
   };
@@ -162,7 +165,7 @@ const accountdetails = () => {
                 color: dark ? COLORS.white : COLORS.greyscale900,
               }}
             >
-              Vfd Microfinance Bank
+              Account No:
             </Text>
             <Text
               style={{
@@ -170,7 +173,7 @@ const accountdetails = () => {
                 color: dark ? COLORS.secondaryWhite : COLORS.greyScale800,
               }}
             >
-              0.5% Charge
+              {fundData?.data?.accountNumber}
             </Text>
           </View>
           <View
@@ -188,6 +191,8 @@ const accountdetails = () => {
             >
               {userProfile?.accountNumber}
             </Text>
+
+            {/* Copy Button */}
             <TouchableOpacity
               style={{
                 ...styles.copyButton,
@@ -204,9 +209,13 @@ const accountdetails = () => {
             </TouchableOpacity>
           </View>
         </View>
+        <Text style={{ color: COLORS.red, fontSize: 12, textAlign: 'center' }}>
+          Account number is valid until{' '}
+          {fundData?.data?.expiryDate && formatDate(fundData?.data?.expiryDate)}
+        </Text>
 
         {/* Withdraw Section */}
-        <View style={styles.withdrawBox}>
+        {/* <View style={styles.withdrawBox}>
           <View>
             <Text
               style={{
@@ -228,7 +237,7 @@ const accountdetails = () => {
           <TouchableOpacity style={styles.withdrawButton}>
             <Text style={styles.withdrawButtonText}>Withdraw</Text>
           </TouchableOpacity>
-        </View>
+        </View> */}
       </>
     );
   };
@@ -242,9 +251,19 @@ const accountdetails = () => {
           onPress={() => navigate('inoutpaymenthistory')}
         />
         <View style={{ marginBottom: 12 }}>
-          <TransferHistory
-            transferData={transferData?.data.splice(0, 2) || []}
-          />
+          {transferData?.data && (
+            <TransferHistory
+              transferData={transferData?.data.splice(0, 2) || []}
+            />
+          )}
+          {!transferData?.data ||
+            (transferData?.data.length == 0 && (
+              <Text
+                style={{ color: COLORS.red, fontSize: 16, textAlign: 'center' }}
+              >
+                No recent transactions
+              </Text>
+            ))}
         </View>
       </View>
     );
@@ -262,7 +281,7 @@ const accountdetails = () => {
   );
 };
 
-export default accountdetails;
+export default FundWallet;
 
 const styles = StyleSheet.create({
   area: {

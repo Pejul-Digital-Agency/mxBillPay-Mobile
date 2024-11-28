@@ -18,6 +18,7 @@ const ScreenStacks = () => {
         <Stack.Screen name="welcome" />
         <Stack.Screen name="login" />
         <Stack.Screen name="signup" />
+        <Stack.Screen name="fundwallet" />
         {/* <Stack.Screen name="accountcreationmethod" /> */}
         <Stack.Screen name="otpverification" />
         <Stack.Screen name="forgotpasswordmethods" />

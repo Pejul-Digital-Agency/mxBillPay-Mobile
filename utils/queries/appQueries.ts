@@ -117,6 +117,7 @@ export interface IBillerItemsList {
 export interface IBillerItem {
   id: number;
   paymentitemname: string;
+  percentageComission: string;
   logo: string;
 }
 

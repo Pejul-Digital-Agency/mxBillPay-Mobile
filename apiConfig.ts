@@ -42,6 +42,7 @@ const API_ENDPOINTS = {
     Trasnsfer: API_DOMAIN + '/transfer',
     GetRecepientDetails: API_DOMAIN + '/recepient-details',
     GetTransactionStatus: API_DOMAIN + '/transaction-Status',
+    GetFundAccountNo: API_DOMAIN + '/fund-account',
   },
 };
 

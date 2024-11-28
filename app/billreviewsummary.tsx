@@ -9,10 +9,13 @@ import { Image } from 'expo-image';
 import Button from '@/components/Button';
 import { useNavigation } from 'expo-router';
 import { NavigationProp, useRoute } from '@react-navigation/native';
-import { IBillerItemDetails } from '@/utils/queries/appQueries';
+import {
+  getBillerItemDetails,
+  IBillerItemDetails,
+} from '@/utils/queries/appQueries';
 import { IPayBill, payBillFn } from '@/utils/mutations/accountMutations';
 import { validateCustomer } from '@/utils/mutations/accountMutations';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import CustomModal from './custommodal';
 import { useAppSelector } from '@/store/slices/authSlice';
 import LabeledInput from '@/components/LabeledInput';
@@ -21,6 +24,7 @@ import { reducer } from '@/utils/reducers/formReducers';
 import { validateInput } from '@/utils/actions/formActions';
 import showToast from '@/utils/showToast';
 import { billServices } from '@/data';
+import { applyCommission } from '@/utils/helpers/commissionedFee';
 
 interface InputValues {
   customerId: string;
@@ -64,8 +68,15 @@ const BillReviewSummary = () => {
   const [errorModal, setErrorModal] = React.useState(false);
   const [errorModalText, setErrorModalText] = React.useState('');
   if (!route.params) return navigate('/(tabs)');
-  const { billerItemDetails }: { billerItemDetails: IBillerItemDetails } =
-    route.params as any;
+  const { itemId }: { itemId: string } = route.params as any;
+  const { data, isLoading, isError, error } = useQuery({
+    queryKey: ['billerItems', itemId],
+    queryFn: () =>
+      getBillerItemDetails({
+        itemId,
+        token,
+      }),
+  });
   const { mutate: validate, isPending: isValidating } = useMutation({
     mutationFn: validateCustomer,
     onSuccess: (data) => {
@@ -111,24 +122,25 @@ const BillReviewSummary = () => {
       });
       return;
     }
-    const reqData = {
-      amount:
-        billerItemDetails?.itemFee !== null &&
-        billerItemDetails?.itemFee !== '0.00'
-          ? billerItemDetails.itemFee
-          : formState.inputValues.amount,
-      billerId: billerItemDetails?.billerId,
-      billerItemId: billerItemDetails?.id.toString(),
-      customerId: formState.inputValues.customerId,
-      phoneNumber: formState.inputValues.phone,
-      userId,
-    };
-    console.log(reqData);
-    // console.log(reqData);
-    payBill({
-      data: reqData,
-      token,
-    });
+    if (data) {
+      const reqData = {
+        amount:
+          data.data?.itemFee !== null && data.data?.itemFee !== '0.00'
+            ? data.data.itemFee
+            : formState.inputValues.amount,
+        billerId: data.data?.billerId,
+        billerItemId: data.data?.id.toString(),
+        customerId: formState.inputValues.customerId,
+        phoneNumber: formState.inputValues.phone,
+        userId,
+      };
+      console.log(reqData);
+      // console.log(reqData);
+      payBill({
+        data: reqData,
+        token,
+      });
+    }
   };
   const handleErrorModal = () => {
     setErrorModal(false);
@@ -142,13 +154,164 @@ const BillReviewSummary = () => {
       });
       return;
     }
-    validate({
-      data: {
-        customerId: formState.inputValues.customerId,
-        id: billerItemDetails?.id.toString(),
-      },
-      token,
-    });
+    if (data) {
+      validate({
+        data: {
+          customerId: formState.inputValues.customerId,
+          id: data.data?.id.toString(),
+        },
+        token,
+      });
+    }
+  };
+
+  const TopContainerItem = ({
+    title,
+    value,
+  }: {
+    title: string;
+    value: string;
+  }) => {
+    return (
+      <View style={styles.view}>
+        <Text
+          style={[
+            styles.viewLeft,
+            {
+              color: dark ? COLORS.greyscale300 : COLORS.grayscale700,
+            },
+          ]}
+        >
+          {title}
+        </Text>
+        <Text
+          style={[
+            styles.viewRight,
+            {
+              color: dark ? COLORS.white : COLORS.greyscale900,
+            },
+          ]}
+        >
+          {value}
+        </Text>
+      </View>
+    );
+  };
+
+  const SeparateLine = () => {
+    return (
+      <View
+        style={[
+          styles.separateLine,
+          {
+            backgroundColor: dark ? COLORS.greyscale900 : COLORS.grayscale200,
+          },
+        ]}
+      />
+    );
+  };
+
+  const renderTopContainer = () => {
+    return (
+      <>
+        <View style={styles.viewViewContainer}>
+          {/* Title Section */}
+          <View style={{ marginVertical: 16 }}>
+            <Text
+              style={[
+                styles.subtitle,
+                {
+                  color: dark ? COLORS.greyscale300 : COLORS.greyScale800,
+                },
+              ]}
+            >
+              Pay {data?.data?.paymentitemname} bills safely, conveniently &
+              easily.
+            </Text>
+            <Text
+              style={[
+                styles.subtitle,
+                {
+                  color: dark ? COLORS.greyscale300 : COLORS.greyScale800,
+                },
+              ]}
+            >
+              You can pay anytime and anywhere!
+            </Text>
+          </View>
+
+          <SeparateLine />
+        </View>
+        <View
+          style={[
+            styles.viewContainer,
+            {
+              backgroundColor: dark ? COLORS.dark2 : '#FAFAFA',
+            },
+          ]}
+        >
+          <TopContainerItem
+            title={`Bill Amount (${data?.data?.itemCurrencySymbol})`}
+            value={data?.data?.itemFee || '0.00'}
+          />
+          {/* <View style={styles.view}>
+            <Text
+              style={[
+                styles.viewLeft,
+                {
+                  color: dark ? COLORS.greyscale300 : COLORS.grayscale700,
+                },
+              ]}
+            >
+              Bill Amount ({data?.data?.itemCurrencySymbol})
+            </Text>
+            <Text
+              style={[
+                styles.viewRight,
+                {
+                  color: dark ? COLORS.white : COLORS.greyscale900,
+                },
+              ]}
+            >
+              {data?.data?.itemFee
+                ? applyCommission(
+                    data?.data?.percentage_commission,
+                    data?.data?.itemFee
+                  )
+                : 'Enter Amount Below'}
+            </Text>
+          </View> */}
+          {data?.data?.itemFee && data.data.itemFee !== '0.00' && (
+            <>
+              <TopContainerItem
+                title="Fixed Charges"
+                value={data?.data?.fixed_commission}
+              />
+              <TopContainerItem
+                title="Percentage Charges"
+                value={data?.data?.percentage_commission}
+              />
+            </>
+          )}
+          <SeparateLine />
+          <View style={styles.view}>
+            <Text
+              style={[
+                styles.viewLeft,
+                {
+                  color: dark ? COLORS.greyscale300 : COLORS.grayscale700,
+                },
+              ]}
+            >
+              Status
+            </Text>
+            <View style={styles.paidBtn}>
+              <Text style={styles.paidBtnText}>Unpaid</Text>
+            </View>
+          </View>
+        </View>
+      </>
+    );
   };
 
   return (
@@ -175,170 +338,10 @@ const BillReviewSummary = () => {
       }
 
       <View style={[styles.container, { backgroundColor: colors.background }]}>
-        <Header title={`Pay ${billerItemDetails?.paymentitemname} Bill`} />
-        {/* <Header title={billerItemDetails} /> */}
+        <Header title={`Pay ${data?.data?.paymentitemname} Bill`} />
+        {/* <Header title={data.data} /> */}
         {/* <ScrollView showsVerticalScrollIndicator={false}> */}
-        <View style={styles.viewViewContainer}>
-          {/* <Text
-            style={[
-              styles.title,
-              {
-                color: dark ? COLORS.white : COLORS.greyscale900,
-              },
-            ]}
-          >
-            Pay {billerItemDetails?.paymentitemname} Bill
-          </Text> */}
-          <View style={{ marginVertical: 12 }}>
-            <Text
-              style={[
-                styles.subtitle,
-                {
-                  color: dark ? COLORS.greyscale300 : COLORS.greyScale800,
-                },
-              ]}
-            >
-              Pay {billerItemDetails?.paymentitemname} bills safely,
-              conveniently & easily.
-            </Text>
-            <Text
-              style={[
-                styles.subtitle,
-                {
-                  color: dark ? COLORS.greyscale300 : COLORS.greyScale800,
-                },
-              ]}
-            >
-              You can pay anytime and anywhere!
-            </Text>
-          </View>
-          <View
-            style={[
-              styles.separateLine,
-              {
-                backgroundColor: dark
-                  ? COLORS.greyscale900
-                  : COLORS.grayscale200,
-              },
-            ]}
-          />
-        </View>
-        <View
-          style={[
-            styles.viewContainer,
-            {
-              backgroundColor: dark ? COLORS.dark2 : '#FAFAFA',
-            },
-          ]}
-        >
-          {/* <Image
-              source={images.user1}
-              contentFit="contain"
-              style={styles.avatar}
-            /> */}
-          {/* <View
-              style={[
-                styles.separateLine,
-                {
-                  backgroundColor: dark
-                    ? COLORS.greyScale800
-                    : COLORS.grayscale200,
-                },
-              ]}
-            /> */}
-          <View style={styles.view}>
-            <Text
-              style={[
-                styles.viewLeft,
-                {
-                  color: dark ? COLORS.greyscale300 : COLORS.grayscale700,
-                },
-              ]}
-            >
-              Bill Amount ({billerItemDetails?.itemCurrencySymbol})
-            </Text>
-            <Text
-              style={[
-                styles.viewRight,
-                {
-                  color: dark ? COLORS.white : COLORS.greyscale900,
-                },
-              ]}
-            >
-              {billerItemDetails?.itemFee}
-            </Text>
-          </View>
-          {/* <View style={styles.view}>
-            <Text
-              style={[
-                styles.viewLeft,
-                {
-                  color: dark ? COLORS.greyscale300 : COLORS.grayscale700,
-                },
-              ]}
-            >
-              Fixed Commission
-            </Text>
-            <Text
-              style={[
-                styles.viewRight,
-                {
-                  color: dark ? COLORS.white : COLORS.greyscale900,
-                },
-              ]}
-            >
-              {billerItemDetails?.fixed_commission}
-            </Text>
-          </View>
-          <View style={styles.view}>
-            <Text
-              style={[
-                styles.viewLeft,
-                {
-                  color: dark ? COLORS.greyscale300 : COLORS.grayscale700,
-                },
-              ]}
-            >
-              Percentage Commission
-            </Text>
-            <Text
-              style={[
-                styles.viewRight,
-                {
-                  color: dark ? COLORS.white : COLORS.greyscale900,
-                },
-              ]}
-            >
-              {billerItemDetails?.percentage_commission}
-            </Text>
-          </View> */}
-          <View
-            style={[
-              styles.separateLine,
-              {
-                backgroundColor: dark
-                  ? COLORS.greyScale800
-                  : COLORS.grayscale200,
-              },
-            ]}
-          />
-          <View style={styles.view}>
-            <Text
-              style={[
-                styles.viewLeft,
-                {
-                  color: dark ? COLORS.greyscale300 : COLORS.grayscale700,
-                },
-              ]}
-            >
-              Status
-            </Text>
-            <View style={styles.paidBtn}>
-              <Text style={styles.paidBtnText}>Unpaid</Text>
-            </View>
-          </View>
-        </View>
-
+        {renderTopContainer()}
         <View style={{ height: 20 }} />
 
         <Input
@@ -362,25 +365,26 @@ const BillReviewSummary = () => {
           icon={icons.mobile}
           keyboardType="number-pad"
         />
-        <Input
-          id="amount"
-          value={
-            billerItemDetails?.itemFee !== null &&
-            billerItemDetails?.itemFee !== '0.00'
-              ? billerItemDetails.itemFee
-              : formState.inputValues.amount
-          }
-          onInputChanged={inputChangedHandler}
-          errorText={formState.inputValidities['amount']}
-          placeholder="Amount"
-          editable={
-            billerItemDetails?.itemFee === null ||
-            billerItemDetails?.itemFee === '0.00'
-          }
-          placeholderTextColor={dark ? COLORS.grayTie : COLORS.black}
-          icon={icons.wallet}
-          keyboardType="number-pad"
-        />
+        {!data?.data?.itemFee ||
+          (data?.data?.itemFee === '0.00' && (
+            <Input
+              id="amount"
+              value={
+                data?.data?.itemFee !== null && data?.data?.itemFee !== '0.00'
+                  ? data?.data?.itemFee
+                  : formState.inputValues.amount
+              }
+              onInputChanged={inputChangedHandler}
+              errorText={formState.inputValidities['amount']}
+              placeholder="Amount"
+              editable={
+                data?.data?.itemFee === null || data?.data?.itemFee === '0.00'
+              }
+              placeholderTextColor={dark ? COLORS.grayTie : COLORS.black}
+              icon={icons.wallet}
+              keyboardType="number-pad"
+            />
+          ))}
 
         <Button
           title={isValidating ? 'Verifying...' : 'Confirm & Verify Bill'}

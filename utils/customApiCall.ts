@@ -1,5 +1,4 @@
 import axios, { AxiosResponse } from 'axios';
-import { useAppSelector } from '@/store/slices/authSlice';
 
 export class ApiError extends Error {
   data: any;
@@ -56,7 +55,7 @@ export const apiCall = async (
 
     return response?.data;
   } catch (error) {
-    // console.log(error);
+    console.log(error);
     if (axios.isAxiosError(error) && error.response) {
       throw new ApiError(
         error.response.data,

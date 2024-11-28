@@ -29,9 +29,6 @@ import { IBillerItemsList } from '@/utils/queries/appQueries';
 import { useAppSelector } from '@/store/slices/authSlice';
 import { darkColors } from '@/theme/colors';
 
-type Nav = {
-  navigate: (value: number) => void;
-};
 const BillerProviders = () => {
   const route = useRoute<RouteProp<any>>();
   if (!route.params || Object.keys(route.params).length == 0)
@@ -52,13 +49,6 @@ const BillerProviders = () => {
   const handleClickProvider = (providerData: IProviderData) => {
     navigate('billerItems', { categoryData, providerData });
   };
-  useEffect(() => {
-    if (data?.data) {
-      navigate('billreviewsummary', {
-        billerItemDetails: data?.data,
-      });
-    }
-  }, [data]);
 
   // console.log(billerItemsData);
   // error && console.log(error);
@@ -134,7 +124,7 @@ const BillerProviders = () => {
                 },
               ]}
             >
-              Choose category of {categoryData?.category} bills
+              Choose provider of {categoryData?.category} billing service
             </Text>
             <View
               style={[

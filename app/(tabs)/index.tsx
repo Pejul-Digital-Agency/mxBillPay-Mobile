@@ -31,34 +31,18 @@ import {
 } from '@/utils/queries/appQueries';
 import Loader from '../loader';
 import { useAppSelector } from '@/store/slices/authSlice';
-import {
-  checkBvnStatus,
-  generateBvnLinkAgain,
-  getTransferHistory,
-  verifyBvnStatus,
-} from '@/utils/queries/accountQueries';
-import CustomModal from '../custommodal';
-import * as Linking from 'expo-linking';
-import { authSliceActions } from '@/store/slices/authSlice';
-import { useDispatch } from 'react-redux';
+import { getTransferHistory } from '@/utils/queries/accountQueries';
 import AccountOption from '@/components/AccountOption';
 import TransferHistory from '@/tabs/TransferPaymentHistory';
-
-type Nav = {
-  navigate: (value: string) => void;
-};
+import { usePusher } from '@/store/SocketContext';
 
 const HomeScreen = () => {
-  const dispatch = useDispatch();
-  const [generateModalVisible, setGenerateModalVisible] = useState(false);
-  const [modalTitle, setModalTitle] = useState('');
   const { navigate, setParams } = useNavigation<NavigationProp<any>>();
-  const [selectedCategory, setSelectedCategory] =
-    React.useState<IBillerCategory | null>(null);
   const [isSelectedBankPayment, setIsSelectedBankPayment] =
     React.useState(false);
   const { token, userProfile } = useAppSelector((state) => state.auth);
   const { dark, colors } = useTheme();
+  const { channel } = usePusher();
 
   const { data: billerCategories, isLoading: isLoadingCategories } = useQuery({
     queryKey: ['billCategories'],
@@ -93,7 +77,7 @@ const HomeScreen = () => {
   }, [banksData]);
 
   const handleClickCategory = (category: IBillerCategory) => {
-    navigate('billerItems', { categoryData: category });
+    navigate('billerproviders', { categoryData: category });
   };
 
   const handleNavigateToBankTransfer = () => {
@@ -153,7 +137,7 @@ const HomeScreen = () => {
         <View style={styles.topCardContainer}>
           <TouchableOpacity
             style={{ flexDirection: 'row', alignItems: 'center' }}
-            onPress={() => navigate('accountdetails')}
+            onPress={() => navigate('fundwallet')}
             activeOpacity={0.7}
           >
             <Text style={styles.username}>{'Fund Wallet'}</Text>

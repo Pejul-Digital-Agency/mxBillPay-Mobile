@@ -30,9 +30,6 @@ import { IBillerItemsList } from '@/utils/queries/appQueries';
 import { useAppSelector } from '@/store/slices/authSlice';
 import { darkColors } from '@/theme/colors';
 
-type Nav = {
-  navigate: (value: number) => void;
-};
 const BillerItems = () => {
   const route = useRoute<RouteProp<any>>();
   if (!route.params || Object.keys(route.params).length == 0)
@@ -60,6 +57,7 @@ const BillerItems = () => {
     enabled: categoryData != null || providerData != null,
   });
 
+  console.log(billerItemsData);
   const handleClickItem = (id: number) => {
     navigate('billreviewsummary', { itemId: id.toString() });
   };
@@ -67,7 +65,12 @@ const BillerItems = () => {
   // console.log(billerItemsData);
   // error && console.log(error);
 
-  const renderListItem = ({ id, logo, paymentitemname }: IBillerItem) => {
+  const renderListItem = ({
+    id,
+    logo,
+    paymentitemname,
+    percentageComission,
+  }: IBillerItem) => {
     return (
       <TouchableOpacity
         style={{
@@ -99,16 +102,16 @@ const BillerItems = () => {
               color: dark ? COLORS.greyscale300 : COLORS.greyscale600,
             }}
           >
-            1% Cashback
+            {percentageComission}% Charges
           </Text>
-          <View style={styles.itemStatRow}>
+          {/* <View style={styles.itemStatRow}>
             <Image
               source={icons.upOutlined}
               contentFit="contain"
               style={styles.itemStatImage}
             />
             <Text style={styles.itemStatText}>5</Text>
-          </View>
+          </View> */}
         </View>
       </TouchableOpacity>
     );
@@ -156,8 +159,8 @@ const BillerItems = () => {
                 },
               ]}
             >
-              Choose category of {billerItemsData?.data?.category?.category}{' '}
-              bills
+              Choose biller item of {categoryData?.category} by{' '}
+              {providerData?.title}
             </Text>
             <View
               style={[

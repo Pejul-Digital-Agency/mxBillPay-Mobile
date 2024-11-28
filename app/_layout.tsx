@@ -11,6 +11,7 @@ import { Provider } from 'react-redux';
 import { store } from '@/store/store';
 import ScreenStacks from '../components/screenstacks';
 import { AppStateProvider } from '@/store/AppStateContext';
+import { PusherProvider } from '@/store/SocketContext';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -34,11 +35,13 @@ export default function RootLayout() {
   return (
     <ThemeProvider>
       <Provider store={store}>
-        <AppStateProvider>
-          <QueryClientProvider client={new QueryClient()}>
-            <ScreenStacks />
-          </QueryClientProvider>
-        </AppStateProvider>
+        <PusherProvider>
+          <AppStateProvider>
+            <QueryClientProvider client={new QueryClient()}>
+              <ScreenStacks />
+            </QueryClientProvider>
+          </AppStateProvider>
+        </PusherProvider>
       </Provider>
     </ThemeProvider>
   );
