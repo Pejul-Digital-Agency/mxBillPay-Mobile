@@ -12,6 +12,9 @@ import { useNavigation } from 'expo-router';
 import { COLORS, SIZES, icons } from '@/constants';
 import { useTheme } from '@/theme/ThemeProvider';
 import { Screen } from 'expo-router/build/views/Screen';
+import { Image } from 'expo-image';
+import { userCards } from '@/data';
+import Card from '@/components/Card';
 
 type Nav = {
   navigate: (value: string) => void;
@@ -29,7 +32,7 @@ const MyCard = () => {
         contentContainerStyle={{ flexGrow: 1 }} // Ensures ScrollView takes full heigh
         style={{ paddingHorizontal: 16 }}
       >
-        {/* <FlatList
+        <FlatList
           data={userCards}
           showsVerticalScrollIndicator={false}
           keyExtractor={(item, index) => index.toString()}
@@ -38,18 +41,23 @@ const MyCard = () => {
               number={item.number}
               balance={item.balance}
               date={item.date}
-              onPress={() => navigate("ecarddetails")}
+              onPress={() => navigate('ecarddetails')}
               containerStyle={{
                 width: SIZES.width - 32,
-                marginBottom: 8
+                marginBottom: 8,
               }}
             />
-          )} />
+          )}
+        />
         <TouchableOpacity
-          onPress={() => navigate("addnewcard")}
-          style={[styles.btn, { 
-            backgroundColor: dark ? COLORS.dark1 : COLORS.white
-          }]}>
+          onPress={() => navigate('addnewcard')}
+          style={[
+            styles.btn,
+            {
+              backgroundColor: dark ? COLORS.dark1 : COLORS.white,
+            },
+          ]}
+        >
           <Image
             source={icons.plus}
             contentFit="contain"
@@ -57,12 +65,12 @@ const MyCard = () => {
               height: 20,
               width: 20,
               tintColor: COLORS.primary,
-              marginRight: 16
+              marginRight: 16,
             }}
           />
           <Text style={styles.btnText}>Add X - Card</Text>
-        </TouchableOpacity> */}
-        <View
+        </TouchableOpacity>
+        {/* <View
           style={{
             minHeight: SIZES.height - 100,
             // minHeight: S - 100,
@@ -83,7 +91,7 @@ const MyCard = () => {
           >
             Coming Soon
           </Text>
-        </View>
+        </View> */}
       </ScrollView>
     );
   };

@@ -22,7 +22,7 @@ import { router, useNavigation } from 'expo-router';
 import SubHeaderItem from '@/components/SubHeaderItem';
 import { invoiceItems, services } from '@/data';
 import Category from '@/components/Category';
-import { useQuery } from '@tanstack/react-query';
+import { QueryClient, useQuery } from '@tanstack/react-query';
 import {
   getBanks,
   getBillerCategories,
@@ -31,7 +31,7 @@ import {
 } from '@/utils/queries/appQueries';
 import Loader from '../loader';
 import { useAppSelector } from '@/store/slices/authSlice';
-import { getTransferHistory } from '@/utils/queries/accountQueries';
+import { getBalance, getTransferHistory } from '@/utils/queries/accountQueries';
 import AccountOption from '@/components/AccountOption';
 import TransferHistory from '@/tabs/TransferPaymentHistory';
 import { usePusher } from '@/store/SocketContext';
@@ -70,6 +70,22 @@ const HomeScreen = () => {
     enabled: isSelectedBankPayment,
   });
 
+  const queryClient = new QueryClient();
+  const {
+    data: balance,
+    isLoading: isLoadingBalance,
+    error: errorBalance,
+  } = useQuery({
+    queryKey: ['get Balance'],
+    queryFn: () => getBalance(token),
+    refetchInterval: () => {
+      queryClient.invalidateQueries({ queryKey: ['get Balance'] });
+      return 3000;
+    },
+    enabled: !!token,
+  });
+
+  console.log(balance);
   useEffect(() => {
     if (banksData?.data) {
       navigate('transfertobankselectbank', { data: banksData?.data });
@@ -135,39 +151,39 @@ const HomeScreen = () => {
     return (
       <View style={styles.cardContainer}>
         <View style={styles.topCardContainer}>
-          <TouchableOpacity
+          {/* <TouchableOpacity
             style={{ flexDirection: 'row', alignItems: 'center' }}
             onPress={() => navigate('fundwallet')}
             activeOpacity={0.7}
           >
             <Text style={styles.username}>{'Fund Wallet'}</Text>
-            {/* <Text style={styles.cardNum}>{userProfile?.accountNumber}</Text> */}
-          </TouchableOpacity>
+            <Text style={styles.cardNum}>{userProfile?.accountNumber}</Text>
+          </TouchableOpacity> */}
+          <View>
+            <Text style={styles.balanceText}>Your balance</Text>
+            <Text style={styles.balanceAmount}>
+              ₦{Number(balance?.balance).toFixed(2).toString() || '0.00'}
+              {/* {Number(userProfile?.accountBalance).toFixed(2).toString() ||
+                '0.00'} */}
+            </Text>
+          </View>
           <Image
             source={images.mxlogo}
             contentFit="contain"
             style={styles.cardIcon}
           />
         </View>
-        <View style={styles.balanceContainer}>
-          <Text style={styles.balanceText}>Your balance</Text>
-          <Text style={styles.balanceAmount}>
-            ₦
-            {Number(userProfile?.accountBalance).toFixed(2).toString() ||
-              '0.00'}
-          </Text>
-        </View>
         <View style={styles.bottomCardContainer}>
           <AccountOption
-            iconName="bank"
-            title="Bank Transfer"
-            onPress={handleNavigateToBankTransfer}
+            iconName="wallet"
+            title="Fund Wallet"
+            onPress={() => navigate('fundwallet')}
           />
-          <AccountOption
+          {/* <AccountOption
             iconName="wallet"
             title="Wallet Transfer"
             onPress={handleWalletTransfer}
-          />
+          /> */}
           <AccountOption
             iconName="swapUpDown"
             title="Transactions"
@@ -190,7 +206,7 @@ const HomeScreen = () => {
         {billerCategories?.data && (
           <FlatList
             data={billerCategories?.data}
-            keyExtractor={(item, index) => index.toString()}
+            keyExtractor={(item, index) => item.id.toString()}
             horizontal={false}
             numColumns={3} // Render four items per row
             columnWrapperStyle={{ justifyContent: 'space-evenly' }}
@@ -306,7 +322,8 @@ const styles = StyleSheet.create({
   },
   cardContainer: {
     width: SIZES.width - 32,
-    height: 250,
+    height: 'auto',
+    paddingVertical: 20,
     borderRadius: 32,
     backgroundColor: COLORS.primary,
     marginTop: 16,
@@ -315,7 +332,7 @@ const styles = StyleSheet.create({
   topCardContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: 16,
+    marginBottom: 16,
   },
   username: {
     fontSize: 20,
@@ -332,9 +349,9 @@ const styles = StyleSheet.create({
     height: 45,
     width: 72,
   },
-  balanceContainer: {
-    marginVertical: 16,
-  },
+  // balanceContainer: {
+  //   marginVertical: 16,
+  // },
   balanceText: {
     fontSize: 16,
     fontFamily: 'regular',
@@ -347,13 +364,14 @@ const styles = StyleSheet.create({
     color: COLORS.white,
   },
   bottomCardContainer: {
-    width: '100%',
+    width: '70%',
+    marginHorizontal: 'auto',
     height: 90,
     borderRadius: 16,
     backgroundColor: COLORS.white,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    justifyContent: 'space-evenly',
     paddingHorizontal: 12,
   },
 });

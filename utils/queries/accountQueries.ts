@@ -93,6 +93,20 @@ export const getFundAccountNo = async (
   );
 };
 
+export const getBalance = async (token: string): Promise<IBalanceResposne> => {
+  return await apiCall(
+    API_ENDPOINTS.ACCOUNT_MANAGEMENT.GetBalance,
+    'GET',
+    undefined,
+    token
+  );
+};
+
+interface IBalanceResposne {
+  status: string;
+  balance: number;
+}
+
 interface IUserProfileResponse {
   status: string;
   data: IUserProfileData;

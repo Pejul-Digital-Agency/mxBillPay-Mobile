@@ -27,8 +27,7 @@ import showToast from '@/utils/showToast';
 import * as LocalAuthentication from 'expo-local-authentication';
 import { useDispatch } from 'react-redux';
 import { authSliceActions, useAppSelector } from '@/store/slices/authSlice';
-import WebView from 'react-native-webview';
-import Loader from './loader';
+import * as SecureStore from 'expo-secure-store';
 import { NavigationProp } from '@react-navigation/native';
 
 export interface InputValues {
@@ -210,10 +209,22 @@ const Login = () => {
       });
       console.log(result);
       if (result.success) {
-        showToast({
-          type: 'success',
-          text1: 'Login Successful',
-        });
+        // showToast({
+        //   type: 'success',
+        //   text1: 'Login Successful',
+        // });
+        const authCredentials = await SecureStore.getItemAsync(
+          'authCredentials'
+        );
+        if (authCredentials) {
+          const credentials = JSON.parse(authCredentials);
+          if (credentials.email && credentials.password) {
+            mutateLogin({
+              email: credentials.email,
+              password: credentials.password,
+            });
+          }
+        }
       }
       if (result.success === false) {
         showToast({

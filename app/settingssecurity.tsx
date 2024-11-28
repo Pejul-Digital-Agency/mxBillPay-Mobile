@@ -77,7 +77,20 @@ const SettingsSecurity = () => {
             />
           </TouchableOpacity> */}
 
-          {/* <Button
+          <Button
+            title="Add Biometric Authentication"
+            style={{
+              backgroundColor: dark ? COLORS.dark3 : COLORS.tansparentPrimary,
+              borderRadius: 32,
+              borderColor: dark ? COLORS.dark3 : COLORS.tansparentPrimary,
+              marginTop: 22,
+            }}
+            textColor={dark ? COLORS.white : COLORS.primary}
+            onPress={() => {
+              navigate('authenticatewithdevice');
+            }}
+          />
+          <Button
             title="Change PIN"
             style={{
               backgroundColor: dark ? COLORS.dark3 : COLORS.tansparentPrimary,
@@ -86,8 +99,10 @@ const SettingsSecurity = () => {
               marginTop: 22,
             }}
             textColor={dark ? COLORS.white : COLORS.primary}
-            onPress={() => { navigate("changepin") }}
-          /> */}
+            onPress={() => {
+              navigate('changepin');
+            }}
+          />
           <Button
             title="Change Password"
             style={{

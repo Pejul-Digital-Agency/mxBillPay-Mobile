@@ -25,6 +25,7 @@ import { validateInput } from '@/utils/actions/formActions';
 import showToast from '@/utils/showToast';
 import { billServices } from '@/data';
 import { applyCommission } from '@/utils/helpers/commissionedFee';
+import RBSheet from 'react-native-raw-bottom-sheet';
 
 interface InputValues {
   customerId: string;
@@ -63,7 +64,7 @@ const BillReviewSummary = () => {
   );
   const { token } = useAppSelector((state) => state.auth);
   const [modalOpen, setModalOpen] = React.useState(false);
-  const [value, setValue] = React.useState('');
+  const rbSheetRef = React.useRef<any>(null);
   const { userId } = useAppSelector((state) => state.auth);
   const [errorModal, setErrorModal] = React.useState(false);
   const [errorModalText, setErrorModalText] = React.useState('');
@@ -198,6 +199,43 @@ const BillReviewSummary = () => {
     );
   };
 
+  const renderRBSheet = () => {
+    return (
+      <RBSheet
+        ref={rbSheetRef}
+        closeOnPressMask={true}
+        height={322}
+        customStyles={{
+          wrapper: {
+            backgroundColor: 'rgba(0,0,0,0.5)',
+          },
+          draggableIcon: {
+            backgroundColor: dark ? COLORS.dark3 : '#000',
+          },
+          container: {
+            borderTopRightRadius: 32,
+            borderTopLeftRadius: 32,
+            height: 322,
+            backgroundColor: dark ? COLORS.dark2 : COLORS.white,
+            alignItems: 'center',
+          },
+        }}
+      >
+        <View style={{ flexDirection: 'row' }}>
+          <Text
+            style={{ color: dark ? COLORS.grayscale200 : COLORS.greyScale800 }}
+          >
+            Name
+          </Text>
+          <Text
+            style={{ color: dark ? COLORS.grayscale100 : COLORS.greyscale900 }}
+          >
+            skjf sjdfskdjf
+          </Text>
+        </View>
+      </RBSheet>
+    );
+  };
   const SeparateLine = () => {
     return (
       <View

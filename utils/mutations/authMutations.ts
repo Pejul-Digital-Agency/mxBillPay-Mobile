@@ -23,7 +23,6 @@ export const verifyEmailOTP = async ({
   return await apiCall(API_ENDPOINTS.AUTH.VerfiyEmailOtp, 'POST', data, token);
 };
 
-
 export const verifyPasswordOTP = async (data: {
   otp: string;
   userId: string;
@@ -66,6 +65,16 @@ export const generateBvnLink = async ({
     data,
     token
   );
+};
+
+export const verifyUser = async ({
+  data,
+  token,
+}: {
+  data: { password: string };
+  token: string;
+}): Promise<any> => {
+  return await apiCall(API_ENDPOINTS.AUTH.VerifyUser, 'POST', data, token);
 };
 
 export interface IUserProfile {
