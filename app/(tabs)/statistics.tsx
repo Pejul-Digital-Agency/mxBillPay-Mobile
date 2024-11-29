@@ -1,4 +1,10 @@
-import { View, Text, StyleSheet, TouchableOpacity, useWindowDimensions } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  useWindowDimensions,
+} from 'react-native';
 import React from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { COLORS, SIZES, icons, images } from '@/constants';
@@ -6,18 +12,23 @@ import { Image } from 'expo-image';
 import { useTheme } from '@/theme/ThemeProvider';
 import { useNavigation } from 'expo-router';
 import { SceneMap, TabBar, TabView } from 'react-native-tab-view';
-import { AnalyticsMonthV1, AnalyticsQuarterV1, AnalyticsYearToYearV1, AnalyticsYearV1 } from '@/tabs';
+import {
+  AnalyticsMonthV1,
+  AnalyticsQuarterV1,
+  AnalyticsYearToYearV1,
+  AnalyticsYearV1,
+} from '@/tabs';
 
 const renderScene = SceneMap({
   first: AnalyticsMonthV1,
   second: AnalyticsQuarterV1,
   third: AnalyticsYearV1,
-  fourth: AnalyticsYearToYearV1
+  // fourth: AnalyticsYearToYearV1
 });
 
 type Nav = {
-  navigate: (value: string) => void
-}
+  navigate: (value: string) => void;
+};
 
 const Statistics = () => {
   const { navigate } = useNavigation<Nav>();
@@ -29,7 +40,7 @@ const Statistics = () => {
     { key: 'first', title: 'Month' },
     { key: 'second', title: 'Quarter' },
     { key: 'third', title: 'Year' },
-    { key: 'fourth', title: 'YTY' }
+    // { key: 'fourth', title: 'YTY' }
   ]);
 
   const renderTabBar = (props: any) => (
@@ -42,11 +53,15 @@ const Statistics = () => {
         backgroundColor: colors.background,
       }}
       renderLabel={({ route, focused }) => (
-        <Text style={[{
-          color: focused ? COLORS.primary : 'gray',
-          fontSize: 16,
-          fontFamily: "bold"
-        }]}>
+        <Text
+          style={[
+            {
+              color: focused ? COLORS.primary : 'gray',
+              fontSize: 16,
+              fontFamily: 'bold',
+            },
+          ]}
+        >
           {route.title}
         </Text>
       )}
@@ -65,9 +80,16 @@ const Statistics = () => {
             contentFit='contain'
             style={styles.headerLogo}
           /> */}
-          <Text style={[styles.headerTitle, {
-            color: dark ? COLORS.white : COLORS.greyscale900
-          }]}>Analytics</Text>
+          <Text
+            style={[
+              styles.headerTitle,
+              {
+                color: dark ? COLORS.white : COLORS.greyscale900,
+              },
+            ]}
+          >
+            Analytics
+          </Text>
         </View>
         <View style={styles.headerRight}>
           {/* <TouchableOpacity
@@ -82,8 +104,8 @@ const Statistics = () => {
           </TouchableOpacity> */}
         </View>
       </View>
-    )
-  }
+    );
+  };
 
   return (
     <SafeAreaView style={[styles.area, { backgroundColor: colors.background }]}>
@@ -98,56 +120,56 @@ const Statistics = () => {
         />
       </View>
     </SafeAreaView>
-  )
+  );
 };
 
 const styles = StyleSheet.create({
   area: {
     flex: 1,
-    backgroundColor: COLORS.white
+    backgroundColor: COLORS.white,
   },
   container: {
     flex: 1,
     backgroundColor: COLORS.white,
-    padding: 16
+    padding: 16,
   },
   headerContainer: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     width: SIZES.width - 32,
-    justifyContent: "space-between",
-    marginBottom: 12
+    justifyContent: 'space-between',
+    marginBottom: 12,
   },
   headerLeft: {
-    flexDirection: "row",
-    alignItems: "center"
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   headerLogo: {
     height: 24,
     width: 24,
-    tintColor: COLORS.primary
+    tintColor: COLORS.primary,
   },
   headerTitle: {
     fontSize: 22,
-    fontFamily: "bold",
+    fontFamily: 'bold',
     color: COLORS.black,
-    marginLeft: 12
+    marginLeft: 12,
   },
   headerRight: {
-    flexDirection: "row",
-    alignItems: "center"
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   searchIcon: {
     width: 24,
     height: 24,
-    tintColor: COLORS.black
+    tintColor: COLORS.black,
   },
   moreCircleIcon: {
     width: 24,
     height: 24,
     tintColor: COLORS.black,
-    marginLeft: 12
+    marginLeft: 12,
   },
-})
+});
 
-export default Statistics
+export default Statistics;

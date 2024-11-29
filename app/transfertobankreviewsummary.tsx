@@ -31,45 +31,45 @@ interface IParams {
 const TransferToBankReviewSummary = () => {
   const { colors, dark } = useTheme();
   const { navigate, goBack } = useNavigation<NavigationProp<any>>();
-  const route = useRoute();
-  if (!route.params || Object.keys(route.params).length === 0) {
-    return goBack();
-  }
-  const { selectedBank, receipientDetails, amount } = route.params as IParams;
+  // const route = useRoute();
+  // if (!route.params || Object.keys(route.params).length === 0) {
+  //   return goBack();
+  // }
+  // const { selectedBank, receipientDetails, amount } = route.params as IParams;
   const { token, userProfile } = useAppSelector((state) => state.auth);
-  const { mutate, isPending } = useMutation({
-    mutationKey: ['transferPayment'],
-    mutationFn: transferMoney,
-    onSuccess: (data) => {
-      console.log(data);
-      // navigate('transfertobanksuccessful');
-      navigate('sendmoneysuccessful', {
-        recepientName: receipientDetails.name,
-      });
-    },
-    onError: (error) => {
-      console.log(error);
-    },
-  });
+  // const { mutate, isPending } = useMutation({
+  //   mutationKey: ['transferPayment'],
+  //   mutationFn: transferMoney,
+  //   onSuccess: (data) => {
+  //     console.log(data);
+  //     // navigate('transfertobanksuccessful');
+  //     navigate('sendmoneysuccessful', {
+  //       recepientName: receipientDetails.name,
+  //     });
+  //   },
+  //   onError: (error) => {
+  //     console.log(error);
+  //   },
+  // });
   // console.log(userProfile?.profilePicture);
-  console.log(receipientDetails);
+  // console.log(receipientDetails);
 
   const handleTransferPayment = () => {
-    mutate({
-      token,
-      data: {
-        amount,
-        toAccount: receipientDetails?.account.number,
-        toBank: selectedBank?.code,
-        transferType: 'inter',
-        toClient: receipientDetails?.name,
-        toClientId: receipientDetails?.clientId,
-        toSavingsId: receipientDetails?.account.id,
-        toBvn: receipientDetails?.bvn,
-        toClientName: receipientDetails?.name,
-        remark: 'transfer payment',
-      },
-    });
+    // mutate({
+    //   token,
+    //   data: {
+    //     amount,
+    //     toAccount: receipientDetails?.account.number,
+    //     toBank: selectedBank?.code,
+    //     transferType: 'inter',
+    //     toClient: receipientDetails?.name,
+    //     toClientId: receipientDetails?.clientId,
+    //     toSavingsId: receipientDetails?.account.id,
+    //     toBvn: receipientDetails?.bvn,
+    //     toClientName: receipientDetails?.name,
+    //     remark: 'transfer payment',
+    //   },
+    // });
     // navigate('transfertobanksuccessful')
   };
   return (
@@ -95,7 +95,7 @@ const TransferToBankReviewSummary = () => {
               },
             ]}
           >
-            ₦{amount}
+            ₦00
           </Text>
           <View
             style={[
@@ -132,7 +132,7 @@ const TransferToBankReviewSummary = () => {
                   },
                 ]}
               >
-                {userProfile?.firstName + ' ' + userProfile?.lastName}
+                {'mhy name'}
               </Text>
               <Text
                 style={[
@@ -159,7 +159,7 @@ const TransferToBankReviewSummary = () => {
           </Text>
           <View style={styles.bankContainer}>
             <Image
-              source={selectedBank?.logo || icons.bank}
+              source={icons.bank}
               contentFit="contain"
               style={styles.logoIcon}
             />
@@ -172,7 +172,7 @@ const TransferToBankReviewSummary = () => {
                   },
                 ]}
               >
-                {selectedBank?.name}
+                {'Bank name'}
               </Text>
               <Text
                 style={[
@@ -182,7 +182,7 @@ const TransferToBankReviewSummary = () => {
                   },
                 ]}
               >
-                {receipientDetails?.name}
+                {'recenipent name'}
               </Text>
             </View>
           </View>
@@ -223,7 +223,7 @@ const TransferToBankReviewSummary = () => {
                   },
                 ]}
               >
-                ₦{amount}
+                ₦{'9.00'}
               </Text>
             </View>
             <View style={styles.view}>
@@ -277,7 +277,7 @@ const TransferToBankReviewSummary = () => {
                   },
                 ]}
               >
-                ₦{amount}
+                ₦{'9.00'}
               </Text>
             </View>
           </View>
@@ -310,12 +310,12 @@ const TransferToBankReviewSummary = () => {
         <Button
           title="Transfer"
           style={styles.sendBtn}
-          disabled={isPending}
+          // disabled={isPending}
           onPress={handleTransferPayment}
           filled
         />
       </View>
-      {isPending && <Loader />}
+      {/* {isPending && <Loader />} */}
     </SafeAreaView>
   );
 };

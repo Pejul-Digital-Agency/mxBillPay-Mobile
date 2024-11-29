@@ -1,23 +1,62 @@
-import { View, Text, StyleSheet, TouchableOpacity, Image, Alert, Modal, TouchableWithoutFeedback, FlatList, ImageSourcePropType } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Image,
+  Alert,
+  Modal,
+  TouchableWithoutFeedback,
+  FlatList,
+  ImageSourcePropType,
+} from 'react-native';
 import React, { useState } from 'react';
 import { COLORS, SIZES, icons } from '../constants';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ScrollView } from 'react-native-virtualized-view';
 import Barcode from '@kichiyaki/react-native-barcode-generator';
-import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import * as Clipboard from 'expo-clipboard';
 import { useTheme } from '../theme/ThemeProvider';
-import { NavigationProp, useNavigation } from '@react-navigation/native';
+import {
+  NavigationProp,
+  RouteProp,
+  useNavigation,
+  useRoute,
+} from '@react-navigation/native';
+import { IBillerItemDetails } from '@/utils/queries/appQueries';
+import { applyCommission } from '@/utils/helpers/commissionedFee';
+
+interface ReceiptData {
+  status: string;
+  item: string;
+  amount: number;
+  provider: string;
+  category: string;
+  transactionId: string;
+  transactionDate: string;
+}
 
 const InOutPaymentViewEreceipt = () => {
-  const navigation = useNavigation<NavigationProp<any>>();
+  const { navigate, reset, goBack } = useNavigation<NavigationProp<any>>();
+  const route = useRoute<RouteProp<any>>();
+  const {
+    transactionData,
+    billerItemData,
+  }: { transactionData: ReceiptData; billerItemData: IBillerItemDetails } =
+    route.params as any;
+  if (!transactionData || !billerItemData) return goBack();
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const { colors, dark } = useTheme();
 
   const dropdownItems = [
     { label: 'Share E-Receipt', value: 'share', icon: icons.shareOutline },
-    { label: 'Download E-Receipt', value: 'downloadEReceipt', icon: icons.download2 },
+    {
+      label: 'Download E-Receipt',
+      value: 'downloadEReceipt',
+      icon: icons.download2,
+    },
     { label: 'Print', value: 'print', icon: icons.documentOutline },
   ];
 
@@ -30,17 +69,17 @@ const InOutPaymentViewEreceipt = () => {
       case 'share':
         // Handle Share action
         setModalVisible(false);
-        navigation.navigate("(tabs)")
+        navigate('(tabs)');
         break;
       case 'downloadEReceipt':
         // Handle Download E-Receipt action
         setModalVisible(false);
-        navigation.navigate("(tabs)")
+        navigate('(tabs)');
         break;
       case 'print':
         // Handle Print action
-        setModalVisible(false)
-        navigation.navigate("(tabs)")
+        setModalVisible(false);
+        navigate('(tabs)');
         break;
       default:
         break;
@@ -48,37 +87,50 @@ const InOutPaymentViewEreceipt = () => {
   };
 
   /**
-  * Render header
-  */
+   * Render header
+   */
   const renderHeader = () => {
     return (
       <View style={styles.headerContainer}>
         <View style={styles.headerLeft}>
-          <TouchableOpacity
-            onPress={() => navigation.goBack()}>
+          <TouchableOpacity onPress={() => goBack()}>
             <Image
               source={icons.back as ImageSourcePropType}
-              resizeMode='contain'
-              style={[styles.backIcon, {
-                tintColor: dark ? COLORS.white : COLORS.black
-              }]} />
+              resizeMode="contain"
+              style={[
+                styles.backIcon,
+                {
+                  tintColor: dark ? COLORS.white : COLORS.black,
+                },
+              ]}
+            />
           </TouchableOpacity>
-          <Text style={[styles.headerTitle, {
-            color: dark ? COLORS.white : COLORS.black
-          }]}>E-Receipt</Text>
+          <Text
+            style={[
+              styles.headerTitle,
+              {
+                color: dark ? COLORS.white : COLORS.black,
+              },
+            ]}
+          >
+            E-Receipt
+          </Text>
         </View>
         <TouchableOpacity onPress={() => setModalVisible(true)}>
           <Image
             source={icons.moreCircle as ImageSourcePropType}
-            resizeMode='contain'
-            style={[styles.moreIcon, {
-              tintColor: dark ? COLORS.secondaryWhite : COLORS.black
-            }]}
+            resizeMode="contain"
+            style={[
+              styles.moreIcon,
+              {
+                tintColor: dark ? COLORS.secondaryWhite : COLORS.black,
+              },
+            ]}
           />
         </TouchableOpacity>
       </View>
-    )
-  }
+    );
+  };
   /**
    * Render content
    */
@@ -86,8 +138,38 @@ const InOutPaymentViewEreceipt = () => {
     const transactionId = 'SKD354822747'; // Replace with your actual transaction ID
 
     const handleCopyToClipboard = async () => {
-      await Clipboard.setStringAsync(transactionId);
-      Alert.alert('Copied!', 'Transaction ID copied to clipboard.');
+      try {
+        await Clipboard.setStringAsync(transactionData?.transactionId);
+      } catch (error) {
+        Alert.alert('Error!', 'Failed to copy transaction ID');
+      }
+    };
+
+    const EntryRow = ({ key, value }: { key: string; value: string }) => {
+      return (
+        <View style={styles.viewContainer}>
+          <Text
+            style={[
+              styles.viewLeft,
+              {
+                color: dark ? COLORS.grayscale400 : 'gray',
+              },
+            ]}
+          >
+            {key}
+          </Text>
+          <Text
+            style={[
+              styles.viewRight,
+              {
+                color: dark ? COLORS.white : COLORS.black,
+              },
+            ]}
+          >
+            {value}
+          </Text>
+        </View>
+      );
     };
 
     return (
@@ -104,186 +186,178 @@ const InOutPaymentViewEreceipt = () => {
           }}
           lineColor={dark ? COLORS.white : COLORS.black}
           textStyle={{
-            color: dark ? COLORS.white : COLORS.black
+            color: dark ? COLORS.white : COLORS.black,
           }}
           maxWidth={SIZES.width - 64}
         />
-        <View style={[styles.summaryContainer, {
-          backgroundColor: dark ? COLORS.dark2 : COLORS.white,
-          borderRadius: 6,
-        }]}>
-          <View style={styles.viewContainer}>
-            <Text style={[styles.viewLeft, {
-              color: dark ? COLORS.grayscale400 : "gray"
-            }]}>Amount (USD)</Text>
-            <Text style={[styles.viewRight, {
-              color: dark ? COLORS.white : COLORS.black
-            }]}>$25</Text>
-          </View>
-          <View style={styles.viewContainer}>
-            <Text style={[styles.viewLeft, {
-              color: dark ? COLORS.grayscale400 : "gray"
-            }]}>Name</Text>
-            <Text style={[styles.viewRight, {
-              color: dark ? COLORS.white : COLORS.black
-            }]}>McDonald's Orders</Text>
-          </View>
-          <View style={styles.viewContainer}>
-            <Text style={[styles.viewLeft, {
-              color: dark ? COLORS.grayscale400 : "gray"
-            }]}>Bank Account</Text>
-            <Text style={[styles.viewRight, {
-              color: dark ? COLORS.white : COLORS.black
-            }]}>8490884921</Text>
-          </View>
-          <View style={styles.viewContainer}>
-            <Text style={[styles.viewLeft, {
-              color: dark ? COLORS.grayscale400 : "gray"
-            }]}>Scheduled</Text>
-            <Text style={[styles.viewRight, {
-              color: dark ? COLORS.white : COLORS.black
-            }]}>No</Text>
-          </View>
-          <View style={styles.viewContainer}>
-            <Text style={[styles.viewLeft, {
-              color: dark ? COLORS.grayscale400 : "gray"
-            }]}>Hours </Text>
-            <Text style={[styles.viewRight, {
-              color: dark ? COLORS.white : COLORS.black
-            }]}>No</Text>
-          </View>
+        <View
+          style={[
+            styles.summaryContainer,
+            {
+              backgroundColor: dark ? COLORS.dark2 : COLORS.white,
+              borderRadius: 6,
+            },
+          ]}
+        >
+          <EntryRow key="Bill Amount (NGN)" value={billerItemData?.itemFee} />
+          <EntryRow
+            key="Percentage Charges"
+            value={billerItemData?.percentage_commission}
+          />
+          <EntryRow
+            key="Net Bill Amount (NGN)"
+            value={applyCommission(
+              billerItemData?.percentage_commission,
+              billerItemData?.itemFee
+            )}
+          />
+          <EntryRow
+            key="Amount Paid (NGN)"
+            value={transactionData?.amount.toFixed(2).toString()}
+          />
+          <EntryRow
+            key="Remaining Bill Amount (NGN)"
+            value={(
+              +applyCommission(
+                billerItemData?.percentage_commission,
+                billerItemData?.itemFee
+              ) - transactionData?.amount
+            ).toString()}
+          />
         </View>
 
-        <View style={[styles.summaryContainer, {
-          backgroundColor: dark ? COLORS.dark2 : COLORS.white,
-          borderRadius: 6,
-        }]}>
-          <View style={styles.viewContainer}>
-            <Text style={[styles.viewLeft, {
-              color: dark ? COLORS.grayscale400 : "gray"
-            }]}>Category</Text>
-            <Text style={[styles.viewRight, {
-              color: dark ? COLORS.white : COLORS.black
-            }]}>Food & Drink</Text>
-          </View>
-          <View style={styles.viewContainer}>
-            <Text style={[styles.viewLeft, {
-              color: dark ? COLORS.grayscale400 : "gray"
-            }]}>Notes</Text>
-            <Text style={[styles.viewRight, {
-              color: dark ? COLORS.white : COLORS.black
-            }]}>-</Text>
-          </View>
-          <View style={styles.viewContainer}>
-            <Text style={[styles.viewLeft, {
-              color: dark ? COLORS.grayscale400 : "gray"
-            }]}>Country</Text>
-            <Text style={[styles.viewRight, {
-              color: dark ? COLORS.white : COLORS.black
-            }]}>United States</Text>
-          </View>
+        <View
+          style={[
+            styles.summaryContainer,
+            {
+              backgroundColor: dark ? COLORS.dark2 : COLORS.white,
+              borderRadius: 6,
+            },
+          ]}
+        >
+          <EntryRow key="Biller Category" value={transactionData?.category} />
+          <EntryRow key="Biller Provider" value={transactionData?.provider} />
+          <EntryRow key="Biller Item" value={transactionData?.item} />
+          <EntryRow key="Country" value={'Nigeria'} />
         </View>
-        <View style={[styles.summaryContainer, {
-          backgroundColor: dark ? COLORS.dark2 : COLORS.white,
-          borderRadius: 6,
-        }]}>
+
+        <View
+          style={[
+            styles.summaryContainer,
+            {
+              backgroundColor: dark ? COLORS.dark2 : COLORS.white,
+              borderRadius: 6,
+            },
+          ]}
+        >
+          <EntryRow
+            key="Transaction Date"
+            value={transactionData?.transactionDate}
+          />
+
           <View style={styles.viewContainer}>
-            <Text style={[styles.viewLeft, {
-              color: dark ? COLORS.grayscale400 : "gray"
-            }]}>Total</Text>
-            <Text style={[styles.viewRight, {
-              color: dark ? COLORS.white : COLORS.black
-            }]}>$605.55</Text>
-          </View>
-          <View style={styles.viewContainer}>
-            <Text style={[styles.viewLeft, {
-              color: dark ? COLORS.grayscale400 : "gray"
-            }]}>Payment Methods</Text>
-            <Text style={[styles.viewRight, {
-              color: dark ? COLORS.white : COLORS.black
-            }]}>Credit Card</Text>
-          </View>
-          <View style={styles.viewContainer}>
-            <Text style={[styles.viewLeft, {
-              color: dark ? COLORS.grayscale400 : "gray"
-            }]}>Date</Text>
-            <Text style={[styles.viewRight, {
-              color: dark ? COLORS.white : COLORS.black
-            }]}>Dec 16, 2026 | 12:23:45 PM</Text>
-          </View>
-          <View style={styles.viewContainer}>
-            <Text style={[styles.viewLeft, {
-              color: dark ? COLORS.grayscale400 : "gray"
-            }]}>Transaction ID</Text>
+            <Text
+              style={[
+                styles.viewLeft,
+                {
+                  color: dark ? COLORS.grayscale400 : 'gray',
+                },
+              ]}
+            >
+              Transaction ID
+            </Text>
             <View style={styles.copyContentContainer}>
-              <Text style={styles.viewRight}>{transactionId}</Text>
-              <TouchableOpacity style={{ marginLeft: 8 }} onPress={handleCopyToClipboard}>
-                <MaterialCommunityIcons name="content-copy" size={24} color={COLORS.primary} />
+              <Text style={styles.viewRight}>
+                {transactionData?.transactionId}
+              </Text>
+              <TouchableOpacity
+                style={{ marginLeft: 8 }}
+                onPress={handleCopyToClipboard}
+              >
+                <MaterialCommunityIcons
+                  name="content-copy"
+                  size={24}
+                  color={COLORS.primary}
+                />
               </TouchableOpacity>
             </View>
           </View>
           <View style={styles.viewContainer}>
-            <Text style={[styles.viewLeft, {
-              color: dark ? COLORS.grayscale400 : "gray"
-            }]}>Status</Text>
+            <Text
+              style={[
+                styles.viewLeft,
+                {
+                  color: dark ? COLORS.grayscale400 : 'gray',
+                },
+              ]}
+            >
+              Status
+            </Text>
             <TouchableOpacity style={styles.statusBtn}>
               <Text style={styles.statusBtnText}>Paid</Text>
             </TouchableOpacity>
           </View>
         </View>
       </View>
-    )
-  }
+    );
+  };
   return (
     <SafeAreaView style={[styles.area, { backgroundColor: colors.background }]}>
       <View style={[styles.container, { backgroundColor: colors.background }]}>
         {renderHeader()}
         <ScrollView
-          style={[styles.scrollView, { backgroundColor: dark ? COLORS.dark1 : COLORS.tertiaryWhite }]}
-          showsVerticalScrollIndicator={false}>
+          style={[
+            styles.scrollView,
+            { backgroundColor: dark ? COLORS.dark1 : COLORS.tertiaryWhite },
+          ]}
+          showsVerticalScrollIndicator={false}
+        >
           {renderContent()}
         </ScrollView>
       </View>
       {/* Modal for dropdown selection */}
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={modalVisible}
-      >
+      <Modal animationType="slide" transparent={true} visible={modalVisible}>
         <TouchableWithoutFeedback onPress={() => setModalVisible(false)}>
-          <View style={{ position: "absolute", top: 112, right: 12 }}>
-            <View style={{
-              width: 202,
-              padding: 16,
-              backgroundColor: dark ? COLORS.dark2 : COLORS.tertiaryWhite,
-              borderRadius: 8
-            }}>
+          <View style={{ position: 'absolute', top: 112, right: 12 }}>
+            <View
+              style={{
+                width: 202,
+                padding: 16,
+                backgroundColor: dark ? COLORS.dark2 : COLORS.tertiaryWhite,
+                borderRadius: 8,
+              }}
+            >
               <FlatList
                 data={dropdownItems}
                 keyExtractor={(item) => item.value}
                 renderItem={({ item }) => (
                   <TouchableOpacity
                     style={{
-                      flexDirection: "row",
+                      flexDirection: 'row',
                       alignItems: 'center',
-                      marginVertical: 12
+                      marginVertical: 12,
                     }}
-                    onPress={() => handleDropdownSelect(item)}>
+                    onPress={() => handleDropdownSelect(item)}
+                  >
                     <Image
                       source={item.icon as ImageSourcePropType}
-                      resizeMode='contain'
+                      resizeMode="contain"
                       style={{
                         width: 20,
                         height: 20,
                         marginRight: 16,
-                        tintColor: dark ? COLORS.white : COLORS.black
+                        tintColor: dark ? COLORS.white : COLORS.black,
                       }}
                     />
-                    <Text style={{
-                      fontSize: 14,
-                      fontFamily: "semiBold",
-                      color: dark ? COLORS.white : COLORS.black
-                    }}>{item.label}</Text>
+                    <Text
+                      style={{
+                        fontSize: 14,
+                        fontFamily: 'semiBold',
+                        color: dark ? COLORS.white : COLORS.black,
+                      }}
+                    >
+                      {item.label}
+                    </Text>
                   </TouchableOpacity>
                 )}
               />
@@ -292,89 +366,89 @@ const InOutPaymentViewEreceipt = () => {
         </TouchableWithoutFeedback>
       </Modal>
     </SafeAreaView>
-  )
+  );
 };
 
 const styles = StyleSheet.create({
   area: {
     flex: 1,
-    backgroundColor: COLORS.white
+    backgroundColor: COLORS.white,
   },
   container: {
     flex: 1,
     backgroundColor: COLORS.white,
-    padding: 16
+    padding: 16,
   },
   headerContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingBottom: 16
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingBottom: 16,
   },
   scrollView: {
-    backgroundColor: COLORS.tertiaryWhite
+    backgroundColor: COLORS.tertiaryWhite,
   },
   headerLeft: {
-    flexDirection: "row",
-    alignItems: "center"
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   backIcon: {
     height: 24,
     width: 24,
     tintColor: COLORS.black,
-    marginRight: 16
+    marginRight: 16,
   },
   headerTitle: {
     fontSize: 24,
-    fontFamily: "bold",
-    color: COLORS.black
+    fontFamily: 'bold',
+    color: COLORS.black,
   },
   moreIcon: {
     width: 24,
     height: 24,
-    tintColor: COLORS.black
+    tintColor: COLORS.black,
   },
   summaryContainer: {
     width: SIZES.width - 32,
     backgroundColor: COLORS.white,
-    alignItems: "center",
+    alignItems: 'center',
     padding: 16,
-    marginVertical: 8
+    marginVertical: 8,
   },
   viewContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    width: "100%",
-    marginVertical: 12
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    width: '100%',
+    marginVertical: 12,
   },
   viewLeft: {
     fontSize: 12,
-    fontFamily: "regular",
-    color: "gray"
+    fontFamily: 'regular',
+    color: 'gray',
   },
   viewRight: {
     fontSize: 14,
-    fontFamily: "medium",
-    color: COLORS.black
+    fontFamily: 'medium',
+    color: COLORS.black,
   },
   copyContentContainer: {
-    flexDirection: "row",
-    alignItems: "center"
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   statusBtn: {
     width: 72,
     height: 28,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
     backgroundColor: COLORS.tansparentPrimary,
-    borderRadius: 6
+    borderRadius: 6,
   },
   statusBtnText: {
     fontSize: 12,
-    fontFamily: "medium",
-    color: COLORS.primary
-  }
-})
+    fontFamily: 'medium',
+    color: COLORS.primary,
+  },
+});
 
-export default InOutPaymentViewEreceipt
+export default InOutPaymentViewEreceipt;

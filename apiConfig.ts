@@ -29,6 +29,9 @@ const API_ENDPOINTS = {
     GetTransferHistory: API_DOMAIN + '/get-transfer',
     UpdateProfile: API_DOMAIN + '/update-profile',
     GetBalance: API_DOMAIN + '/balance',
+    GetMonthlyStats: API_DOMAIN + '/monthly-stats',
+    GetQuarterlyStats: API_DOMAIN + '/quarterly-stats',
+    GetYearlyStats: API_DOMAIN + '/yearly-stats',
   },
   BILL_MANAGEMENT: {
     GetBillerCategories: API_DOMAIN + '/biller-categories-fetch',

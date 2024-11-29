@@ -202,6 +202,7 @@ const Login = () => {
         console.log('not available');
         return;
       }
+      console.log('reached');
       const result = await LocalAuthentication.authenticateAsync({
         promptMessage: 'Login to MX Bill with Biometric',
         cancelLabel: 'Cancel',

@@ -328,6 +328,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.primary,
     marginTop: 16,
     paddingHorizontal: 22,
+    rowGap: 16,
   },
   topCardContainer: {
     flexDirection: 'row',

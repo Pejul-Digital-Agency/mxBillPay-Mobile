@@ -26,6 +26,7 @@ import showToast from '@/utils/showToast';
 import { billServices } from '@/data';
 import { applyCommission } from '@/utils/helpers/commissionedFee';
 import RBSheet from 'react-native-raw-bottom-sheet';
+import { ApiError } from '@/utils/customApiCall';
 
 interface InputValues {
   customerId: string;
@@ -56,7 +57,7 @@ const initialState: FormState = {
 
 const BillReviewSummary = () => {
   const { colors, dark } = useTheme();
-  const { navigate } = useNavigation<NavigationProp<any>>();
+  const { navigate, reset } = useNavigation<NavigationProp<any>>();
   const route = useRoute();
   const [formState, dispatchFormState] = React.useReducer(
     reducer,
@@ -70,7 +71,12 @@ const BillReviewSummary = () => {
   const [errorModalText, setErrorModalText] = React.useState('');
   if (!route.params) return navigate('/(tabs)');
   const { itemId }: { itemId: string } = route.params as any;
-  const { data, isLoading, isError, error } = useQuery({
+  const {
+    data: billerItemData,
+    isLoading,
+    isError,
+    error,
+  } = useQuery({
     queryKey: ['billerItems', itemId],
     queryFn: () =>
       getBillerItemDetails({
@@ -82,7 +88,7 @@ const BillReviewSummary = () => {
     mutationFn: validateCustomer,
     onSuccess: (data) => {
       console.log(data);
-      setModalOpen(true);
+      rbSheetRef?.current.open();
     },
     onError: (error) => {
       console.log(error.message);
@@ -94,12 +100,17 @@ const BillReviewSummary = () => {
     mutationFn: payBillFn,
     onSuccess: (data) => {
       console.log(data);
-      setModalOpen(false);
-      navigate('paybillssuccessful');
+      rbSheetRef.current.close();
+      reset({ index: 0, routes: [{ name: 'inoutpaymentviewereceipt' }] });
+      navigate('inoutpaymentviewereceipt', {
+        transactionData: data?.data,
+        billerItemData: billerItemData?.data,
+      });
     },
-    onError: (error) => {
-      console.log(errorModalText);
-      console.log(error.message);
+    onError: (error: ApiError) => {
+      console.log(error);
+      setErrorModalText(error.message);
+      setErrorModal(true);
     },
   });
 
@@ -123,14 +134,15 @@ const BillReviewSummary = () => {
       });
       return;
     }
-    if (data) {
+    if (billerItemData) {
       const reqData = {
         amount:
-          data.data?.itemFee !== null && data.data?.itemFee !== '0.00'
-            ? data.data.itemFee
+          billerItemData.data?.itemFee !== null &&
+          billerItemData.data?.itemFee !== '0.00'
+            ? billerItemData.data.itemFee
             : formState.inputValues.amount,
-        billerId: data.data?.billerId,
-        billerItemId: data.data?.id.toString(),
+        billerId: billerItemData.data?.billerId,
+        billerItemId: billerItemData.data?.id.toString(),
         customerId: formState.inputValues.customerId,
         phoneNumber: formState.inputValues.phone,
         userId,
@@ -155,11 +167,11 @@ const BillReviewSummary = () => {
       });
       return;
     }
-    if (data) {
+    if (billerItemData) {
       validate({
         data: {
           customerId: formState.inputValues.customerId,
-          id: data.data?.id.toString(),
+          id: billerItemData.data?.id.toString(),
         },
         token,
       });
@@ -199,43 +211,6 @@ const BillReviewSummary = () => {
     );
   };
 
-  const renderRBSheet = () => {
-    return (
-      <RBSheet
-        ref={rbSheetRef}
-        closeOnPressMask={true}
-        height={322}
-        customStyles={{
-          wrapper: {
-            backgroundColor: 'rgba(0,0,0,0.5)',
-          },
-          draggableIcon: {
-            backgroundColor: dark ? COLORS.dark3 : '#000',
-          },
-          container: {
-            borderTopRightRadius: 32,
-            borderTopLeftRadius: 32,
-            height: 322,
-            backgroundColor: dark ? COLORS.dark2 : COLORS.white,
-            alignItems: 'center',
-          },
-        }}
-      >
-        <View style={{ flexDirection: 'row' }}>
-          <Text
-            style={{ color: dark ? COLORS.grayscale200 : COLORS.greyScale800 }}
-          >
-            Name
-          </Text>
-          <Text
-            style={{ color: dark ? COLORS.grayscale100 : COLORS.greyscale900 }}
-          >
-            skjf sjdfskdjf
-          </Text>
-        </View>
-      </RBSheet>
-    );
-  };
   const SeparateLine = () => {
     return (
       <View
@@ -263,8 +238,8 @@ const BillReviewSummary = () => {
                 },
               ]}
             >
-              Pay {data?.data?.paymentitemname} bills safely, conveniently &
-              easily.
+              Pay {billerItemData?.data?.paymentitemname} bills safely,
+              conveniently & easily.
             </Text>
             <Text
               style={[
@@ -289,8 +264,8 @@ const BillReviewSummary = () => {
           ]}
         >
           <TopContainerItem
-            title={`Bill Amount (${data?.data?.itemCurrencySymbol})`}
-            value={data?.data?.itemFee || '0.00'}
+            title={`Bill Amount (${billerItemData?.data?.itemCurrencySymbol})`}
+            value={billerItemData?.data?.itemFee || '0.00'}
           />
           {/* <View style={styles.view}>
             <Text
@@ -319,18 +294,19 @@ const BillReviewSummary = () => {
                 : 'Enter Amount Below'}
             </Text>
           </View> */}
-          {data?.data?.itemFee && data.data.itemFee !== '0.00' && (
-            <>
-              <TopContainerItem
-                title="Fixed Charges"
-                value={data?.data?.fixed_commission}
-              />
-              <TopContainerItem
-                title="Percentage Charges"
-                value={data?.data?.percentage_commission}
-              />
-            </>
-          )}
+          {billerItemData?.data?.itemFee &&
+            billerItemData.data.itemFee !== '0.00' && (
+              <>
+                <TopContainerItem
+                  title="Fixed Charges"
+                  value={billerItemData?.data?.fixed_commission}
+                />
+                <TopContainerItem
+                  title="Percentage Charges"
+                  value={billerItemData?.data?.percentage_commission}
+                />
+              </>
+            )}
           <SeparateLine />
           <View style={styles.view}>
             <Text
@@ -352,18 +328,32 @@ const BillReviewSummary = () => {
     );
   };
 
+  const RBSheetItem = ({ title, value }: { title: string; value: string }) => {
+    return (
+      <View
+        style={{
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          width: '100%',
+          paddingVertical: 4,
+        }}
+      >
+        <Text
+          style={{ color: dark ? COLORS.grayscale400 : COLORS.grayscale400 }}
+        >
+          {title}
+        </Text>
+        <Text
+          style={{ color: dark ? COLORS.grayscale100 : COLORS.greyscale900 }}
+        >
+          {value}
+        </Text>
+      </View>
+    );
+  };
+
   return (
     <SafeAreaView style={[styles.area, { backgroundColor: colors.background }]}>
-      {
-        <CustomModal
-          btnText={isBillPaying ? 'Paying...' : 'Pay'}
-          modalVisible={modalOpen}
-          setModalVisible={setModalOpen}
-          title="Successfully validated your customer id, please click below to continue"
-          disabled={isBillPaying}
-          onPress={handlePaymentClick}
-        />
-      }
       {
         <CustomModal
           btnText={'Error'}
@@ -376,7 +366,7 @@ const BillReviewSummary = () => {
       }
 
       <View style={[styles.container, { backgroundColor: colors.background }]}>
-        <Header title={`Pay ${data?.data?.paymentitemname} Bill`} />
+        <Header title={`Pay ${billerItemData?.data?.paymentitemname} Bill`} />
         {/* <Header title={data.data} /> */}
         {/* <ScrollView showsVerticalScrollIndicator={false}> */}
         {renderTopContainer()}
@@ -403,30 +393,28 @@ const BillReviewSummary = () => {
           icon={icons.mobile}
           keyboardType="number-pad"
         />
-        {!data?.data?.itemFee ||
-          (data?.data?.itemFee === '0.00' && (
-            <Input
-              id="amount"
-              value={
-                data?.data?.itemFee !== null && data?.data?.itemFee !== '0.00'
-                  ? data?.data?.itemFee
-                  : formState.inputValues.amount
-              }
-              onInputChanged={inputChangedHandler}
-              errorText={formState.inputValidities['amount']}
-              placeholder="Amount"
-              editable={
-                data?.data?.itemFee === null || data?.data?.itemFee === '0.00'
-              }
-              placeholderTextColor={dark ? COLORS.grayTie : COLORS.black}
-              icon={icons.wallet}
-              keyboardType="number-pad"
-            />
-          ))}
+        {/* {!data?.data?.itemFee ||
+          (data?.data?.itemFee === '0.00' && ( */}
+        <Input
+          id="amount"
+          // value={
+          //   data?.data?.itemFee !== null && data?.data?.itemFee !== '0.00'
+          //     ? data?.data?.itemFee
+          //     : formState.inputValues.amount
+          // }
+          onInputChanged={inputChangedHandler}
+          errorText={formState.inputValidities['amount']}
+          placeholder="Amount"
+          placeholderTextColor={dark ? COLORS.grayTie : COLORS.black}
+          icon={icons.wallet}
+          keyboardType="number-pad"
+        />
+        {/* ))} */}
 
         <Button
-          title={isValidating ? 'Verifying...' : 'Confirm & Verify Bill'}
+          title={'Confirm & Verify Bill'}
           filled
+          isLoading={isValidating}
           disabled={isValidating}
           style={styles.continueBtn}
           onPress={handleValidateCustomer}
@@ -434,6 +422,94 @@ const BillReviewSummary = () => {
         />
         {/* </ScrollView> */}
       </View>
+      <RBSheet
+        ref={rbSheetRef}
+        closeOnPressMask={true}
+        height={322}
+        customStyles={{
+          wrapper: {
+            backgroundColor: 'rgba(0,0,0,0.5)',
+          },
+          draggableIcon: {
+            backgroundColor: dark ? COLORS.dark3 : '#000',
+          },
+          container: {
+            borderTopRightRadius: 32,
+            borderTopLeftRadius: 32,
+            height: 322,
+            paddingVertical: 16,
+            paddingHorizontal: 16,
+            backgroundColor: dark ? COLORS.dark2 : COLORS.white,
+            alignItems: 'center',
+            position: 'relative',
+          },
+        }}
+        customModalProps={{
+          animationType: 'fade',
+          statusBarTranslucent: true,
+        }}
+      >
+        <Text
+          style={{
+            fontSize: 32,
+            fontFamily: 'bold',
+            color: dark ? COLORS.grayTie : COLORS.greyscale900,
+            marginBottom: 12,
+          }}
+        >
+          ₦{formState.inputValues.amount}
+        </Text>
+        {/* <RBSheetItem title="Bank" value="VFD Microfinance Bank" /> */}
+        <RBSheetItem
+          title="Bill's cost (NGN)"
+          value={billerItemData?.data?.itemFee || '0.00'}
+        />
+        <RBSheetItem
+          title="Charges applied (NGN)"
+          value={
+            billerItemData?.data.itemFee
+              ? (
+                  +applyCommission(
+                    billerItemData?.data?.percentage_commission,
+                    billerItemData?.data?.itemFee
+                  ) - +billerItemData?.data?.itemFee
+                )
+                  .toFixed(2)
+                  .toString()
+              : '0.00'
+          }
+        />
+        <RBSheetItem
+          title="Net Bill Amount (NGN)"
+          value={applyCommission(
+            billerItemData?.data?.percentage_commission,
+            billerItemData?.data?.itemFee
+          )}
+        />
+        <RBSheetItem
+          title="Remaining amount"
+          value={
+            billerItemData?.data?.itemFee
+              ? (+billerItemData?.data?.itemFee - +formState.inputValues.amount)
+                  .toFixed(2)
+                  .toString()
+              : '0.00'
+          }
+        />
+        <Button
+          title="Pay"
+          isLoading={isBillPaying}
+          onPress={handlePaymentClick}
+          disabled={isBillPaying}
+          filled
+          style={{
+            width: '100%',
+            marginTop: 16,
+            position: 'absolute',
+            bottom: 16,
+          }}
+        />
+      </RBSheet>
     </SafeAreaView>
   );
 };

@@ -102,6 +102,49 @@ export const getBalance = async (token: string): Promise<IBalanceResposne> => {
   );
 };
 
+export const getMonthlyStats = async (
+  token: string
+): Promise<IStatsResponse> => {
+  return await apiCall(
+    API_ENDPOINTS.ACCOUNT_MANAGEMENT.GetMonthlyStats,
+    'GET',
+    undefined,
+    token
+  );
+};
+
+export const getYearlyStats = async (
+  token: string
+): Promise<IStatsResponse> => {
+  return await apiCall(
+    API_ENDPOINTS.ACCOUNT_MANAGEMENT.GetYearlyStats,
+    'GET',
+    undefined,
+    token
+  );
+};
+
+export const getQuarterlyStats = async (
+  token: string
+): Promise<IStatsResponse> => {
+  return await apiCall(
+    API_ENDPOINTS.ACCOUNT_MANAGEMENT.GetQuarterlyStats,
+    'GET',
+    undefined,
+    token
+  );
+};
+
+interface IStatsResponse {
+  status: string;
+  data: IStats[];
+}
+
+export interface IStats {
+  name: string;
+  expense: number;
+}
+
 interface IBalanceResposne {
   status: string;
   balance: number;
