@@ -5,12 +5,17 @@ import {
   TouchableOpacity,
   FlatList,
   BackHandler,
+  Platform,
+  StatusBar,
 } from 'react-native';
 import React, { useEffect, useState } from 'react';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from 'react-native-safe-area-context';
 import { ScrollView } from 'react-native-virtualized-view';
 import { useTheme } from '@/theme/ThemeProvider';
-import { COLORS, SIZES, icons, images } from '@/constants';
+import { COLORS, FONTS, SIZES, icons, images } from '@/constants';
 import { Image } from 'expo-image';
 import {
   NavigationProp,
@@ -35,6 +40,8 @@ import { getBalance, getTransferHistory } from '@/utils/queries/accountQueries';
 import AccountOption from '@/components/AccountOption';
 import TransferHistory from '@/tabs/TransferPaymentHistory';
 import { usePusher } from '@/store/SocketContext';
+// import { StatusBar } from 'expo-status-bar';
+import { useAppStateContext } from '@/store/AppStateContext';
 
 const HomeScreen = () => {
   const { navigate, setParams } = useNavigation<NavigationProp<any>>();
@@ -43,6 +50,8 @@ const HomeScreen = () => {
   const { token, userProfile } = useAppSelector((state) => state.auth);
   const { dark, colors } = useTheme();
   const { channel } = usePusher();
+  const { currentPage } = useAppStateContext();
+  const insets = useSafeAreaInsets();
 
   const { data: billerCategories, isLoading: isLoadingCategories } = useQuery({
     queryKey: ['billCategories'],
@@ -85,7 +94,6 @@ const HomeScreen = () => {
     enabled: !!token,
   });
 
-  console.log(balance);
   useEffect(() => {
     if (banksData?.data) {
       navigate('transfertobankselectbank', { data: banksData?.data });
@@ -93,7 +101,19 @@ const HomeScreen = () => {
   }, [banksData]);
 
   const handleClickCategory = (category: IBillerCategory) => {
-    navigate('billerproviders', { categoryData: category });
+    if (!category) return;
+    if (category.isCategory == 1) {
+      navigate('billerproviders', { categoryData: category });
+      return;
+    }
+    if (category.category == 'Top Up') {
+      navigate('fundwallet');
+      return;
+    }
+    if (category.category == 'History') {
+      navigate('inoutpaymenthistory');
+      return;
+    }
   };
 
   const handleNavigateToBankTransfer = () => {
@@ -118,15 +138,8 @@ const HomeScreen = () => {
             style={styles.userIcon}
           />
           <View style={styles.viewNameContainer}>
-            <Text style={styles.greeeting}>Good Morning👋</Text>
-            <Text
-              style={[
-                styles.title,
-                {
-                  color: dark ? COLORS.white : COLORS.greyscale900,
-                },
-              ]}
-            >
+            {/* <Text style={styles.greeeting}>Good Morning👋</Text> */}
+            <Text style={[styles.title]}>
               {userProfile?.firstName + ' ' + userProfile?.lastName}
             </Text>
           </View>
@@ -136,10 +149,7 @@ const HomeScreen = () => {
             <Image
               source={icons.notificationBell2}
               contentFit="contain"
-              style={[
-                styles.bellIcon,
-                { tintColor: dark ? COLORS.white : COLORS.greyscale900 },
-              ]}
+              style={[styles.bellIcon, { tintColor: COLORS.grayscale200 }]}
             />
           </TouchableOpacity>
         </View>
@@ -147,76 +157,56 @@ const HomeScreen = () => {
     );
   };
 
-  const renderCard = () => {
+  const renderTopContainer = () => {
     return (
       <View style={styles.cardContainer}>
-        <View style={styles.topCardContainer}>
-          {/* <TouchableOpacity
-            style={{ flexDirection: 'row', alignItems: 'center' }}
-            onPress={() => navigate('fundwallet')}
-            activeOpacity={0.7}
-          >
-            <Text style={styles.username}>{'Fund Wallet'}</Text>
-            <Text style={styles.cardNum}>{userProfile?.accountNumber}</Text>
-          </TouchableOpacity> */}
-          <View>
-            <Text style={styles.balanceText}>Your balance</Text>
-            <Text style={styles.balanceAmount}>
-              ₦{Number(balance?.balance).toFixed(2).toString() || '0.00'}
-              {/* {Number(userProfile?.accountBalance).toFixed(2).toString() ||
-                '0.00'} */}
+        {renderHeader()}
+        <View style={{ alignItems: 'center', rowGap: 4, marginTop: 20 }}>
+          <Text style={styles.balanceAmount}>
+            ₦{balance?.balance.toFixed(2) || '0.00'}
+          </Text>
+          <Text style={styles.balanceText}>Current balance</Text>
+        </View>
+        <View
+          style={{
+            flexDirection: 'row',
+            paddingHorizontal: 20,
+            marginTop: 8,
+            justifyContent: 'space-between',
+          }}
+        >
+          <View style={{ alignItems: 'center', rowGap: 3 }}>
+            <Text style={styles.balanceAmountBottom}>
+              ₦{balance?.totalBillPayment.toFixed(2) || '0.00'}
             </Text>
+            <Text style={styles.balanceTextBottom}>Total Bill Payment</Text>
           </View>
-          <Image
-            source={images.mxlogo}
-            contentFit="contain"
-            style={styles.cardIcon}
-          />
+          <View style={{ alignItems: 'center', rowGap: 3 }}>
+            <Text style={styles.balanceAmountBottom}>
+              ₦{balance?.totalIncome.toFixed(2) || '44.88'}
+            </Text>
+            <Text style={styles.balanceTextBottom}>Total Wallet Deposit</Text>
+          </View>
         </View>
-        <View style={styles.bottomCardContainer}>
-          <AccountOption
-            iconName="wallet"
-            title="Fund Wallet"
-            onPress={() => navigate('fundwallet')}
-          />
-          {/* <AccountOption
-            iconName="wallet"
-            title="Wallet Transfer"
-            onPress={handleWalletTransfer}
-          /> */}
-          <AccountOption
-            iconName="swapUpDown"
-            title="Transactions"
-            onPress={() => navigate('inoutpaymenthistory')}
-          />
-        </View>
+        {renderCategories()}
       </View>
     );
   };
 
   const renderCategories = () => {
     return (
-      <View style={{ marginTop: 24, width: '100%' }}>
-        {/* <View style={styles.bottomCategoryContainer}> */}
-        {/* <SubHeaderItem
-          title="Services"
-          navTitle="See all"
-          onPress={() => navigate('allservices')}
-        /> */}
+      <View style={styles.categoryWrapper}>
         {billerCategories?.data && (
           <FlatList
             data={billerCategories?.data}
             keyExtractor={(item, index) => item.id.toString()}
             horizontal={false}
-            numColumns={3} // Render four items per row
-            columnWrapperStyle={{ justifyContent: 'space-evenly' }}
-            style={{
-              marginTop: 0,
-              flex: 1,
-              // columnGap: 8,
-              rowGap: 8,
-              width: '100%',
+            numColumns={4} // Render four items per row
+            columnWrapperStyle={{
+              justifyContent: 'space-evenly',
             }}
+            ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
+            style={styles.categoryList}
             renderItem={({ item, index }) => (
               <Category
                 key={item.id}
@@ -235,33 +225,39 @@ const HomeScreen = () => {
 
   const rederTransactionsHistory = () => {
     return (
-      <View style={{ marginBottom: 8 }}>
+      <View style={{ marginBottom: 8, marginTop: 130, paddingHorizontal: 16 }}>
         <SubHeaderItem
           title="Recent Transactions"
           navTitle="See all"
           onPress={() => navigate('inoutpaymenthistory')}
         />
         <View style={{ marginBottom: 12 }}>
-          <TransferHistory
-            transferData={transferData?.data.splice(0, 2) || []}
-          />
+          {transferData?.data && transferData?.data.length > 0 ? (
+            <TransferHistory transferData={transferData?.data.splice(0, 2)} />
+          ) : (
+            <Text style={{ textAlign: 'center', ...FONTS.body3 }}>
+              No recent transactions
+            </Text>
+          )}
         </View>
       </View>
     );
   };
 
   return (
-    <SafeAreaView style={[styles.area, { backgroundColor: colors.background }]}>
-      <View style={[styles.container, { backgroundColor: colors.background }]}>
-        {renderHeader()}
-        <ScrollView showsVerticalScrollIndicator={false}>
-          {renderCard()}
-          {renderCategories()}
-          {rederTransactionsHistory()}
-        </ScrollView>
-      </View>
+    <SafeAreaView
+      style={[
+        styles.area,
+        {
+          backgroundColor: dark ? COLORS.black : COLORS.grayscale200,
+        },
+      ]}
+    >
+      {renderTopContainer()}
+      {rederTransactionsHistory()}
       {(isLoadingBanks || isLoadingCategories || loadingTransfer) && <Loader />}
     </SafeAreaView>
+    // </View>
   );
 };
 
@@ -269,22 +265,20 @@ const HomeScreen = () => {
 const styles = StyleSheet.create({
   area: {
     flex: 1,
-    backgroundColor: COLORS.white,
   },
   container: {
     flex: 1,
-    backgroundColor: COLORS.white,
-    padding: 16,
+    // padding: 16,
   },
   headerContainer: {
     flexDirection: 'row',
-    width: SIZES.width - 32,
+    width: '100%',
     justifyContent: 'space-between',
     alignItems: 'center',
   },
   userIcon: {
-    width: 48,
-    height: 48,
+    width: 34,
+    height: 34,
     borderRadius: 32,
   },
   viewLeft: {
@@ -294,13 +288,13 @@ const styles = StyleSheet.create({
   greeeting: {
     fontSize: 12,
     fontFamily: 'regular',
-    color: 'gray',
+    color: COLORS.grayscale200,
     marginBottom: 4,
   },
   title: {
-    fontSize: 20,
+    fontSize: 16,
     fontFamily: 'bold',
-    color: COLORS.greyscale900,
+    color: COLORS.grayscale200,
   },
   viewNameContainer: {
     marginLeft: 12,
@@ -321,14 +315,17 @@ const styles = StyleSheet.create({
     tintColor: COLORS.black,
   },
   cardContainer: {
-    width: SIZES.width - 32,
+    position: 'relative',
+    width: '100%',
     height: 'auto',
-    paddingVertical: 20,
-    borderRadius: 32,
+    zIndex: 1,
+    paddingTop: 20,
+    paddingBottom: 100,
+    borderBottomLeftRadius: 24,
+    borderBottomRightRadius: 24,
     backgroundColor: COLORS.primary,
-    marginTop: 16,
     paddingHorizontal: 22,
-    rowGap: 16,
+    // rowGap: 16,
   },
   topCardContainer: {
     flexDirection: 'row',
@@ -354,14 +351,25 @@ const styles = StyleSheet.create({
   //   marginVertical: 16,
   // },
   balanceText: {
-    fontSize: 16,
+    fontSize: 12,
     fontFamily: 'regular',
     color: COLORS.white,
-    marginBottom: 4,
+    // marginBottom: 4,
   },
   balanceAmount: {
-    fontSize: 20,
+    fontSize: 28,
     fontFamily: 'extraBold',
+    color: COLORS.white,
+  },
+  balanceTextBottom: {
+    fontSize: 10,
+    fontFamily: 'regular',
+    color: COLORS.white,
+    // marginBottom: 4,
+  },
+  balanceAmountBottom: {
+    fontSize: 20,
+    fontFamily: 'regular',
     color: COLORS.white,
   },
   bottomCardContainer: {
@@ -374,6 +382,31 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-evenly',
     paddingHorizontal: 12,
+  },
+  categoryList: {
+    paddingVertical: 16,
+    borderRadius: 12,
+    backgroundColor: COLORS.white,
+    shadowColor: COLORS.grayscale400,
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    marginTop: 0,
+    flex: 1,
+    width: '100%',
+    marginVertical: 'auto',
+    height: 'auto',
+  },
+  categoryWrapper: {
+    position: 'absolute',
+    flexDirection: 'row',
+    top: '130%',
+    paddingHorizontal: 14,
+    left: 0,
+    right: 0,
   },
 });
 

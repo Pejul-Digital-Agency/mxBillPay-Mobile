@@ -15,6 +15,7 @@ import { Screen } from 'expo-router/build/views/Screen';
 import { Image } from 'expo-image';
 import { userCards } from '@/data';
 import Card from '@/components/Card';
+import { StatusBar } from 'expo-status-bar';
 
 type Nav = {
   navigate: (value: string) => void;
@@ -32,6 +33,7 @@ const MyCard = () => {
         contentContainerStyle={{ flexGrow: 1 }} // Ensures ScrollView takes full heigh
         style={{ paddingHorizontal: 16 }}
       >
+        {/* <StatusBar style={dark ? 'light' : 'dark'} /> */}
         <FlatList
           data={userCards}
           showsVerticalScrollIndicator={false}

@@ -89,6 +89,7 @@ interface IBillerCategoriesResponse {
 export interface IBillerCategory {
   id: number;
   category: string;
+  isCategory: 0 | 1;
   icon?: string;
   iconColor?: string;
 }

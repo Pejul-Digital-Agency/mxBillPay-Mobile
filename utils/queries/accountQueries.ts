@@ -148,6 +148,8 @@ export interface IStats {
 interface IBalanceResposne {
   status: string;
   balance: number;
+  totalIncome: number;
+  totalBillPayment: number;
 }
 
 interface IUserProfileResponse {
@@ -197,20 +199,30 @@ interface INotificationsResponse {
 export type ITrasnferTransaction = {
   transaction_id: number;
   amount: string;
-  user_id: number;
-  transaction_type: 'inter' | 'intra';
-  transaction_date: string; // ISO date format
-  sign: 'negative' | 'positive';
-  status: 'Completed' | 'Pending' | 'Failed'; // Expandable if there are more statuses
-  from_account_number: string;
-  to_account_number: string;
-  from_client_id: string;
-  to_client_id: string;
-  to_client_name: string;
-  from_client_name: string;
-  response_message: string | null;
-  type: string | null;
+  category: string;
+  item: string;
+  logo: string;
+  type: string;
+  date: string; // ISO date format
+  status: 'Completed' | 'Pending' | 'Failed';
 };
+// export type ITrasnferTransaction = {
+//   transaction_id: number;
+//   amount: string;
+//   user_id: number;
+//   transaction_type: 'inter' | 'intra';
+//   transaction_date: string; // ISO date format
+//   sign: 'negative' | 'positive';
+//   status: 'Completed' | 'Pending' | 'Failed'; // Expandable if there are more statuses
+//   from_account_number: string;
+//   to_account_number: string;
+//   from_client_id: string;
+//   to_client_id: string;
+//   to_client_name: string;
+//   from_client_name: string;
+//   response_message: string | null;
+//   type: string | null;
+// };
 
 type ITransferTransactionResponse = {
   status: 'success' | 'error';

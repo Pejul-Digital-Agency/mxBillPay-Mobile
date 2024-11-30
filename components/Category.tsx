@@ -30,18 +30,19 @@ const Category: React.FC<CategoryProps> = ({
         style={[
           styles.iconContainer,
           {
-            backgroundColor: backgroundColor,
+            backgroundColor: COLORS.primary,
           },
         ]}
       >
         <Image
           source={icon}
-          contentFit="contain"
+          // contentFit="contain"
+          tintColor={COLORS.white}
           style={[
             styles.icon,
-            {
-              tintColor: iconColor,
-            },
+            // {
+            //   tintColor: iconColor,
+            // },
           ]}
         />
       </TouchableOpacity>
@@ -50,7 +51,7 @@ const Category: React.FC<CategoryProps> = ({
         style={[
           styles.name,
           {
-            color: COLORS.white,
+            color: COLORS.primary,
             // color: dark ? COLORS.white : COLORS.greyscale900,
           },
         ]}
@@ -65,24 +66,24 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'column',
     alignItems: 'center',
-    marginBottom: 12,
-    width: (SIZES.width - 32) / 4,
-    backgroundColor: COLORS.primary,
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    borderRadius: 12,
+    // marginBottom: 12,
+    // width: (SIZES.width - 32) / 4,
+    // // backgroundColor: COLORS.primary,
+    // paddingVertical: 10,
+    // paddingHorizontal: 16,
+    // borderRadius: 12,
   },
   iconContainer: {
-    width: 54,
-    height: 54,
-    borderRadius: 999,
+    width: 58,
+    height: 58,
+    borderRadius: 50,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 8,
+    // marginBottom: 8,
   },
   icon: {
-    height: 24,
-    width: 24,
+    height: 34,
+    width: 34,
   },
   name: {
     fontSize: 12,

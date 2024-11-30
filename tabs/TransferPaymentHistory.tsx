@@ -16,45 +16,31 @@ const TransferHistory = ({
 }) => {
   const navigation = useNavigation<NavigationProp<any>>();
   const { dark } = useTheme();
-const handleonPress = () => {
-  console.log("onpress")
-}
+  const handleonPress = () => {
+    console.log('onpress');
+  };
+  console.log(transferData);
   return (
-    <View
-      style={[
-        styles.container,
-        {
-          backgroundColor: dark ? COLORS.dark1 : COLORS.secondaryWhite,
-        },
-      ]}
-    >
-      <ScrollView style={{ marginVertical: 12 }}>
-        <FlatList
-          data={transferData}
-          keyExtractor={(item) => item.transaction_id.toString()}
-          renderItem={({ item }) => (
-            <TransferHistoryCard
-              name={item.to_client_name}
-              sign={item.sign}
-              // image={item.}
-              date={item.transaction_date}
-              amount={item.amount}
-              type={item.transaction_type}
-              onPress={handleonPress}
-            />
-            // <TransferHistoryCard
-            //   name={item.to_client_name}
-            //   sign={item.sign}
-            //   // image={item.}
-            //   date={item.transaction_date}
-            //   amount={item.amount}
-            //   type={item.transaction_type}
-            //   onPress={() => navigation.navigate('inoutpaymentviewereceipt', { id: item.transaction_id })}
-            // />
-          )}
-        />
-      </ScrollView>
-    </View>
+    // <View
+    //   style={[
+    //     styles.container,
+    //     {
+    //       backgroundColor: dark ? COLORS.dark1 : COLORS.secondaryWhite,
+    //     },
+    //   ]}
+    // >
+    //   {/* <ScrollView style={{ marginVertical: 12 }}> */}
+    <FlatList
+      data={transferData}
+      keyExtractor={(item) => item.transaction_id.toString()}
+      renderItem={({ item }) => (
+        <TransferHistoryCard {...item} onPress={handleonPress} />
+      )}
+      scrollEnabled
+      style={{ marginBottom: 12 }}
+    />
+    // {/* </ScrollView> */}
+    // </View>
   );
 };
 

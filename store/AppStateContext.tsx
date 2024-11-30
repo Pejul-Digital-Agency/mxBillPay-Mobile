@@ -35,7 +35,7 @@ export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({
   const [expired, setExpired] = useState(false);
   const { token } = useAppSelector((state) => state.auth);
   const currentStateRef = useRef(AppState.currentState);
-  const currentTabRef = useRef('');
+  const [currentPage, setCurrentPage] = useState('');
   const backGroundTimeRef = useRef<number | null>(null);
   const dispatch = useDispatch();
   const navigation = useNavigation<NavigationProp<any>>();
@@ -46,7 +46,7 @@ export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({
       const activeIndex = e.data?.state?.index;
       const acitveTabName = e.data?.state?.routes[activeIndex]?.name;
       console.log('TokenExpiryModal: ' + acitveTabName);
-      currentTabRef.current = acitveTabName;
+      setCurrentPage(acitveTabName);
       dispatch(currentPageActions.setCurrentPage(acitveTabName));
       // setCurrentTab(acitveTabName);
     });
@@ -113,7 +113,7 @@ export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({
       if (backgroundTime) {
         const timeDiff = Date.now() - backgroundTime;
         console.log(timeDiff);
-        if (timeDiff > 0.1 * 60 * 1000) {
+        if (timeDiff > 2 * 60 * 1000) {
           dispatch(authSliceActions.clearToken());
           console.log('token expired');
           backGroundTimeRef.current = null;
@@ -128,11 +128,11 @@ export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({
     console.log('AppStateContext: ' + token);
     if (
       !token &&
-      currentTabRef.current &&
-      currentTabRef.current != 'otpverification' &&
-      currentTabRef.current != 'index' &&
-      currentTabRef.current != 'login' &&
-      currentTabRef.current != 'signup'
+      currentPage &&
+      currentPage != 'otpverification' &&
+      currentPage != 'index' &&
+      currentPage != 'login' &&
+      currentPage != 'signup'
     ) {
       console.log('truthiying');
       setExpired(true);
@@ -143,7 +143,7 @@ export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({
     <AppStateContext.Provider
       value={{
         expired,
-        currentPage: currentTabRef.current,
+        currentPage,
         setExpired: setExpired,
       }}
     >
