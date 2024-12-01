@@ -57,14 +57,6 @@ const HomeScreen = () => {
     enabled: !!token,
   });
 
-  // const {
-  //   transactionsHistory,
-  //   isLoading: isLoadingTransactions,
-  //   isError: istransactionsError,
-  //   error: transactionsError,
-  // } = useGlobalApis();
-
-  // console.log('index:', transactionsHistory);
   const {
     data: transactionsHistory,
     isLoading: isLoadingTransactions,
@@ -113,23 +105,21 @@ const HomeScreen = () => {
   const renderHeader = () => {
     return (
       <View style={styles.headerContainer}>
-        <View style={styles.viewLeft}>
-          <Image
-            source={userProfile?.profilePicture || icons.profile}
-            contentFit="contain"
-            style={styles.userIcon}
-          />
-          <View style={styles.viewNameContainer}>
-            {/* <Text style={styles.greeeting}>Good Morning👋</Text> */}
-            <Text style={[styles.title]}>
-              {userProfile?.firstName + ' ' + userProfile?.lastName}
-            </Text>
-          </View>
-        </View>
+        {/* <View style={styles.viewLeft}> */}
+        <Image
+          source={userProfile?.profilePicture || icons.profile}
+          contentFit="contain"
+          style={styles.userIcon}
+        />
+        {/* </View> */}
+        {/* <View style={styles.viewNameContainer}> */}
+        {/* <Text style={styles.greeeting}>Good Morning👋</Text> */}
+        <Text style={[styles.title]}>{'MX BILL PAY'}</Text>
+        {/* </View> */}
         <View style={styles.viewRight}>
           <TouchableOpacity onPress={() => navigate('notifications')}>
             <Image
-              source={icons.notificationBell2}
+              source={icons.notification2}
               contentFit="contain"
               style={[styles.bellIcon, { tintColor: COLORS.grayscale200 }]}
             />
@@ -280,14 +270,17 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   title: {
-    fontSize: 16,
+    fontSize: 20,
+    // marginRight: 10,
     fontFamily: 'bold',
-    color: COLORS.grayscale200,
+    color: '#dfa430',
   },
   viewNameContainer: {
     marginLeft: 12,
   },
   viewRight: {
+    width: 34,
+    height: 34,
     flexDirection: 'row',
     alignItems: 'center',
   },
@@ -295,7 +288,6 @@ const styles = StyleSheet.create({
     height: 24,
     width: 24,
     tintColor: COLORS.black,
-    marginRight: 8,
   },
   bookmarkIcon: {
     height: 24,
