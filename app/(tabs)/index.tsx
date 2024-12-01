@@ -42,16 +42,14 @@ import TransferHistory from '@/tabs/TransferPaymentHistory';
 import { usePusher } from '@/store/SocketContext';
 // import { StatusBar } from 'expo-status-bar';
 import { useAppStateContext } from '@/store/AppStateContext';
+import { useGlobalApis } from '@/store/GlobalApisContext';
 
 const HomeScreen = () => {
   const { navigate, setParams } = useNavigation<NavigationProp<any>>();
-  const [isSelectedBankPayment, setIsSelectedBankPayment] =
-    React.useState(false);
   const { token, userProfile } = useAppSelector((state) => state.auth);
   const { dark, colors } = useTheme();
   const { channel } = usePusher();
   const { currentPage } = useAppStateContext();
-  const insets = useSafeAreaInsets();
 
   const { data: billerCategories, isLoading: isLoadingCategories } = useQuery({
     queryKey: ['billCategories'],
@@ -59,31 +57,31 @@ const HomeScreen = () => {
     enabled: !!token,
   });
 
+  // const {
+  //   transactionsHistory,
+  //   isLoading: isLoadingTransactions,
+  //   isError: istransactionsError,
+  //   error: transactionsError,
+  // } = useGlobalApis();
+
+  // console.log('index:', transactionsHistory);
   const {
-    data: transferData,
-    isLoading: loadingTransfer,
-    error: errorTransfer,
+    data: transactionsHistory,
+    isLoading: isLoadingTransactions,
+    isError: istransactionsError,
+    error: transactionsError,
   } = useQuery({
-    queryKey: ['transferHistory'],
+    queryKey: ['transactionsHistory'],
     queryFn: () => getTransferHistory(token),
-    enabled: !!token,
   });
 
-  const { data: banksData, isLoading: isLoadingBanks } = useQuery({
-    queryKey: ['billerMethod'],
-    queryFn: () => {
-      if (isSelectedBankPayment) {
-        return getBanks(token);
-      }
-    },
-    enabled: isSelectedBankPayment,
-  });
+  // console.log('index:', transactionsHistory);
 
   const queryClient = new QueryClient();
   const {
     data: balance,
     isLoading: isLoadingBalance,
-    error: errorBalance,
+    isError: isErrorBalance,
   } = useQuery({
     queryKey: ['get Balance'],
     queryFn: () => getBalance(token),
@@ -93,12 +91,6 @@ const HomeScreen = () => {
     },
     enabled: !!token,
   });
-
-  useEffect(() => {
-    if (banksData?.data) {
-      navigate('transfertobankselectbank', { data: banksData?.data });
-    }
-  }, [banksData]);
 
   const handleClickCategory = (category: IBillerCategory) => {
     if (!category) return;
@@ -116,17 +108,7 @@ const HomeScreen = () => {
     }
   };
 
-  const handleNavigateToBankTransfer = () => {
-    if (banksData?.data) {
-      navigate('transfertobankselectbank', { data: banksData?.data });
-      return;
-    }
-    setIsSelectedBankPayment(true);
-  };
-
-  const handleWalletTransfer = () => {
-    navigate('wallettransfer');
-  };
+  // console.log('index rerendered');
 
   const renderHeader = () => {
     return (
@@ -232,11 +214,15 @@ const HomeScreen = () => {
           onPress={() => navigate('inoutpaymenthistory')}
         />
         <View style={{ marginBottom: 12 }}>
-          {transferData?.data && transferData?.data.length > 0 ? (
-            <TransferHistory transferData={transferData?.data.splice(0, 2)} />
+          {transactionsHistory?.data && transactionsHistory.data.length > 0 ? (
+            <TransferHistory
+              transferData={[...transactionsHistory.data].splice(0, 2)}
+            />
           ) : (
             <Text style={{ textAlign: 'center', ...FONTS.body3 }}>
-              No recent transactions
+              {istransactionsError
+                ? 'Error fetching transactions'
+                : 'No recent transactions'}
             </Text>
           )}
         </View>
@@ -255,7 +241,9 @@ const HomeScreen = () => {
     >
       {renderTopContainer()}
       {rederTransactionsHistory()}
-      {(isLoadingBanks || isLoadingCategories || loadingTransfer) && <Loader />}
+      {(isLoadingCategories || isLoadingTransactions || isLoadingBalance) && (
+        <Loader />
+      )}
     </SafeAreaView>
     // </View>
   );

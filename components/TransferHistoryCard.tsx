@@ -27,7 +27,7 @@ const TransferHistoryCard: React.FC<TransferHistoryCardProps> = ({
   onPress,
 }) => {
   const { dark } = useTheme();
-  console.log(logo);
+  // console.log(logo);
   return (
     <TouchableOpacity
       onPress={onPress}

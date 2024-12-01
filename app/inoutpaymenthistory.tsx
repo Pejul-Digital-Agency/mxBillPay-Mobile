@@ -29,20 +29,20 @@ const InOutPaymentHistory = () => {
   const navigation = useNavigation<NavigationProp<any>>();
   const { token } = useAppSelector((state) => state.auth);
   const [selectedTab, setSelectedTab] = useState<Tab>('Transfer History');
-  const {
-    data: billPaymentData,
-    isLoading: loadingBill,
-    error: errorBill,
-  } = useQuery({
-    queryKey: ['billPayments'],
-    queryFn: () => getBillPaymentHistory(token),
-  });
+  // const {
+  //   data: billPaymentData,
+  //   isLoading: loadingBill,
+  //   error: errorBill,
+  // } = useQuery({
+  //   queryKey: ['billPayments'],
+  //   queryFn: () => getBillPaymentHistory(token),
+  // });
   const {
     data: transferData,
     isLoading: loadingTransfer,
     error: errorTransfer,
   } = useQuery({
-    queryKey: ['transferHistory'],
+    queryKey: ['transactionsHistory'],
     queryFn: () => getTransferHistory(token),
   });
 
@@ -50,10 +50,10 @@ const InOutPaymentHistory = () => {
     switch (selectedTab) {
       case 'Transfer History':
         return <TransferHistory transferData={transferData?.data || []} />;
-      case 'Bill Payments':
-        return (
-          <BillPaymentHistory billPaymentData={billPaymentData?.data || []} />
-        );
+      // case 'Bill Payments':
+      //   return (
+      //     <BillPaymentHistory billPaymentData={billPaymentData?.data || []} />
+      //   );
       default:
         return null;
     }
@@ -105,7 +105,7 @@ const InOutPaymentHistory = () => {
 
   return (
     <SafeAreaView style={[styles.area, { backgroundColor: colors.background }]}>
-      {(loadingBill || loadingTransfer) && <Loader />}
+      {loadingTransfer && <Loader />}
       <View style={[styles.container, { backgroundColor: colors.background }]}>
         {renderHeader()}
         <ScrollView showsVerticalScrollIndicator={false}>

@@ -19,7 +19,7 @@ const TransferHistory = ({
   const handleonPress = () => {
     console.log('onpress');
   };
-  console.log(transferData);
+
   return (
     // <View
     //   style={[

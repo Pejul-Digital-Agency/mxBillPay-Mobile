@@ -3,15 +3,9 @@ import { View, Text, Platform, BackHandler } from 'react-native';
 import { Image } from 'expo-image';
 import { COLORS, icons, FONTS } from '../../constants';
 import { useTheme } from '@/theme/ThemeProvider';
-import { useAppSelector } from '@/store/slices/authSlice';
 import TokenExpiryModal from '../tokenexpirymodal';
-import { useEffect } from 'react';
-import { NavigationProp, useRoute } from '@react-navigation/native';
-import { StatusBar } from 'react-native';
 
 const TabLayout: React.FC = () => {
-  const { token, userProfile } = useAppSelector((state) => state.auth);
-  const { navigate, setParams } = useNavigation<NavigationProp<any>>();
   const { dark } = useTheme();
 
   return (
@@ -35,7 +29,7 @@ const TabLayout: React.FC = () => {
           name="index"
           options={{
             title: '',
-            tabBarIcon: ({ focused }: { focused: boolean }) => {
+            tabBarIcon: ({ focused }) => {
               return (
                 <View
                   style={{
@@ -115,37 +109,6 @@ const TabLayout: React.FC = () => {
             },
           }}
         />
-        {/* <Tabs.Screen
-          name="scanqrcode"
-          options={{
-            title: '',
-            tabBarIcon: () => {
-              return (
-                <View
-                  style={{
-                    height: 64,
-                    width: 64,
-                    borderRadius: 32,
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    backgroundColor: COLORS.primary,
-                    marginBottom: 16,
-                  }}
-                >
-                  <Image
-                    source={icons.scan2}
-                    contentFit="contain"
-                    style={{
-                      width: 24,
-                      height: 24,
-                      tintColor: COLORS.white,
-                    }}
-                  />
-                </View>
-              );
-            },
-          }}
-        /> */}
         <Tabs.Screen
           name="mycard"
           options={{

@@ -47,7 +47,7 @@ const BillerProviders = () => {
   });
 
   const handleClickProvider = (providerData: IProviderData) => {
-    navigate('billerItems', { categoryData, providerData });
+    navigate('billreviewsummary', { categoryData, providerData });
   };
 
   // console.log(billerItemsData);

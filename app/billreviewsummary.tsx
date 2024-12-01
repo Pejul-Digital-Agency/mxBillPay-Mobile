@@ -11,7 +11,10 @@ import { useNavigation } from 'expo-router';
 import { NavigationProp, useRoute } from '@react-navigation/native';
 import {
   getBillerItemDetails,
+  getBillerItems,
+  IBillerCategory,
   IBillerItemDetails,
+  IProviderData,
 } from '@/utils/queries/appQueries';
 import { IPayBill, payBillFn } from '@/utils/mutations/accountMutations';
 import { validateCustomer } from '@/utils/mutations/accountMutations';
@@ -27,6 +30,7 @@ import { billServices } from '@/data';
 import { applyCommission } from '@/utils/helpers/commissionedFee';
 import RBSheet from 'react-native-raw-bottom-sheet';
 import { ApiError } from '@/utils/customApiCall';
+import CustomPicker from '@/components/Picker';
 
 interface InputValues {
   customerId: string;
@@ -59,30 +63,53 @@ const BillReviewSummary = () => {
   const { colors, dark } = useTheme();
   const { navigate, reset } = useNavigation<NavigationProp<any>>();
   const route = useRoute();
+  if (!route.params || Object.keys(route.params).length == 0)
+    return navigate('/(tabs)');
+  const {
+    categoryData,
+    providerData,
+  }: { categoryData: IBillerCategory; providerData: IProviderData } =
+    route.params as any;
   const [formState, dispatchFormState] = React.useReducer(
     reducer,
     initialState
   );
   const { token } = useAppSelector((state) => state.auth);
   const [modalOpen, setModalOpen] = React.useState(false);
+  const [selectedBillerItemId, setSelectedBillerItemId] = React.useState('');
   const rbSheetRef = React.useRef<any>(null);
   const { userId } = useAppSelector((state) => state.auth);
   const [errorModal, setErrorModal] = React.useState(false);
   const [errorModalText, setErrorModalText] = React.useState('');
-  if (!route.params) return navigate('/(tabs)');
-  const { itemId }: { itemId: string } = route.params as any;
+
   const {
-    data: billerItemData,
-    isLoading,
-    isError,
-    error,
+    data: billerItemsList,
+    isLoading: isLoadingItemList,
+    isError: isErrorItemsList,
+    error: errorItemsList,
   } = useQuery({
-    queryKey: ['billerItems', itemId],
+    queryKey: ['billCategories', categoryData?.id],
     queryFn: () =>
-      getBillerItemDetails({
-        itemId,
+      getBillerItems({
+        categoryId: categoryData?.id.toString() as string,
+        providerId: providerData?.id.toString() as string,
         token,
       }),
+    enabled: categoryData != null || providerData != null,
+  });
+  const {
+    data: billerItemData,
+    isLoading: isLoadingItemData,
+    isError: isErrorItemData,
+    error: errorItemData,
+  } = useQuery({
+    queryKey: ['billerItems', selectedBillerItemId],
+    queryFn: () =>
+      getBillerItemDetails({
+        itemId: selectedBillerItemId,
+        token,
+      }),
+    enabled: selectedBillerItemId != '',
   });
   const { mutate: validate, isPending: isValidating } = useMutation({
     mutationFn: validateCustomer,
@@ -99,7 +126,7 @@ const BillReviewSummary = () => {
   const { mutate: payBill, isPending: isBillPaying } = useMutation({
     mutationFn: payBillFn,
     onSuccess: (data) => {
-      console.log(data);
+      console.log('transaction_data', data);
       rbSheetRef.current.close();
       reset({ index: 0, routes: [{ name: 'inoutpaymentviewereceipt' }] });
       navigate('inoutpaymentviewereceipt', {
@@ -167,15 +194,21 @@ const BillReviewSummary = () => {
       });
       return;
     }
-    if (billerItemData) {
-      validate({
-        data: {
-          customerId: formState.inputValues.customerId,
-          id: billerItemData.data?.id.toString(),
-        },
-        token,
+
+    if (!selectedBillerItemId) {
+      showToast({
+        type: 'error',
+        text1: 'Please choose a biller item',
       });
+      return;
     }
+    validate({
+      data: {
+        customerId: formState.inputValues.customerId,
+        id: selectedBillerItemId,
+      },
+      token,
+    });
   };
 
   const TopContainerItem = ({
@@ -371,7 +404,14 @@ const BillReviewSummary = () => {
         {/* <ScrollView showsVerticalScrollIndicator={false}> */}
         {renderTopContainer()}
         <View style={{ height: 20 }} />
-
+        {billerItemsList?.data?.itemList && (
+          <CustomPicker
+            selectedValue={selectedBillerItemId}
+            setSelectedValue={setSelectedBillerItemId}
+            placeholder="-Select Biller Item-"
+            options={billerItemsList?.data?.itemList}
+          />
+        )}
         <Input
           id="customerId"
           value={formState.inputValues.customerId}
@@ -434,14 +474,8 @@ const BillReviewSummary = () => {
             backgroundColor: dark ? COLORS.dark3 : '#000',
           },
           container: {
-            borderTopRightRadius: 32,
-            borderTopLeftRadius: 32,
-            height: 322,
-            paddingVertical: 16,
-            paddingHorizontal: 16,
+            ...styles.rbsheetContainer,
             backgroundColor: dark ? COLORS.dark2 : COLORS.white,
-            alignItems: 'center',
-            position: 'relative',
           },
         }}
         customModalProps={{
@@ -622,6 +656,15 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontFamily: 'regular',
     color: COLORS.white,
+  },
+  rbsheetContainer: {
+    borderTopRightRadius: 32,
+    borderTopLeftRadius: 32,
+    height: 322,
+    paddingVertical: 16,
+    paddingHorizontal: 16,
+    alignItems: 'center',
+    position: 'relative',
   },
 });
 

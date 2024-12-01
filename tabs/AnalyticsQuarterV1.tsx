@@ -6,14 +6,16 @@ import {
   Dimensions,
 } from 'react-native';
 import React from 'react';
-import { COLORS, SIZES, icons } from '@/constants';
+import { COLORS, FONTS, SIZES, icons } from '@/constants';
 import { Image } from 'expo-image';
 import { LineChart } from 'react-native-chart-kit';
 import { useTheme } from '@/theme/ThemeProvider';
 import { useAppSelector } from '@/store/slices/authSlice';
 import { useQuery } from '@tanstack/react-query';
-import { getQuarterlyStats } from '@/utils/queries/accountQueries';
-import { useGlobalApis } from '@/store/GlobalApisContext';
+import {
+  getQuarterlyStats,
+  getTransferHistory,
+} from '@/utils/queries/accountQueries';
 import SubHeaderItem from '@/components/SubHeaderItem';
 import TransferHistory from './TransferPaymentHistory';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
@@ -42,11 +44,14 @@ const AnalyticsQuarterV1 = () => {
     queryFn: () => getQuarterlyStats(token),
   });
   const {
-    transactionsHistory,
+    data: transactionsHistory,
     isLoading: loadingTransactions,
-    isError: istransactionsError,
+    isError: isErrorTransactions,
     error: transactionsError,
-  } = useGlobalApis();
+  } = useQuery({
+    queryKey: ['transactionsHistory'],
+    queryFn: () => getTransferHistory(token),
+  });
 
   const chartConfig = {
     backgroundGradientFrom: dark ? COLORS.dark1 : '#FFF',
@@ -73,9 +78,17 @@ const AnalyticsQuarterV1 = () => {
           onPress={() => navigate('inoutpaymenthistory')}
         />
         <View style={{ marginBottom: 12 }}>
-          <TransferHistory
-            transferData={transactionsHistory?.splice(0, 2) || []}
-          />
+          {transactionsHistory?.data && transactionsHistory.data.length > 0 ? (
+            <TransferHistory
+              transferData={[...transactionsHistory?.data].splice(0, 2) || []}
+            />
+          ) : (
+            <Text style={{ textAlign: 'center', ...FONTS.body3 }}>
+              {isErrorTransactions
+                ? 'Error fetching transactions history'
+                : 'No transactions History Found'}
+            </Text>
+          )}
         </View>
       </View>
     );

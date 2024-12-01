@@ -3,23 +3,31 @@ import {
   ITrasnferTransaction,
 } from '@/utils/queries/accountQueries';
 import { useQuery } from '@tanstack/react-query';
-import { createContext, useContext } from 'react';
+import React, { createContext, useContext } from 'react';
 import { useAppSelector } from './slices/authSlice';
-import { ApiError } from '@/utils/customApiCall';
-import { G } from 'react-native-svg';
+import { apiCall, ApiError } from '@/utils/customApiCall';
+import axios from 'axios';
+import { API_ENDPOINTS } from '@/apiConfig';
+
+type ITransferTransactionResponse = {
+  status: 'success' | 'error';
+  data: ITrasnferTransaction[];
+};
 
 interface GlobalApisContextProps {
-  transactionsHistory: ITrasnferTransaction[] | undefined;
+  transactionsHistory: ITransferTransactionResponse | null;
   isLoading: boolean;
   isError: boolean;
   error: any;
+  fetchData: () => void;
 }
 
 const initialValue = {
-  transactionsHistory: undefined,
+  transactionsHistory: null,
   isLoading: false,
   isError: false,
   error: null,
+  fetchData: () => {},
 };
 
 const GlobalApisContext = createContext<GlobalApisContextProps>(initialValue);
@@ -30,15 +38,50 @@ export const GlobalApisContextProvider = ({
   children: React.ReactNode;
 }) => {
   const { token } = useAppSelector((state) => state.auth);
-  const { data, isLoading, isError, error } = useQuery({
-    queryKey: ['transactionsHistory'],
-    queryFn: async () => getTransferHistory(token),
-    enabled: !!token,
-  });
+  const [data, setData] = React.useState<ITransferTransactionResponse | null>(
+    null
+  );
+  const [isLoading, setIsLoading] = React.useState(false);
+  const [isError, setIsError] = React.useState(false);
+  const [error, setError] = React.useState<ApiError | null>(null);
+  const [japlu, setJaplu] = React.useState<any>('nothing');
 
+  const fetchData = async () => {
+    setIsLoading(true);
+    setIsError(false);
+    setError(null);
+
+    try {
+      console.log('invoked');
+      const response = await axios.get(
+        API_ENDPOINTS.ACCOUNT_MANAGEMENT.GetTransferHistory,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      console.log('resolved');
+      setJaplu(response?.data?.data);
+      setData(response?.data as ITransferTransactionResponse);
+      setIsLoading(false);
+    } catch (err) {
+      setIsError(true);
+      setError(err as ApiError);
+    }
+  };
+
+  React.useEffect(() => {
+    if (token) fetchData();
+  }, [token]);
+
+  console.log('global', data);
+  console.log('japlu: ', japlu);
   return (
     <GlobalApisContext.Provider
-      value={{ error, isError, isLoading, transactionsHistory: data?.data }}
+      value={{
+        error,
+        isError,
+        isLoading,
+        transactionsHistory: data,
+        fetchData,
+      }}
     >
       {children}
     </GlobalApisContext.Provider>

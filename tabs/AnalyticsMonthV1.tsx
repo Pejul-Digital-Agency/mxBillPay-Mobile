@@ -6,14 +6,16 @@ import {
   Dimensions,
 } from 'react-native';
 import React from 'react';
-import { COLORS, SIZES, icons } from '@/constants';
+import { COLORS, FONTS, SIZES, icons } from '@/constants';
 import { Image } from 'expo-image';
 import { LineChart } from 'react-native-chart-kit';
 import { useTheme } from '@/theme/ThemeProvider';
 import { useQuery } from '@tanstack/react-query';
-import { getMonthlyStats } from '@/utils/queries/accountQueries';
+import {
+  getMonthlyStats,
+  getTransferHistory,
+} from '@/utils/queries/accountQueries';
 import { useAppSelector } from '@/store/slices/authSlice';
-import { useGlobalApis } from '@/store/GlobalApisContext';
 import SubHeaderItem from '@/components/SubHeaderItem';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
 import TransferHistory from './TransferPaymentHistory';
@@ -42,14 +44,19 @@ const AnalyticsMonthV1 = () => {
     queryFn: () => getMonthlyStats(token),
   });
 
-  const {
-    transactionsHistory,
-    isLoading: loadingTransactions,
-    isError,
-    error: transactionsError,
-  } = useGlobalApis();
+  console.log('rendered');
 
-  console.log(statsData?.data);
+  const {
+    data: transactionsHistory,
+    isLoading: loadingTransactions,
+    isError: isErrorTransactions,
+    error: transactionsError,
+  } = useQuery({
+    queryKey: ['transactionsHistory'],
+    queryFn: () => getTransferHistory(token),
+  });
+
+  console.log(transactionsHistory);
   const chartConfig = {
     backgroundGradientFrom: dark ? COLORS.dark1 : '#FFF',
     backgroundGradientTo: dark ? COLORS.dark1 : '#FFF',
@@ -121,9 +128,17 @@ const AnalyticsMonthV1 = () => {
           onPress={() => navigate('inoutpaymenthistory')}
         />
         <View style={{ marginBottom: 12 }}>
-          <TransferHistory
-            transferData={transactionsHistory?.splice(0, 2) || []}
-          />
+          {transactionsHistory?.data && transactionsHistory.data.length > 0 ? (
+            <TransferHistory
+              transferData={[...transactionsHistory.data].splice(0, 2) || []}
+            />
+          ) : (
+            <Text style={{ textAlign: 'center', ...FONTS.body3 }}>
+              {isErrorTransactions
+                ? 'Error fetching transactions history'
+                : 'No transactions History Found'}
+            </Text>
+          )}
         </View>
       </View>
     );

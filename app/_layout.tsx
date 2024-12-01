@@ -12,6 +12,7 @@ import { store } from '@/store/store';
 import ScreenStacks from '../components/screenstacks';
 import { AppStateProvider } from '@/store/AppStateContext';
 import { PusherProvider } from '@/store/SocketContext';
+import { GlobalApisContextProvider } from '@/store/GlobalApisContext';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();

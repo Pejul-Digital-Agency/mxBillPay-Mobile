@@ -40,6 +40,7 @@ interface ReceiptData {
 const InOutPaymentViewEreceipt = () => {
   const { navigate, reset, goBack } = useNavigation<NavigationProp<any>>();
   const route = useRoute<RouteProp<any>>();
+  if (!route.params || Object.keys(route.params).length == 0) return goBack();
   const {
     transactionData,
     billerItemData,
@@ -145,7 +146,7 @@ const InOutPaymentViewEreceipt = () => {
       }
     };
 
-    const EntryRow = ({ key, value }: { key: string; value: string }) => {
+    const EntryRow = ({ title, value }: { title: string; value: string }) => {
       return (
         <View style={styles.viewContainer}>
           <Text
@@ -156,7 +157,7 @@ const InOutPaymentViewEreceipt = () => {
               },
             ]}
           >
-            {key}
+            {title}
           </Text>
           <Text
             style={[
@@ -199,24 +200,24 @@ const InOutPaymentViewEreceipt = () => {
             },
           ]}
         >
-          <EntryRow key="Bill Amount (NGN)" value={billerItemData?.itemFee} />
+          <EntryRow title="Bill Amount (NGN)" value={billerItemData?.itemFee} />
           <EntryRow
-            key="Percentage Charges"
+            title="Percentage Charges"
             value={billerItemData?.percentage_commission}
           />
           <EntryRow
-            key="Net Bill Amount (NGN)"
+            title="Net Bill Amount (NGN)"
             value={applyCommission(
               billerItemData?.percentage_commission,
               billerItemData?.itemFee
             )}
           />
           <EntryRow
-            key="Amount Paid (NGN)"
+            title="Amount Paid (NGN)"
             value={transactionData?.amount.toFixed(2).toString()}
           />
           <EntryRow
-            key="Remaining Bill Amount (NGN)"
+            title="Remaining Bill Amount (NGN)"
             value={(
               +applyCommission(
                 billerItemData?.percentage_commission,
@@ -235,10 +236,10 @@ const InOutPaymentViewEreceipt = () => {
             },
           ]}
         >
-          <EntryRow key="Biller Category" value={transactionData?.category} />
-          <EntryRow key="Biller Provider" value={transactionData?.provider} />
-          <EntryRow key="Biller Item" value={transactionData?.item} />
-          <EntryRow key="Country" value={'Nigeria'} />
+          <EntryRow title="Biller Category" value={transactionData?.category} />
+          <EntryRow title="Biller Provider" value={transactionData?.provider} />
+          <EntryRow title="Biller Item" value={transactionData?.item} />
+          <EntryRow title="Country" value={'Nigeria'} />
         </View>
 
         <View
@@ -251,7 +252,7 @@ const InOutPaymentViewEreceipt = () => {
           ]}
         >
           <EntryRow
-            key="Transaction Date"
+            title="Transaction Date"
             value={transactionData?.transactionDate}
           />
 
