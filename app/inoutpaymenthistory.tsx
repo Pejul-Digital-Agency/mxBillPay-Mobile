@@ -12,8 +12,9 @@ import { NavigationProp } from '@react-navigation/native';
 //   InOutPaymentRequested,
 //   InOutPaymentScheduled,
 // } from '@/tabs';
-import { useQuery } from '@tanstack/react-query';
+import { QueryClient, useQuery } from '@tanstack/react-query';
 import {
+  getBalance,
   getBillPaymentHistory,
   getTransferHistory,
 } from '@/utils/queries/accountQueries';
@@ -27,8 +28,10 @@ type Tab = 'Transfer History' | 'Bill Payments';
 const InOutPaymentHistory = () => {
   const { colors, dark } = useTheme();
   const navigation = useNavigation<NavigationProp<any>>();
-  const { token } = useAppSelector((state) => state.auth);
+  // const { token } = useAppSelector((state) => state.auth);
   const [selectedTab, setSelectedTab] = useState<Tab>('Transfer History');
+  const { token, userProfile } = useAppSelector((state) => state.auth);
+
   // const {
   //   data: billPaymentData,
   //   isLoading: loadingBill,
@@ -37,6 +40,20 @@ const InOutPaymentHistory = () => {
   //   queryKey: ['billPayments'],
   //   queryFn: () => getBillPaymentHistory(token),
   // });
+  const queryClient = new QueryClient();
+  const {
+    data: balance,
+    isLoading: isLoadingBalance,
+    isError: isErrorBalance,
+  } = useQuery({
+    queryKey: ['get Balance'],
+    queryFn: () => getBalance(token),
+    refetchInterval: () => {
+      queryClient.invalidateQueries({ queryKey: ['get Balance'] });
+      return 3000;
+    },
+    enabled: !!token,
+  });
   const {
     data: transferData,
     isLoading: loadingTransfer,
@@ -63,43 +80,37 @@ const InOutPaymentHistory = () => {
    */
   const renderHeader = () => {
     return (
-      <View style={styles.headerContainer}>
-        <View style={styles.headerLeft}>
-          <TouchableOpacity onPress={() => navigation.goBack()}>
-            <Image
-              source={icons.back}
-              contentFit="contain"
-              style={[
-                styles.headerLogo,
-                {
-                  tintColor: dark ? COLORS.white : COLORS.greyscale900,
-                },
-              ]}
-            />
-          </TouchableOpacity>
-          <Text
-            style={[
-              styles.headerTitle,
-              {
-                color: dark ? COLORS.white : COLORS.greyscale900,
-              },
-            ]}
-          >
-            In & Out Payment
-          </Text>
-        </View>
-        {/* <View style={styles.headerRight}>
-          <TouchableOpacity>
-            <Image
-              source={icons.moreCircle}
-              contentFit='contain'
-              style={[styles.searchIcon, {
-                tintColor: dark ? COLORS.secondaryWhite : COLORS.greyscale900
-              }]}
-            />
-          </TouchableOpacity>
-        </View> */}
+      <View style={styles.cardContainer}>
+      {/* {renderHeader()} */}
+      <View style={{ alignItems: 'center', rowGap: 4, marginTop: 20 }}>
+        <Text style={styles.balanceAmount}>
+          ₦{balance?.balance.toFixed(2) || '0.00'}
+        </Text>
+        <Text style={styles.balanceText}>Current balance</Text>
       </View>
+      <View
+        style={{
+          flexDirection: 'row',
+          paddingHorizontal: 20,
+          marginTop: 8,
+          justifyContent: 'space-between',
+        }}
+      >
+        <View style={{ alignItems: 'center', rowGap: 3 }}>
+          <Text style={styles.balanceAmountBottom}>
+            ₦{balance?.totalBillPayment.toFixed(2) || '0.00'}
+          </Text>
+          <Text style={styles.balanceTextBottom}>Total Bill Payment</Text>
+        </View>
+        <View style={{ alignItems: 'center', rowGap: 3 }}>
+          <Text style={styles.balanceAmountBottom}>
+            ₦{balance?.totalIncome.toFixed(2) || '44.88'}
+          </Text>
+          <Text style={styles.balanceTextBottom}>Total Wallet Deposit</Text>
+        </View>
+      </View>
+      {/* {renderCategories()} */}
+    </View>
     );
   };
 
@@ -118,7 +129,7 @@ const InOutPaymentHistory = () => {
                 },
               ]}
             >
-              {['Transfer History', 'Bill Payments'].map((tab) => (
+              {/* {['Transfer History', 'Bill Payments'].map((tab) => (
                 <TouchableOpacity
                   key={tab}
                   onPress={() => setSelectedTab(tab as Tab)}
@@ -136,7 +147,7 @@ const InOutPaymentHistory = () => {
                     {tab}
                   </Text>
                 </TouchableOpacity>
-              ))}
+              ))} */}
             </View>
             <View style={styles.contentContainer}>{renderContent()}</View>
           </View>
@@ -147,6 +158,41 @@ const InOutPaymentHistory = () => {
 };
 
 const styles = StyleSheet.create({
+  cardContainer: {
+    position: 'relative',
+    width: '100%',
+    height: 'auto',
+    zIndex: 1,
+    paddingTop: 20,
+    paddingBottom: 50,
+    borderBottomLeftRadius: 24,
+    borderBottomRightRadius: 24,
+    backgroundColor: COLORS.primary,
+    paddingHorizontal: 22,
+    // rowGap: 16,
+  },
+  balanceText: {
+    fontSize: 12,
+    fontFamily: 'regular',
+    color: COLORS.white,
+    // marginBottom: 4,
+  },
+  balanceAmount: {
+    fontSize: 28,
+    fontFamily: 'extraBold',
+    color: COLORS.white,
+  },
+  balanceTextBottom: {
+    fontSize: 10,
+    fontFamily: 'regular',
+    color: COLORS.white,
+    // marginBottom: 4,
+  },
+  balanceAmountBottom: {
+    fontSize: 20,
+    fontFamily: 'regular',
+    color: COLORS.white,
+  },
   area: {
     flex: 1,
     backgroundColor: COLORS.white,
@@ -154,7 +200,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.white,
-    padding: 16,
+    // padding: 16,
   },
   headerContainer: {
     flexDirection: 'row',
@@ -224,11 +270,51 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    paddingHorizontal: 16,
   },
   contentText: {
     fontSize: 18,
     color: COLORS.black,
   },
+  topContainer: {
+    position: 'relative',
+    width: '100%',
+    height: 'auto',
+    zIndex: 1,
+    paddingTop: 20,
+    paddingBottom: 25,
+    borderBottomLeftRadius: 7,
+    borderBottomRightRadius: 7,
+    backgroundColor: COLORS.primary,
+    paddingHorizontal: 0,
+  },
+  //for mx bill payment title
+  mxtitle: {
+    textAlign: 'center',
+    fontSize: 19,
+    marginTop: 4,
+    fontWeight: '500',
+    textTransform: 'uppercase',
+
+    fontFamily: 'regular',
+    color: 'orange',
+    // marginBottom: 4,
+  },
+  // balanceAmount: {
+  //   textAlign: 'center',
+  //   fontSize: 28,
+  //   marginTop: 4,
+  //   fontFamily: 'extraBold',
+  //   color: COLORS.white,
+  // },
+  // balanceText: {
+  //   textAlign: 'center',
+  //   fontSize: 12,
+  //   marginTop: 4,
+  //   fontFamily: 'regular',
+  //   color: COLORS.white,
+  //   // marginBottom: 4,
+  // },
 });
 
 export default InOutPaymentHistory;

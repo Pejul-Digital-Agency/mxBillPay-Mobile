@@ -1,3 +1,4 @@
+// SettingsItem.tsx
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import React from 'react';
 import { SIZES, COLORS, icons } from '../constants';
@@ -27,23 +28,10 @@ const SettingsItem: React.FC<SettingsItemProps> = ({
         <Image
           source={icon}
           contentFit="contain"
-          style={[
-            styles.icon,
-            {
-              tintColor: COLORS.primary,
-              //   tintColor: dark ? COLORS.white : COLORS.greyscale900,
-            },
-          ]}
+          style={[styles.icon, { tintColor: COLORS.primary }]}
         />
         <View>
-          <Text
-            style={[
-              styles.name,
-              {
-                color: dark ? COLORS.white : COLORS.greyscale900,
-              },
-            ]}
-          >
+          <Text style={[styles.name, { color: dark ? COLORS.white : COLORS.greyscale900 }]}>
             {name}
           </Text>
           <Text
@@ -58,16 +46,13 @@ const SettingsItem: React.FC<SettingsItemProps> = ({
         </View>
       </View>
       {hasArrowRight && (
-        <Image
-          source={icons.arrowRight}
-          contentFit="contain"
-          style={[
-            styles.arrowRight,
-            {
-              tintColor: dark ? COLORS.white : COLORS.greyscale900,
-            },
-          ]}
-        />
+        <View style={{ borderWidth: 1, borderRadius: 12 }}>
+          <Image
+            source={icons.rightArrow}
+            contentFit="contain"
+            style={[styles.arrowRight, { tintColor: dark ? COLORS.white : COLORS.primary }]}
+          />
+        </View>
       )}
     </TouchableOpacity>
   );
@@ -86,8 +71,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   icon: {
-    height: 24,
-    width: 24,
+    height: 29,
+    width: 29,
     tintColor: COLORS.greyscale900,
   },
   name: {
@@ -97,9 +82,8 @@ const styles = StyleSheet.create({
     marginLeft: 12,
   },
   arrowRight: {
-    width: 16,
-    height: 16,
-    tintColor: COLORS.greyscale900,
+    width: 45,
+    height: 20,
   },
 });
 

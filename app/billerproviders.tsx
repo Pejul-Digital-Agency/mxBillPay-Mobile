@@ -65,23 +65,12 @@ const BillerProviders = () => {
         <Image
           source={provider.logo || icons.electricity}
           contentFit="cover"
-          style={{
-            ...styles.itemImage,
-            tintColor: dark ? COLORS.white : COLORS.greyscale900,
-          }}
+          style={styles.fullImage}
         />
-        <Text
-          style={{
-            ...styles.itemName,
-            color: dark ? COLORS.white : COLORS.greyscale900,
-          }}
-        >
-          {provider.title}
-        </Text>
       </TouchableOpacity>
     );
   };
-
+  
   const renderList = () => {
     return (
       <FlatList
@@ -113,19 +102,17 @@ const BillerProviders = () => {
                 source={categoryData?.icon || icons.send}
                 contentFit="contain"
                 style={styles.icon}
-                tintColor={categoryData?.iconColor}
+                tintColor={COLORS.white}
               />
-            </View>
             <Text
               style={[
                 styles.title,
-                {
-                  color: dark ? COLORS.white : COLORS.greyscale900,
-                },
+                
               ]}
             >
-              Choose provider of {categoryData?.category} billing service
+              Fund Your {categoryData?.category} Account
             </Text>
+            </View>
             <View
               style={[
                 styles.separateLine,
@@ -156,13 +143,14 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   iconContainer: {
-    height: 124,
-    width: 124,
-    borderRadius: 999,
+    height: 154,
+    width: '100%',
+    borderRadius: 19,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 8,
-    backgroundColor: darkColors ? COLORS.greyScale800 : COLORS.grayscale100,
+    marginTop: -12,
+    backgroundColor: darkColors ? COLORS.primary : COLORS.grayscale100,
   },
   icon: {
     height: 60,
@@ -174,11 +162,11 @@ const styles = StyleSheet.create({
     marginTop: 32,
   },
   title: {
-    fontSize: 24,
+    fontSize: 16,
     fontFamily: 'bold',
-    color: COLORS.greyscale900,
+    color: COLORS.white,
     textAlign: 'center',
-    marginTop: 32,
+    marginTop: 12,
   },
   subtitle: {
     fontSize: 16,
@@ -211,22 +199,35 @@ const styles = StyleSheet.create({
   continueBtn: {
     marginVertical: 22,
   },
+  // itemContainer: {
+  //   padding: 16, // Adjusted for SIZES.padding * 2
+  //   width: '48%',
+  //   rowGap: 8,
+  //   borderRadius: 12,
+  //   marginBottom: 16, // Adjusted for SIZES.padding
+  //   alignItems: 'flex-start',
+  // },
+  // itemImage: {
+  //   height: 24,
+  //   width: 24,
+  //   borderRadius: 50,
+  // },
+  // itemName: {
+  //   fontSize: 16, // Adjusted for SIZES.h4
+  //   fontWeight: '600',
+  // },
   itemContainer: {
-    padding: 16, // Adjusted for SIZES.padding * 2
+    padding: 0, // Removed padding
     width: '48%',
-    rowGap: 8,
+    height: 110, // Adjust height based on design
     borderRadius: 12,
-    marginBottom: 16, // Adjusted for SIZES.padding
-    alignItems: 'flex-start',
+    marginBottom: 16,
+    overflow: 'hidden', // Ensures the image is clipped to the border radius
   },
-  itemImage: {
-    height: 24,
-    width: 24,
-    borderRadius: 50,
-  },
-  itemName: {
-    fontSize: 16, // Adjusted for SIZES.h4
-    fontWeight: '600',
+  fullImage: {
+    width: '100%',
+    height: '100%',
+    resizeMode: 'contain', // Ensures the image covers the entire container
   },
   itemRow: {
     flexDirection: 'row',
