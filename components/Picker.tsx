@@ -3,6 +3,7 @@ import { View, StyleSheet } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { COLORS, SIZES } from '@/constants';
 import { IBillerItemsList } from '@/utils/queries/appQueries';
+import { Image } from 'expo-image';
 
 interface PickerProps {
   placeholder: string;
@@ -12,7 +13,6 @@ interface PickerProps {
 }
 
 export default function CustomPicker(props: PickerProps) {
-  const [selectedValue, setSelectedValue] = useState<string | undefined>();
   const [isFocused, setIsFocused] = useState(false);
   const dark = false; // Change based on your theme
 
@@ -34,6 +34,12 @@ export default function CustomPicker(props: PickerProps) {
         },
       ]}
     >
+      <Image
+        source={'https://cdn-icons-png.flaticon.com/512/7310/7310495.png'}
+        style={{ width: 20, height: 20 }}
+        tintColor={isFocused ? COLORS.primary : '#BCBCBC'}
+        contentFit="contain"
+      />
       <Picker
         selectedValue={props.selectedValue}
         onValueChange={(itemValue) => props.setSelectedValue(itemValue)}
@@ -43,7 +49,7 @@ export default function CustomPicker(props: PickerProps) {
           styles.picker,
           {
             color: dark
-              ? selectedValue == ''
+              ? props.selectedValue == ''
                 ? COLORS.grayscale200
                 : COLORS.white
               : !dark
@@ -65,7 +71,9 @@ export default function CustomPicker(props: PickerProps) {
             label={item.paymentitemname}
             value={item.id.toString()}
             color={
-              selectedValue === item.id.toString() ? COLORS.primary : '#BCBCBC'
+              props.selectedValue === item.id.toString()
+                ? COLORS.primary
+                : '#BCBCBC'
             }
           />
         ))}

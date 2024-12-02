@@ -88,7 +88,7 @@ const styles = StyleSheet.create({
     width: 25,
     height: 25,
     borderRadius: 12.5,
-    backgroundColor: COLORS.primary,
+    backgroundColor: COLORS.payment,
   },
 });
 

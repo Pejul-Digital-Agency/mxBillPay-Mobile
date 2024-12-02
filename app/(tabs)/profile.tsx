@@ -33,8 +33,9 @@ const Profile = () => {
   const refRBSheet = useRef<any>(null);
   const { dark, colors, setScheme } = useTheme();
   const { navigate, reset } = useNavigation<NavigationProp<any>>();
-  const { token, userProfile } = useAppSelector((state) => state.auth);
-  // const { currentPage } = useAppSelector((state) => state.currPage);
+  const { token, userProfile, userAccount } = useAppSelector(
+    (state) => state.auth
+  );
   const dispatch = useAppDispatch();
 
   const handleLogout = () => {
@@ -63,328 +64,102 @@ const Profile = () => {
                 {'Hi, ' + userProfile?.firstName + ' ' + userProfile?.lastName}
               </Text>
             </View>
-            <TouchableOpacity onPress={() => console.log('pressec settings')}>
-              <Image
-                source={icons.settingOutline}
-                contentFit="contain"
-                tintColor={COLORS.dark2}
-                style={styles.settingsIcon}
-              />
-            </TouchableOpacity>
-          </View>
-          <View style={styles.balanceContainer}>
-            <View style={styles.balanceDetails}>
-              <Text style={styles.balanceLabel}>Total Balance</Text>
-              <View style={styles.balanceRow}>
-                <Text style={styles.currencySymbol}>{`₦`}</Text>
-                <Text style={styles.accountBalance}>
-                  {userProfile?.accountBalance}
-                </Text>
-              </View>
-            </View>
-          </View>
-          <View style={styles.cashbackContainer}>
-            <Text>& Cashback</Text>
-            <Text style={styles.cashbackText}>{` ₦200.00`}</Text>
           </View>
         </View>
       </>
     );
   };
 
-  /**
-   * Render header
-   */
-  // const renderHeader = () => {
-  //   return (
-  //     <TouchableOpacity style={styles.headerContainer}>
-  //       <View style={styles.headerLeft}>
-  //         {/* <Image
-  //           source={images.logo}
-  //           contentFit='contain'
-  //           style={styles.logo}
-  //         /> */}
-  //         <Text
-  //           style={[
-  //             styles.headerTitle,
-  //             {
-  //               color: dark ? COLORS.white : COLORS.greyscale900,
-  //             },
-  //           ]}
-  //         >
-  //           Profile
-  //         </Text>
-  //       </View>
-  //       {/* removing three dots */}
-  //       {/* <TouchableOpacity>
-  //         <Image
-  //           source={icons.moreCircle}
-  //           contentFit='contain'
-  //           style={[styles.headerIcon, {
-  //             tintColor: dark ? COLORS.secondaryWhite : COLORS.greyscale900
-  //           }]}
-  //         />
-  //       </TouchableOpacity> */}
-  //     </TouchableOpacity>
-  //   );
-  // };
-  /**
-   * Render User Profile
-   */
-  // const renderProfile = () => {
-  //   const [image, setImage] = useState(images.user1);
-
-  //   const pickImage = async () => {
-  //     try {
-  //       const tempUri = await launchImagePicker();
-
-  //       if (!tempUri) return;
-
-  //       // Set the image
-  //       setImage({ uri: tempUri });
-  //     } catch (error) {}
-  //   };
-  //   return (
-  //     <View style={styles.profileContainer}>
-  //       <View>
-  //         <Image
-  //           source={userProfile?.profilePicture || icons.profile}
-  //           contentFit="cover"
-  //           style={styles.avatar}
-  //         />
-  //         {/* <TouchableOpacity
-  //           onPress={pickImage}
-  //           style={styles.picContainer}>
-  //           <MaterialIcons name="edit" size={16} color={COLORS.white} />
-  //         </TouchableOpacity> */}
-  //       </View>
-  //       <Text
-  //         style={[
-  //           styles.title,
-  //           { color: dark ? COLORS.secondaryWhite : COLORS.greyscale900 },
-  //         ]}
-  //       >
-  //         {userProfile?.firstName} {userProfile?.lastName}
-  //       </Text>
-  //       <Text
-  //         style={[
-  //           styles.subtitle,
-  //           { color: dark ? COLORS.secondaryWhite : COLORS.greyscale900 },
-  //         ]}
-  //       >
-  //         {userProfile?.email}
-  //       </Text>
-  //     </View>
-  //   );
-  // };
-  /**
-   * Render Settings
-   */
-  const renderSettings = () => {
-    // const [isDarkMode, setIsDarkMode] = useState(false);
-    const systemTheme = useColorScheme();
-    const [isDarkMode, setIsDarkMode] = useState(systemTheme === 'dark');
-
-    // Sync the switch with the system theme on initial load
-    useEffect(() => {
-      setIsDarkMode(systemTheme === 'dark');
-    }, [systemTheme]);
-    const toggleDarkMode = () => {
-      setIsDarkMode((prev) => !prev);
-      dark ? setScheme('light') : setScheme('dark');
-    };
-
-    return (
-      <View
-        style={[
-          styles.settingsContainer,
-          {
-            backgroundColor: dark ? COLORS.greyscale900 : COLORS.white,
-          },
-        ]}
-      >
-        {/* <SettingsItem
-          icon={icons.bell}
-          name="My Notification"
-          onPress={() => navigate('notifications')}
-        /> */}
-        {/* <SettingsItem
-          icon={icons.location2Outline}
-          name="Address"
-          onPress={() => navigate("address")}
-        /> */}
-        <SettingsItem
-          icon={icons.profile2}
-          name="Edit Profile"
-          onPress={() => navigate('editprofile')}
-          subtitle="Update your profile details"
-        />
-        <SettingsItem
-          icon={icons.bell}
-          name="Notification Settings"
-          onPress={() => navigate('settingsnotifications')}
-          subtitle="Turn off notifications to save on battery"
-        />
-        {/* <SettingsItem
-          icon={icons.wallet2Outline}
-          name="Payment"
-          onPress={() => navigate("settingspayment")}
-        /> */}
-        <SettingsItem
-          icon={icons.shield}
-          name="Security"
-          subtitle="Protect your account"
-          onPress={() => navigate('settingssecurity')}
-        />
-        {/* <TouchableOpacity
-          onPress={() => navigate("settingslanguage")}
-          style={styles.settingsItemContainer}>
-          <View style={styles.leftContainer}>
-            <Image
-              source={icons.more}
-              contentFit='contain'
-              style={[styles.settingsIcon, {
-                tintColor: dark ? COLORS.white : COLORS.greyscale900
-              }]}
-            />
-            <Text style={[styles.settingsName, {
-              color: dark ? COLORS.white : COLORS.greyscale900
-            }]}>Language & Region</Text>
-          </View>
-          <View style={styles.rightContainer}>
-            <Text style={[styles.rightLanguage, {
-              color: dark ? COLORS.white : COLORS.greyscale900
-            }]}>English (US)</Text>
-            <Image
-              source={icons.arrowRight}
-              contentFit='contain'
-              style={[styles.settingsArrowRight, {
-                tintColor: dark ? COLORS.white : COLORS.greyscale900
-              }]}
-            />
-          </View>
-        </TouchableOpacity> */}
-        <TouchableOpacity style={styles.settingsItemContainer}>
-          <View style={styles.leftContainer}>
-            <Image
-              source={images.eyefill}
-              contentFit="contain"
-              style={[
-                styles.settingsIcon,
-                {
-                  tintColor: COLORS.primary,
-                  // tintColor: dark ? COLORS.white : COLORS.greyscale900,
-                },
-              ]}
-            />
-            <View>
-              <Text
-                style={[
-                  styles.settingsName,
-                  {
-                    color: dark ? COLORS.white : COLORS.greyscale900,
-                  },
-                ]}
-              >
-                Dark Mode
-              </Text>
-              <Text
-                style={{
-                  color: dark ? COLORS.white : COLORS.greyscale900,
-                  fontSize: 12,
-                  marginLeft: 12,
-                }}
-              >
-                Switch between light and dark mode
-              </Text>
-            </View>
-          </View>
-          <View style={styles.rightContainer}>
-            <Switch
-              value={isDarkMode}
-              onValueChange={toggleDarkMode}
-              thumbColor={isDarkMode ? '#fff' : COLORS.white}
-              trackColor={{ false: '#EEEEEE', true: COLORS.primary }}
-              ios_backgroundColor={COLORS.white}
-              style={styles.switch}
-            />
-          </View>
-        </TouchableOpacity>
-        <SettingsItem
-          icon={icons.lock2}
-          name="Privacy Policy"
-          onPress={() => navigate('settingsprivacypolicy')}
-          subtitle="Read our privacy policy"
-        />
-        <SettingsItem
-          icon={images.infoCircleFilled}
-          name="Help Center"
-          onPress={() => navigate('settingshelpcenter')}
-          subtitle="Contact our support team"
-        />
-        {/* <SettingsItem
-          icon={icons.people4}
-          name="Invite Friends"
-          onPress={() => navigate("settingsinvitefriends")}
-        /> */}
-        <TouchableOpacity
-          onPress={() => refRBSheet.current.open()}
-          style={styles.logoutContainer}
-        >
-          <View style={styles.logoutLeftContainer}>
-            <Image
-              source={icons.logout}
-              contentFit="contain"
-              style={[
-                styles.logoutIcon,
-                {
-                  tintColor: 'red',
-                },
-              ]}
-            />
-            <Text
-              style={[
-                styles.logoutName,
-                {
-                  color: 'red',
-                },
-              ]}
-            >
-              Logout
-            </Text>
-          </View>
-        </TouchableOpacity>
-      </View>
-    );
-  };
   return (
     <SafeAreaView
       style={[
         styles.area,
-        { backgroundColor: dark ? COLORS.dark2 : COLORS.grayscale100 },
+        { backgroundColor: dark ? COLORS.dark2 : COLORS.grayscale200 },
       ]}
     >
-      {/* {currentPage === 'profile' && (
-        <StatusBar style={dark ? 'light' : 'dark'} backgroundColor="#79C2F8" />
-      )} */}
-      <View style={[styles.container, { backgroundColor: colors.background }]}>
-        <LinearGradient
-          colors={['#79C2F8', '#B6CFE4']}
+      <View
+        style={[
+          styles.container,
+          { backgroundColor: colors.background, position: 'relative' },
+        ]}
+      >
+        <View
           style={{
             padding: 16,
+            height: 240,
+            zIndex: 1,
             borderBottomRightRadius: 20,
             borderBottomLeftRadius: 20,
+            backgroundColor: COLORS.primary,
           }}
         >
           {renderTopContainer()}
-          {/* {renderHeader()}
-          {renderProfile()} */}
-        </LinearGradient>
+        </View>
 
-        <ScrollView showsVerticalScrollIndicator={false}>
-          {renderSettings()}
+        <ScrollView
+          contentContainerStyle={{ marginHorizontal: 10 }}
+          style={{ position: 'absolute', zIndex: 2, top: 140 }}
+        >
+          <View style={[styles.sectionContainer]}>
+            <SettingsItem
+              icon={icons.profile2}
+              name="Edit Profile"
+              onPress={() => navigate('editprofile')}
+              subtitle="Update your profile details"
+            />
+            <SettingsItem
+              icon={icons.bell}
+              name="Notification Settings"
+              onPress={() => navigate('settingsnotifications')}
+              subtitle="Manage your notifications"
+            />
+            <SettingsItem
+              icon={icons.shield}
+              name="Security"
+              subtitle="Protect your account"
+              onPress={() => navigate('settingssecurity')}
+            />
+          </View>
+          <View style={styles.sectionContainer}>
+            <SettingsItem
+              icon={images.infoCircleFilled}
+              name="Help Center"
+              onPress={() => navigate('settingshelpcenter')}
+              subtitle="Contact our support team"
+            />
+            <SettingsItem
+              icon={icons.lock2}
+              name="Privacy Policy"
+              onPress={() => navigate('settingsprivacypolicy')}
+              subtitle="Read our privacy policy"
+            />
+            <SettingsItem
+              icon={icons.rating}
+              name="Rate Us"
+              onPress={() => {}}
+              subtitle="Love our App"
+            />
+          </View>
+          <View style={styles.sectionContainer}>
+            <SettingsItem
+              icon={icons.logout}
+              name="Log Out"
+              onPress={() => refRBSheet.current.open()}
+              // onPress={() => { handleLo }}
+              subtitle="Sign out of your account"
+            />
+          </View>
+          <View style={[styles.sectionContainer]}>
+            <SettingsItem
+              icon={icons.logout}
+              name="Delete Account"
+              onPress={() => {}}
+              subtitle="Delete your Mx Bill Pay Account"
+            />
+          </View>
         </ScrollView>
       </View>
+
       <RBSheet
         ref={refRBSheet}
         closeOnPressMask={true}
@@ -424,7 +199,7 @@ const Profile = () => {
         >
           Are you sure you want to log out?
         </Text>
-        <View style={styles.bottomContainer}>
+        <View style={[styles.bottomContainer]}>
           <Button
             title="Cancel"
             style={{
@@ -451,12 +226,21 @@ const Profile = () => {
 const styles = StyleSheet.create({
   area: {
     flex: 1,
+  },
+  sectionContainer: {
+    marginVertical: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
     backgroundColor: COLORS.white,
+    borderRadius: 10,
+    shadowColor: COLORS.black, // Shadow for elevation
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   container: {
     flex: 1,
-    backgroundColor: COLORS.white,
-    // padding: 16,
     marginBottom: 32,
   },
   headerContainer: {
@@ -521,16 +305,13 @@ const styles = StyleSheet.create({
   },
   topContainer: {
     flexDirection: 'column',
-    // marginVertical: 12,
+    marginVertical: 12,
   },
   userInfo: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
     marginVertical: 12,
   },
   userDetails: {
-    flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
   },
@@ -538,9 +319,10 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 50,
+    // tintColor: COLORS.white,
   },
   greetingText: {
-    color: COLORS.greyscale900,
+    color: '#c49b03',
     fontSize: 18,
     fontWeight: 'bold',
   },
@@ -560,7 +342,7 @@ const styles = StyleSheet.create({
   },
   balanceLabel: {
     fontSize: 18,
-    fontWeight: '400', // Use '400' for "regular" weight
+    fontWeight: '400',
   },
   balanceRow: {
     flexDirection: 'row',
@@ -586,18 +368,13 @@ const styles = StyleSheet.create({
     color: COLORS.primary,
   },
   settingsContainer: {
-    marginVertical: 12,
-    marginHorizontal: 6,
-    // zIndex: 100,
     paddingHorizontal: 16,
-    // backgroundColor: COLORS.white,
-    borderRadius: 16,
-    // shadowColor: COLORS.black,
     shadowOffset: {
       width: 0,
       height: 2,
     },
     shadowOpacity: 0.25,
+    marginBottom: 20,
     shadowRadius: 3.84,
     elevation: 5,
   },

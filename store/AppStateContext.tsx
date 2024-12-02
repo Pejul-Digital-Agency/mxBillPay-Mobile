@@ -16,7 +16,6 @@ import {
 import { useNavigation, useRouter } from 'expo-router';
 import { NavigationProp } from '@react-navigation/native';
 import { useDispatch } from 'react-redux';
-import { currentPageActions } from './slices/currentPageSlice';
 import { authSliceActions, useAppSelector } from './slices/authSlice';
 
 interface AppStateContextProps {
@@ -47,7 +46,6 @@ export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({
       const acitveTabName = e.data?.state?.routes[activeIndex]?.name;
       console.log('TokenExpiryModal: ' + acitveTabName);
       setCurrentPage(acitveTabName);
-      dispatch(currentPageActions.setCurrentPage(acitveTabName));
       // setCurrentTab(acitveTabName);
     });
 

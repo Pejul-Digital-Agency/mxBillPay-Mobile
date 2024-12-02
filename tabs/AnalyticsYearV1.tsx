@@ -111,7 +111,10 @@ const AnalyticsYearV1 = () => {
             datasets: [
               // { data: data.map(d => d.income), color: () => `#246BFD` },
               {
-                data: statsData?.data.map((d) => d.expense),
+                data:
+                  statsData?.data?.length != 0
+                    ? statsData.data.map((d) => d.expense)
+                    : [0],
                 color: () => `#FF5252`,
               },
             ],

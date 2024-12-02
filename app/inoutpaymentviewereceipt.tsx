@@ -26,6 +26,7 @@ import {
 } from '@react-navigation/native';
 import { IBillerItemDetails } from '@/utils/queries/appQueries';
 import { applyCommission } from '@/utils/helpers/commissionedFee';
+import Button from '@/components/Button';
 
 interface ReceiptData {
   status: string;
@@ -94,7 +95,7 @@ const InOutPaymentViewEreceipt = () => {
     return (
       <View style={styles.headerContainer}>
         <View style={styles.headerLeft}>
-          <TouchableOpacity onPress={() => goBack()}>
+          {/* <TouchableOpacity onPress={() => goBack()}>
             <Image
               source={icons.back as ImageSourcePropType}
               resizeMode="contain"
@@ -105,7 +106,7 @@ const InOutPaymentViewEreceipt = () => {
                 },
               ]}
             />
-          </TouchableOpacity>
+          </TouchableOpacity> */}
           <Text
             style={[
               styles.headerTitle,
@@ -315,6 +316,15 @@ const InOutPaymentViewEreceipt = () => {
         >
           {renderContent()}
         </ScrollView>
+        <Button
+          title="Go Back"
+          onPress={() => {
+            console.log('pressed');
+            reset({ index: 0, routes: [{ name: 'tabs' }] });
+            navigate('(tabs)');
+          }}
+          filled
+        />
       </View>
       {/* Modal for dropdown selection */}
       <Modal animationType="slide" transparent={true} visible={modalVisible}>
