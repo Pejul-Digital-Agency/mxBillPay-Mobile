@@ -18,9 +18,10 @@ import CustomModal from '@/app/custommodal';
 interface HeaderProps {
   title: string;
   backWarning?: boolean;
+  cantGoBack?: boolean;
 }
 
-const Header: React.FC<HeaderProps> = ({ title, backWarning }) => {
+const Header: React.FC<HeaderProps> = ({ title, backWarning, cantGoBack }) => {
   const navigation = useNavigation<NavigationProp<any>>();
   const [warningModalVisible, setWarningModalVisible] = React.useState(false);
   const { colors, dark } = useTheme();
@@ -42,18 +43,20 @@ const Header: React.FC<HeaderProps> = ({ title, backWarning }) => {
           },
         ]}
       >
-        <TouchableOpacity onPress={handleBackPress}>
-          <Image
-            source={icons.back as ImageSourcePropType}
-            contentFit="contain"
-            style={[
-              styles.backIcon,
-              {
-                tintColor: colors.text,
-              },
-            ]}
-          />
-        </TouchableOpacity>
+        {!cantGoBack && (
+          <TouchableOpacity onPress={handleBackPress}>
+            <Image
+              source={icons.back as ImageSourcePropType}
+              contentFit="contain"
+              style={[
+                styles.backIcon,
+                {
+                  tintColor: colors.text,
+                },
+              ]}
+            />
+          </TouchableOpacity>
+        )}
         <Text style={[styles.title, { color: colors.text }]}>{title}</Text>
       </View>
 

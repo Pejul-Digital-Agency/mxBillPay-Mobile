@@ -19,6 +19,7 @@ import { useAppSelector } from '@/store/slices/authSlice';
 import SubHeaderItem from '@/components/SubHeaderItem';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
 import TransferHistory from './TransferPaymentHistory';
+import Loader from '@/app/loader';
 
 const screenWidth = Dimensions.get('window').width;
 
@@ -37,8 +38,9 @@ const AnalyticsMonthV1 = () => {
   const { navigate, goBack } = useNavigation<NavigationProp<any>>();
   const {
     data: statsData,
-    isLoading,
-    error,
+    isLoading: isLoadingStats,
+    isError: isErrorStats,
+    error: errorStats,
   } = useQuery({
     queryKey: ['monthlyAnalytics'],
     queryFn: () => getMonthlyStats(token),
@@ -146,6 +148,8 @@ const AnalyticsMonthV1 = () => {
   console.log(statsData?.data);
   return (
     <View>
+      {isLoadingStats || (loadingTransactions && <Loader />)}
+
       {statsData?.data && (
         <LineChart
           data={{
@@ -168,6 +172,11 @@ const AnalyticsMonthV1 = () => {
           chartConfig={chartConfig}
           bezier
         />
+      )}
+      {isErrorStats && (
+        <Text style={{ textAlign: 'center', ...FONTS.body3 }}>
+          {errorStats?.message || 'Error fetching stats'}
+        </Text>
       )}
       {renderTransactionsHistory()}
     </View>

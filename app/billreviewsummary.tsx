@@ -74,7 +74,9 @@ const BillReviewSummary = () => {
     reducer,
     initialState
   );
-  const { token } = useAppSelector((state) => state.auth);
+  const { token, userAccount, userProfile } = useAppSelector(
+    (state) => state.auth
+  );
   const [modalOpen, setModalOpen] = React.useState(false);
   const [selectedBillerItemId, setSelectedBillerItemId] = React.useState('');
   const rbSheetRef = React.useRef<any>(null);
@@ -211,38 +213,38 @@ const BillReviewSummary = () => {
     });
   };
 
-  const TopContainerItem = ({
-    title,
-    value,
-  }: {
-    title: string;
-    value: string;
-  }) => {
-    return (
-      <View style={styles.view}>
-        <Text
-          style={[
-            styles.viewLeft,
-            {
-              color: dark ? COLORS.greyscale300 : COLORS.grayscale700,
-            },
-          ]}
-        >
-          {title}
-        </Text>
-        <Text
-          style={[
-            styles.viewRight,
-            {
-              color: dark ? COLORS.white : COLORS.greyscale900,
-            },
-          ]}
-        >
-          {value}
-        </Text>
-      </View>
-    );
-  };
+  // const TopContainerItem = ({
+  //   title,
+  //   value,
+  // }: {
+  //   title: string;
+  //   value: string;
+  // }) => {
+  //   return (
+  //     <View style={styles.view}>
+  //       <Text
+  //         style={[
+  //           styles.viewLeft,
+  //           {
+  //             color: dark ? COLORS.greyscale300 : COLORS.grayscale700,
+  //           },
+  //         ]}
+  //       >
+  //         {title}
+  //       </Text>
+  //       <Text
+  //         style={[
+  //           styles.viewRight,
+  //           {
+  //             color: dark ? COLORS.white : COLORS.greyscale900,
+  //           },
+  //         ]}
+  //       >
+  //         {value}
+  //       </Text>
+  //     </View>
+  //   );
+  // };
 
   const SeparateLine = () => {
     return (
@@ -271,8 +273,7 @@ const BillReviewSummary = () => {
                 },
               ]}
             >
-              Pay {billerItemData?.data?.paymentitemname} bills safely,
-              conveniently & easily.
+              Pay {providerData.title} bills safely, conveniently & easily.
             </Text>
             <Text
               style={[
@@ -288,65 +289,13 @@ const BillReviewSummary = () => {
 
           <SeparateLine />
         </View>
-        <View
-          style={[
-            styles.viewContainer,
-            {
-              backgroundColor: dark ? COLORS.dark2 : '#FAFAFA',
-            },
-          ]}
-        >
-          <TopContainerItem
-            title={`Bill Amount (${billerItemData?.data?.itemCurrencySymbol})`}
-            value={billerItemData?.data?.itemFee || '0.00'}
-          />
-          {/* <View style={styles.view}>
-            <Text
-              style={[
-                styles.viewLeft,
-                {
-                  color: dark ? COLORS.greyscale300 : COLORS.grayscale700,
-                },
-              ]}
-            >
-              Bill Amount ({data?.data?.itemCurrencySymbol})
-            </Text>
-            <Text
-              style={[
-                styles.viewRight,
-                {
-                  color: dark ? COLORS.white : COLORS.greyscale900,
-                },
-              ]}
-            >
-              {data?.data?.itemFee
-                ? applyCommission(
-                    data?.data?.percentage_commission,
-                    data?.data?.itemFee
-                  )
-                : 'Enter Amount Below'}
-            </Text>
-          </View> */}
-          {billerItemData?.data?.itemFee &&
-            billerItemData.data.itemFee !== '0.00' && (
-              <>
-                <TopContainerItem
-                  title="Fixed Charges"
-                  value={billerItemData?.data?.fixed_commission}
-                />
-                <TopContainerItem
-                  title="Percentage Charges"
-                  value={billerItemData?.data?.percentage_commission}
-                />
-              </>
-            )}
-          <SeparateLine />
+        <View style={[styles.viewContainer]}>
           <View style={styles.view}>
             <Text
               style={[
                 styles.viewLeft,
                 {
-                  color: dark ? COLORS.greyscale300 : COLORS.grayscale700,
+                  color: dark ? COLORS.greyscale300 : COLORS.grayscale100,
                 },
               ]}
             >
@@ -361,7 +310,15 @@ const BillReviewSummary = () => {
     );
   };
 
-  const RBSheetItem = ({ title, value }: { title: string; value: string }) => {
+  const RBSheetItem = ({
+    title,
+    value,
+    isbold,
+  }: {
+    title: string;
+    value: string;
+    isbold?: boolean;
+  }) => {
     return (
       <View
         style={{
@@ -372,12 +329,20 @@ const BillReviewSummary = () => {
         }}
       >
         <Text
-          style={{ color: dark ? COLORS.grayscale400 : COLORS.grayscale400 }}
+          style={{
+            fontSize: 15,
+            color: dark ? COLORS.grayscale400 : COLORS.primary,
+            fontFamily: isbold ? 'bold' : 'regular',
+          }}
         >
           {title}
         </Text>
         <Text
-          style={{ color: dark ? COLORS.grayscale100 : COLORS.greyscale900 }}
+          style={{
+            fontSize: 15,
+            color: dark ? COLORS.grayscale100 : COLORS.primary,
+            fontFamily: isbold ? 'bold' : 'regular',
+          }}
         >
           {value}
         </Text>
@@ -399,7 +364,7 @@ const BillReviewSummary = () => {
       }
 
       <View style={[styles.container, { backgroundColor: colors.background }]}>
-        <Header title={`Pay ${billerItemData?.data?.paymentitemname} Bill`} />
+        <Header title={`Pay ${providerData?.title} Bill`} />
         {/* <Header title={data.data} /> */}
         {/* <ScrollView showsVerticalScrollIndicator={false}> */}
         {renderTopContainer()}
@@ -433,15 +398,8 @@ const BillReviewSummary = () => {
           icon={icons.mobile}
           keyboardType="number-pad"
         />
-        {/* {!data?.data?.itemFee ||
-          (data?.data?.itemFee === '0.00' && ( */}
         <Input
           id="amount"
-          // value={
-          //   data?.data?.itemFee !== null && data?.data?.itemFee !== '0.00'
-          //     ? data?.data?.itemFee
-          //     : formState.inputValues.amount
-          // }
           onInputChanged={inputChangedHandler}
           errorText={formState.inputValidities['amount']}
           placeholder="Amount"
@@ -483,7 +441,7 @@ const BillReviewSummary = () => {
           statusBarTranslucent: true,
         }}
       >
-        <Text
+        {/* <Text
           style={{
             fontSize: 32,
             fontFamily: 'bold',
@@ -492,11 +450,21 @@ const BillReviewSummary = () => {
           }}
         >
           ₦{formState.inputValues.amount}
-        </Text>
+        </Text> */}
         {/* <RBSheetItem title="Bank" value="VFD Microfinance Bank" /> */}
         <RBSheetItem
-          title="Bill's cost (NGN)"
+          title="Bill Name"
+          value={billerItemData?.data?.paymentitemname || 'NA'}
+        />
+        <RBSheetItem
+          title="Account Name"
+          value={userProfile?.firstName + ' ' + userProfile?.lastName}
+          isbold
+        />
+        <RBSheetItem
+          title="Amount (NGN)"
           value={billerItemData?.data?.itemFee || '0.00'}
+          // isbold
         />
         <RBSheetItem
           title="Charges applied (NGN)"
@@ -514,13 +482,56 @@ const BillReviewSummary = () => {
           }
         />
         <RBSheetItem
-          title="Net Bill Amount (NGN)"
+          title="Total Payment"
           value={applyCommission(
             billerItemData?.data?.percentage_commission,
             billerItemData?.data?.itemFee
           )}
+          isbold
         />
-        <RBSheetItem
+        <View
+          style={[
+            styles.viewContainer,
+            {
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              marginTop: 20,
+            },
+          ]}
+        >
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              columnGap: 8,
+              paddingLeft: 8,
+              // justifyContent: 'space-between',
+            }}
+          >
+            <Image
+              source={icons.wallet}
+              contentFit="contain"
+              style={{ width: 40, height: 40 }}
+              tintColor={COLORS.white}
+            />
+            <Text
+              style={{ fontFamily: 'bold', fontSize: 16, color: COLORS.white }}
+            >
+              Wallet Balance
+            </Text>
+          </View>
+          <Text
+            style={{
+              fontFamily: 'regular',
+              fontSize: 16,
+              color: COLORS.white,
+              paddingRight: 8,
+            }}
+          >
+            ₦{userAccount?.balance}
+          </Text>
+        </View>
+        {/* <RBSheetItem
           title="Remaining amount"
           value={
             billerItemData?.data?.itemFee
@@ -529,7 +540,7 @@ const BillReviewSummary = () => {
                   .toString()
               : '0.00'
           }
-        />
+        /> */}
         <Button
           title="Pay"
           isLoading={isBillPaying}
@@ -616,9 +627,9 @@ const styles = StyleSheet.create({
   },
   viewContainer: {
     width: SIZES.width - 32,
-    backgroundColor: '#FAFAFA',
-    borderRadius: 16,
-    paddingVertical: 16,
+    backgroundColor: COLORS.primary,
+    borderRadius: 12,
+    paddingVertical: 12,
     paddingHorizontal: 6,
     marginVertical: 2,
     alignItems: 'center',
@@ -632,8 +643,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
   },
   viewLeft: {
-    fontSize: 14,
-    fontFamily: 'medium',
+    fontSize: 16,
+    fontFamily: 'bold',
     color: COLORS.grayscale700,
   },
   viewRight: {
@@ -647,21 +658,21 @@ const styles = StyleSheet.create({
     borderRadius: 999,
   },
   paidBtn: {
-    backgroundColor: COLORS.red,
-    paddingHorizontal: 6,
-    paddingVertical: 6,
+    backgroundColor: COLORS.grayscale100,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
     borderRadius: 6,
   },
   paidBtnText: {
-    fontSize: 10,
+    fontSize: 14,
     fontFamily: 'regular',
-    color: COLORS.white,
+    color: COLORS.primary,
   },
   rbsheetContainer: {
     borderTopRightRadius: 32,
     borderTopLeftRadius: 32,
     height: 322,
-    paddingVertical: 16,
+    paddingVertical: 20,
     paddingHorizontal: 16,
     alignItems: 'center',
     position: 'relative',

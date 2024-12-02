@@ -2,58 +2,25 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import React, { useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '@/theme/ThemeProvider';
-import { COLORS, SIZES, icons } from '@/constants';
+import { COLORS, FONTS, SIZES, icons } from '@/constants';
 import { Image } from 'expo-image';
 import { useNavigation } from 'expo-router';
 import { ScrollView } from 'react-native-virtualized-view';
 import { NavigationProp } from '@react-navigation/native';
-// import {
-//   InOutPaymentMyHistory,
-//   InOutPaymentRequested,
-//   InOutPaymentScheduled,
-// } from '@/tabs';
 import { QueryClient, useQuery } from '@tanstack/react-query';
-import {
-  getBalance,
-  getBillPaymentHistory,
-  getTransferHistory,
-} from '@/utils/queries/accountQueries';
+import { getTransferHistory } from '@/utils/queries/accountQueries';
 import { useAppSelector } from '@/store/slices/authSlice';
 import TransferHistory from '@/tabs/TransferPaymentHistory';
-import BillPaymentHistory from '@/tabs/BillPaymentHistory';
 import Loader from './loader';
+import Header from '@/components/Header';
 
 type Tab = 'Transfer History' | 'Bill Payments';
 
 const InOutPaymentHistory = () => {
   const { colors, dark } = useTheme();
   const navigation = useNavigation<NavigationProp<any>>();
-  // const { token } = useAppSelector((state) => state.auth);
-  const [selectedTab, setSelectedTab] = useState<Tab>('Transfer History');
-  const { token, userProfile } = useAppSelector((state) => state.auth);
+  const { token, userAccount } = useAppSelector((state) => state.auth);
 
-  // const {
-  //   data: billPaymentData,
-  //   isLoading: loadingBill,
-  //   error: errorBill,
-  // } = useQuery({
-  //   queryKey: ['billPayments'],
-  //   queryFn: () => getBillPaymentHistory(token),
-  // });
-  const queryClient = new QueryClient();
-  const {
-    data: balance,
-    isLoading: isLoadingBalance,
-    isError: isErrorBalance,
-  } = useQuery({
-    queryKey: ['get Balance'],
-    queryFn: () => getBalance(token),
-    refetchInterval: () => {
-      queryClient.invalidateQueries({ queryKey: ['get Balance'] });
-      return 3000;
-    },
-    enabled: !!token,
-  });
   const {
     data: transferData,
     isLoading: loadingTransfer,
@@ -63,54 +30,57 @@ const InOutPaymentHistory = () => {
     queryFn: () => getTransferHistory(token),
   });
 
-  const renderContent = () => {
-    switch (selectedTab) {
-      case 'Transfer History':
-        return <TransferHistory transferData={transferData?.data || []} />;
-      // case 'Bill Payments':
-      //   return (
-      //     <BillPaymentHistory billPaymentData={billPaymentData?.data || []} />
-      //   );
-      default:
-        return null;
-    }
+  const renderHeader = () => {
+    return (
+      <View style={[styles.headerContainer]}>
+        <TouchableOpacity onPress={() => navigation.goBack()}>
+          <Image
+            source={icons.back}
+            contentFit="contain"
+            style={styles.backIcon}
+            tintColor={COLORS.white}
+          />
+        </TouchableOpacity>
+        <Text style={[styles.headTitle]}>Transactions History</Text>
+      </View>
+    );
   };
   /**
    * Render header
    */
-  const renderHeader = () => {
+  const renderTopContainer = () => {
     return (
       <View style={styles.cardContainer}>
-      {/* {renderHeader()} */}
-      <View style={{ alignItems: 'center', rowGap: 4, marginTop: 20 }}>
-        <Text style={styles.balanceAmount}>
-          ₦{balance?.balance.toFixed(2) || '0.00'}
-        </Text>
-        <Text style={styles.balanceText}>Current balance</Text>
-      </View>
-      <View
-        style={{
-          flexDirection: 'row',
-          paddingHorizontal: 20,
-          marginTop: 8,
-          justifyContent: 'space-between',
-        }}
-      >
-        <View style={{ alignItems: 'center', rowGap: 3 }}>
-          <Text style={styles.balanceAmountBottom}>
-            ₦{balance?.totalBillPayment.toFixed(2) || '0.00'}
+        {renderHeader()}
+        {/* <Header title="Transactions History" /> */}
+        <View style={{ alignItems: 'center', rowGap: 4, marginTop: 20 }}>
+          <Text style={styles.balanceAmount}>
+            ₦{userAccount?.balance.toFixed(2) || '0.00'}
           </Text>
-          <Text style={styles.balanceTextBottom}>Total Bill Payment</Text>
+          <Text style={styles.balanceText}>Current balance</Text>
         </View>
-        <View style={{ alignItems: 'center', rowGap: 3 }}>
-          <Text style={styles.balanceAmountBottom}>
-            ₦{balance?.totalIncome.toFixed(2) || '44.88'}
-          </Text>
-          <Text style={styles.balanceTextBottom}>Total Wallet Deposit</Text>
+        <View
+          style={{
+            flexDirection: 'row',
+            paddingHorizontal: 20,
+            marginTop: 8,
+            justifyContent: 'space-between',
+          }}
+        >
+          <View style={{ alignItems: 'center', rowGap: 3 }}>
+            <Text style={styles.balanceAmountBottom}>
+              ₦{userAccount?.totalBillPayment.toFixed(2) || '0.00'}
+            </Text>
+            <Text style={styles.balanceTextBottom}>Total Bill Payment</Text>
+          </View>
+          <View style={{ alignItems: 'center', rowGap: 3 }}>
+            <Text style={styles.balanceAmountBottom}>
+              ₦{userAccount?.totalIncome.toFixed(2) || '44.88'}
+            </Text>
+            <Text style={styles.balanceTextBottom}>Total Wallet Deposit</Text>
+          </View>
         </View>
       </View>
-      {/* {renderCategories()} */}
-    </View>
     );
   };
 
@@ -118,38 +88,20 @@ const InOutPaymentHistory = () => {
     <SafeAreaView style={[styles.area, { backgroundColor: colors.background }]}>
       {loadingTransfer && <Loader />}
       <View style={[styles.container, { backgroundColor: colors.background }]}>
-        {renderHeader()}
+        {renderTopContainer()}
         <ScrollView showsVerticalScrollIndicator={false}>
           <View style={styles.viewContainer}>
-            <View
-              style={[
-                styles.tabContainer,
-                {
-                  backgroundColor: dark ? COLORS.dark1 : COLORS.white,
-                },
-              ]}
-            >
-              {/* {['Transfer History', 'Bill Payments'].map((tab) => (
-                <TouchableOpacity
-                  key={tab}
-                  onPress={() => setSelectedTab(tab as Tab)}
-                  style={[
-                    styles.tabButton,
-                    selectedTab === tab && styles.activeTabButton,
-                  ]}
-                >
-                  <Text
-                    style={[
-                      styles.tabButtonText,
-                      selectedTab === tab && styles.activeTabButtonText,
-                    ]}
-                  >
-                    {tab}
-                  </Text>
-                </TouchableOpacity>
-              ))} */}
+            <View style={styles.contentContainer}>
+              {transferData?.data && transferData.data.length > 0 ? (
+                <TransferHistory transferData={transferData.data} />
+              ) : (
+                <Text style={{ textAlign: 'center', ...FONTS.body3 }}>
+                  {errorTransfer
+                    ? 'Error fetching transactions'
+                    : 'No recent transactions'}
+                </Text>
+              )}
             </View>
-            <View style={styles.contentContainer}>{renderContent()}</View>
           </View>
         </ScrollView>
       </View>
@@ -203,10 +155,11 @@ const styles = StyleSheet.create({
     // padding: 16,
   },
   headerContainer: {
+    backgroundColor: COLORS.primary,
     flexDirection: 'row',
     alignItems: 'center',
     width: SIZES.width - 32,
-    justifyContent: 'space-between',
+    // justifyContent: 'space-between',
     marginBottom: 12,
   },
   headerLeft: {
@@ -276,7 +229,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: COLORS.black,
   },
-  topContainer: {
+  renderTopContainer: {
     position: 'relative',
     width: '100%',
     height: 'auto',
@@ -299,6 +252,22 @@ const styles = StyleSheet.create({
     fontFamily: 'regular',
     color: 'orange',
     // marginBottom: 4,
+  },
+  titleContainer: {
+    backgroundColor: COLORS.white,
+    width: SIZES.width - 32,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  backIcon: {
+    width: 24,
+    height: 24,
+    marginRight: 16,
+  },
+  headTitle: {
+    fontSize: 22,
+    fontFamily: 'bold',
+    color: COLORS.white,
   },
   // balanceAmount: {
   //   textAlign: 'center',

@@ -83,10 +83,6 @@ export interface IUserProfile {
   email: string;
   phone: string;
   profilePicture: string;
-  accountNumber: string;
-  accountBalance: string;
-  totalIncome: number;
-  totalBillPayment: number;
   created_at: string;
   updated_at: string;
 }

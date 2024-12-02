@@ -1,5 +1,5 @@
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import {
   getFundAccountNo,
@@ -7,7 +7,7 @@ import {
 } from '@/utils/queries/accountQueries';
 import { useAppSelector } from '@/store/slices/authSlice';
 import SubHeaderItem from '@/components/SubHeaderItem';
-import { useNavigation } from 'expo-router';
+import { useNavigation, useRouter } from 'expo-router';
 import { NavigationProp } from '@react-navigation/native';
 import TransferHistory from '@/tabs/TransferPaymentHistory';
 import { COLORS, icons, SIZES } from '@/constants';
@@ -18,11 +18,16 @@ import Loader from './loader';
 import * as ClipBoard from 'expo-clipboard';
 import showToast from '@/utils/showToast';
 import { formatDate } from '@/utils/helpers/formatDate';
+import CustomModal from './custommodal';
 
 const FundWallet = () => {
-  const { token, userProfile } = useAppSelector((state) => state.auth);
+  const { token, userProfile, userAccount } = useAppSelector(
+    (state) => state.auth
+  );
   const { navigate, goBack } = useNavigation<NavigationProp<any>>();
   const { dark, colors } = useTheme();
+  const [showModal, setShowModal] = React.useState(false);
+  const router = useRouter();
 
   const {
     data: transferData,
@@ -38,11 +43,29 @@ const FundWallet = () => {
     data: fundData,
     isLoading: loadingFund,
     error: errorFund,
+    isError: isErrorFund,
+    refetch: refetchFund,
   } = useQuery({
     queryKey: ['fundWallet'],
     queryFn: () => getFundAccountNo(token),
     enabled: !!token,
   });
+
+  useEffect(() => {
+    if (isErrorFund) {
+      setShowModal(true);
+    }
+  }, [isErrorFund]);
+
+  const handleRetry = () => {
+    setShowModal(false);
+    refetchFund();
+  };
+
+  const handleGoBack = () => {
+    setShowModal(false);
+    router.replace('/(tabs)');
+  };
 
   const handleCopyAccountNo = async () => {
     try {
@@ -61,36 +84,36 @@ const FundWallet = () => {
     }
   };
 
-  const renderHeader = () => {
-    return (
-      <View style={styles.headerContainer}>
-        <View style={styles.headerLeft}>
-          <TouchableOpacity onPress={() => goBack()}>
-            <Image
-              source={icons.back}
-              contentFit="contain"
-              style={[
-                styles.headerLogo,
-                {
-                  tintColor: dark ? COLORS.white : COLORS.greyscale900,
-                },
-              ]}
-            />
-          </TouchableOpacity>
-          <Text
-            style={[
-              styles.headerTitle,
-              {
-                color: dark ? COLORS.white : COLORS.greyscale900,
-              },
-            ]}
-          >
-            In & Out Payment
-          </Text>
-        </View>
-      </View>
-    );
-  };
+  // const renderHeader = () => {
+  //   return (
+  //     <View style={styles.headerContainer}>
+  //       <View style={styles.headerLeft}>
+  //         <TouchableOpacity onPress={() => goBack()}>
+  //           <Image
+  //             source={icons.back}
+  //             contentFit="contain"
+  //             style={[
+  //               styles.headerLogo,
+  //               {
+  //                 tintColor: dark ? COLORS.white : COLORS.greyscale900,
+  //               },
+  //             ]}
+  //           />
+  //         </TouchableOpacity>
+  //         <Text
+  //           style={[
+  //             styles.headerTitle,
+  //             {
+  //               color: dark ? COLORS.white : COLORS.greyscale900,
+  //             },
+  //           ]}
+  //         >
+  //           In & Out Payment
+  //         </Text>
+  //       </View>
+  //     </View>
+  //   );
+  // };
 
   const renderTopContainer = () => {
     return (
@@ -98,15 +121,9 @@ const FundWallet = () => {
         {/* Balance Section */}
 
         <View style={styles.topContainer}>
-          <Text style={styles.mxtitle}>
-            MX Bill Payment
-          </Text>
-          <Text style={styles.balanceAmount}>
-            ₦{userProfile?.accountBalance || 0}
-          </Text>
-          <Text style={styles.balanceText}>
-            Current Balance
-          </Text>
+          <Text style={styles.mxtitle}>MX Bill Payment</Text>
+          <Text style={styles.balanceAmount}>₦{userAccount?.balance || 0}</Text>
+          <Text style={styles.balanceText}>Current Balance</Text>
         </View>
 
         {/* Wallet Fund Section */}
@@ -125,41 +142,54 @@ const FundWallet = () => {
               color: dark ? COLORS.secondaryWhite : COLORS.greyScale800,
             }}
           >
-            Fund your MX Bill Pay  wallet by sending Naira from any bank
-            to the virtual account below.
+            Fund your MX Bill Pay wallet by sending Naira from any bank to the
+            virtual account below.
           </Text>
         </View>
-        <Text style={{ color: COLORS.greeen, fontSize: 12, textAlign: 'center', fontWeight: '500', marginBottom: 0 }}>
-          Account number is valid until{' '}
-          {fundData?.data?.expiryDate && formatDate(fundData?.data?.expiryDate)}
-        </Text>
+        {fundData?.data?.expiryDate && (
+          <Text
+            style={{
+              color: COLORS.greeen,
+              fontSize: 12,
+              textAlign: 'center',
+              fontWeight: '500',
+              marginBottom: 0,
+            }}
+          >
+            Account number is valid until{' '}
+            {fundData?.data?.expiryDate &&
+              formatDate(fundData?.data?.expiryDate)}
+          </Text>
+        )}
 
         {/* Bank Account Section */}
         <View style={styles.bankAccountBox}>
           <View style={styles.rowBetween}>
             <View>
               <Text style={styles.accountLabel}>Account No</Text>
-             
             </View>
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <Text
+              <Text
                 style={{
                   ...styles.accountNumber,
-                  color:COLORS.white,
+                  color: COLORS.white,
                 }}
               >
-                {userProfile?.accountNumber || fundData?.data?.accountNumber}
+                {fundData?.data?.accountNumber}
               </Text>
-            <TouchableOpacity style={styles.copyButton} onPress={handleCopyAccountNo}>
-              <Image
-                source={icons.copy} // Replace with your copy icon path
-                style={styles.copyIcon}
+              <TouchableOpacity
+                style={styles.copyButton}
+                onPress={handleCopyAccountNo}
+              >
+                <Image
+                  source={icons.copy} // Replace with your copy icon path
+                  style={styles.copyIcon}
                 />
-            </TouchableOpacity>
-                </View>
+              </TouchableOpacity>
+            </View>
           </View>
 
-          <View >
+          <View>
             <View style={styles.rowBetween}>
               <Text style={styles.label}>Bank Name</Text>
               <Text style={styles.value}>VFD Microfinance Bank</Text>
@@ -170,12 +200,6 @@ const FundWallet = () => {
             </View>
           </View>
         </View>
-        {/* <Text style={{ color: COLORS.red, fontSize: 12, textAlign: 'center' }}>
-          Account number is valid until{' '}
-          {fundData?.data?.expiryDate && formatDate(fundData?.data?.expiryDate)}
-        </Text> */}
-
-
       </>
     );
   };
@@ -189,9 +213,9 @@ const FundWallet = () => {
           onPress={() => navigate('inoutpaymenthistory')}
         />
         <View style={{ marginBottom: 12 }}>
-          {transferData?.data && (
+          {transferData?.data && transferData.data.length > 0 && (
             <TransferHistory
-              transferData={transferData?.data.splice(0, 2) || []}
+              transferData={[...transferData?.data].splice(0, 2) || []}
             />
           )}
           {!transferData?.data ||
@@ -209,16 +233,23 @@ const FundWallet = () => {
 
   return (
     <SafeAreaView style={[styles.area, { backgroundColor: colors.background }]}>
-      {loadingTransfer && <Loader />}
+      {(loadingTransfer || loadingFund) && <Loader />}
       <View style={[{ backgroundColor: colors.background }]}>
         {/* {renderHeader()} */}
         {renderTopContainer()}
         <View style={{ paddingHorizontal: 16 }}>
           {renderTransactionsHistory()}
-        
-
         </View>
       </View>
+      <CustomModal
+        modalVisible={showModal}
+        setModalVisible={setShowModal}
+        title={errorFund?.message || 'Error creating virtual account'}
+        btnText="Retry"
+        btn2Text="Go Back"
+        onPress2={handleGoBack}
+        onPress={handleRetry}
+      />
     </SafeAreaView>
   );
 };

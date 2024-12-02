@@ -17,15 +17,12 @@ import Button from '@/components/Button';
 import { router, useLocalSearchParams, useNavigation } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
 import {
-  getBillerItemDetails,
-  getBillerItems,
   getBillerProviders,
   IBillerCategory,
   IProviderData,
 } from '@/utils/queries/appQueries';
 import { NavigationProp, RouteProp, useRoute } from '@react-navigation/native';
 import Loader from './loader';
-import { IBillerItemsList } from '@/utils/queries/appQueries';
 import { useAppSelector } from '@/store/slices/authSlice';
 import { darkColors } from '@/theme/colors';
 
@@ -63,7 +60,7 @@ const BillerProviders = () => {
         onPress={() => handleClickProvider(provider)}
       >
         <Image
-          source={provider.logo || icons.electricity}
+          source={provider.logo}
           contentFit="cover"
           style={styles.fullImage}
         />
@@ -104,14 +101,9 @@ const BillerProviders = () => {
                 style={styles.icon}
                 tintColor={COLORS.white}
               />
-            <Text
-              style={[
-                styles.title,
-                
-              ]}
-            >
-              Fund Your {categoryData?.category} Account
-            </Text>
+              <Text style={[styles.title]}>
+                Fund Your {categoryData?.category} Account
+              </Text>
             </View>
             <View
               style={[
@@ -227,7 +219,6 @@ const styles = StyleSheet.create({
   fullImage: {
     width: '100%',
     height: '100%',
-    resizeMode: 'contain', // Ensures the image covers the entire container
   },
   itemRow: {
     flexDirection: 'row',

@@ -5,6 +5,12 @@ import type { RootState, AppDispatch } from '../store';
 import { IUserProfile } from '@/utils/mutations/authMutations';
 
 // Define a type for the slice state
+
+interface IUserAccount {
+  balance: number;
+  totalIncome: number;
+  totalBillPayment: number;
+}
 interface IUserAction {
   userProfile?: IUserProfile | null;
   userId?: string;
@@ -17,6 +23,7 @@ type initialStateType = {
   userId: string;
   userEmail: string;
   userProfile: IUserProfile | null;
+  userAccount: IUserAccount | null;
 };
 const initialState: initialStateType = {
   token: '',
@@ -24,6 +31,7 @@ const initialState: initialStateType = {
   userId: '',
   userEmail: '',
   userProfile: null,
+  userAccount: null,
 };
 const authSlice = createSlice({
   name: 'auth',
@@ -39,6 +47,9 @@ const authSlice = createSlice({
       if (action.payload.userEmail) {
         state.userEmail = action.payload.userEmail;
       }
+    },
+    setUserAccount: (state, action: PayloadAction<IUserAccount>) => {
+      state.userAccount = action.payload;
     },
     setToken: (state, action: PayloadAction<string>) => {
       state.token = action.payload;

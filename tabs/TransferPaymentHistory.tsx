@@ -21,15 +21,6 @@ const TransferHistory = ({
   };
 
   return (
-    // <View
-    //   style={[
-    //     styles.container,
-    //     {
-    //       backgroundColor: dark ? COLORS.dark1 : COLORS.secondaryWhite,
-    //     },
-    //   ]}
-    // >
-    //   {/* <ScrollView style={{ marginVertical: 12 }}> */}
     <FlatList
       data={transferData}
       keyExtractor={(item) => item.transaction_id.toString()}
@@ -39,8 +30,6 @@ const TransferHistory = ({
       scrollEnabled
       style={{ marginBottom: 12 }}
     />
-    // {/* </ScrollView> */}
-    // </View>
   );
 };
 

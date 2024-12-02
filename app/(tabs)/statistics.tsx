@@ -15,8 +15,9 @@ import { SceneMap, TabBar, TabView } from 'react-native-tab-view';
 import {
   AnalyticsMonthV1,
   AnalyticsQuarterV1,
-  AnalyticsYearToYearV1,
+  AnalyticsQuarterV2,
   AnalyticsYearV1,
+  AnalyticsYearV2,
 } from '@/tabs';
 
 const renderScene = SceneMap({

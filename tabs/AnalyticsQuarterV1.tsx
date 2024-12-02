@@ -19,6 +19,7 @@ import {
 import SubHeaderItem from '@/components/SubHeaderItem';
 import TransferHistory from './TransferPaymentHistory';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
+import Loader from '@/app/loader';
 
 const screenWidth = Dimensions.get('window').width;
 
@@ -36,9 +37,9 @@ const AnalyticsQuarterV1 = () => {
   const { navigate } = useNavigation<NavigationProp<any>>();
   const {
     data: statsData,
-    isLoading,
-    isError,
-    error,
+    isLoading: isLoadingStats,
+    isError: isErrorStats,
+    error: errorStats,
   } = useQuery({
     queryKey: ['quarterStats'],
     queryFn: () => getQuarterlyStats(token),
@@ -96,6 +97,8 @@ const AnalyticsQuarterV1 = () => {
 
   return (
     <View>
+      {(isLoadingStats || loadingTransactions) && <Loader />}
+
       {statsData?.data && (
         <LineChart
           data={{
@@ -103,7 +106,10 @@ const AnalyticsQuarterV1 = () => {
             datasets: [
               // { data: data.map((d) => d.income), color: () => `#246BFD` },
               {
-                data: statsData?.data.map((d) => d.expense),
+                data:
+                  statsData?.data?.length != 0
+                    ? statsData.data.map((d) => d.expense)
+                    : [0],
                 color: () => `#FF5252`,
               },
             ],
@@ -114,6 +120,11 @@ const AnalyticsQuarterV1 = () => {
           chartConfig={chartConfig}
           bezier
         />
+      )}
+      {isErrorStats && (
+        <Text style={{ textAlign: 'center', ...FONTS.body3 }}>
+          {errorStats?.message || 'Error fetching stats'}
+        </Text>
       )}
       {renderTransactionsHistory()}
     </View>

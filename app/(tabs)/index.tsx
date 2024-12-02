@@ -17,15 +17,9 @@ import { ScrollView } from 'react-native-virtualized-view';
 import { useTheme } from '@/theme/ThemeProvider';
 import { COLORS, FONTS, SIZES, icons, images } from '@/constants';
 import { Image } from 'expo-image';
-import {
-  NavigationProp,
-  StackActions,
-  useNavigationState,
-  useRoute,
-} from '@react-navigation/native';
+import { NavigationProp } from '@react-navigation/native';
 import { router, useNavigation } from 'expo-router';
 import SubHeaderItem from '@/components/SubHeaderItem';
-import { invoiceItems, services } from '@/data';
 import Category from '@/components/Category';
 import { QueryClient, useQuery } from '@tanstack/react-query';
 import {
@@ -35,19 +29,21 @@ import {
   IBillerCategory,
 } from '@/utils/queries/appQueries';
 import Loader from '../loader';
-import { useAppSelector } from '@/store/slices/authSlice';
+import { authSliceActions, useAppSelector } from '@/store/slices/authSlice';
 import { getBalance, getTransferHistory } from '@/utils/queries/accountQueries';
-import AccountOption from '@/components/AccountOption';
 import TransferHistory from '@/tabs/TransferPaymentHistory';
 import { usePusher } from '@/store/SocketContext';
 // import { StatusBar } from 'expo-status-bar';
 import { useAppStateContext } from '@/store/AppStateContext';
-import { useGlobalApis } from '@/store/GlobalApisContext';
+import { useDispatch } from 'react-redux';
+// import { useGlobalApis } from '@/store/GlobalApisContext';
 
 const HomeScreen = () => {
   const { navigate, setParams } = useNavigation<NavigationProp<any>>();
   const { token, userProfile } = useAppSelector((state) => state.auth);
   const { dark, colors } = useTheme();
+  const queryClient = new QueryClient();
+  const dispatch = useDispatch();
   const { channel } = usePusher();
   const { currentPage } = useAppStateContext();
 
@@ -69,7 +65,6 @@ const HomeScreen = () => {
 
   // console.log('index:', transactionsHistory);
 
-  const queryClient = new QueryClient();
   const {
     data: balance,
     isLoading: isLoadingBalance,
@@ -77,12 +72,24 @@ const HomeScreen = () => {
   } = useQuery({
     queryKey: ['get Balance'],
     queryFn: () => getBalance(token),
-    refetchInterval: () => {
+    refetchInterval: ({ state }) => {
       queryClient.invalidateQueries({ queryKey: ['get Balance'] });
       return 3000;
     },
     enabled: !!token,
   });
+
+  useEffect(() => {
+    if (balance) {
+      dispatch(
+        authSliceActions.setUserAccount({
+          balance: balance.balance,
+          totalIncome: balance.totalIncome,
+          totalBillPayment: balance.totalBillPayment,
+        })
+      );
+    }
+  }, [balance]);
 
   const handleClickCategory = (category: IBillerCategory) => {
     if (!category) return;
@@ -105,17 +112,12 @@ const HomeScreen = () => {
   const renderHeader = () => {
     return (
       <View style={styles.headerContainer}>
-        {/* <View style={styles.viewLeft}> */}
         <Image
           source={userProfile?.profilePicture || icons.profile}
           contentFit="contain"
           style={styles.userIcon}
         />
-        {/* </View> */}
-        {/* <View style={styles.viewNameContainer}> */}
-        {/* <Text style={styles.greeeting}>Good Morning👋</Text> */}
         <Text style={[styles.title]}>{'MX BILL PAY'}</Text>
-        {/* </View> */}
         <View style={styles.viewRight}>
           <TouchableOpacity onPress={() => navigate('notifications')}>
             <Image
@@ -211,7 +213,7 @@ const HomeScreen = () => {
           ) : (
             <Text style={{ textAlign: 'center', ...FONTS.body3 }}>
               {istransactionsError
-                ? 'Error fetching transactions'
+                ? transactionsError?.message || 'Error fetching transactions'
                 : 'No recent transactions'}
             </Text>
           )}

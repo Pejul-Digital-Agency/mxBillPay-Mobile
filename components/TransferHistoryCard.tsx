@@ -40,7 +40,7 @@ const TransferHistoryCard: React.FC<TransferHistoryCardProps> = ({
     >
       <View style={styles.viewLeftContainer}>
         <Image
-          source={icons.wallet}
+          source={logo || icons.wallet}
           contentFit="contain"
           tintColor={COLORS.primary}
           style={styles.avatar}

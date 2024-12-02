@@ -31,7 +31,12 @@ const SettingsItem: React.FC<SettingsItemProps> = ({
           style={[styles.icon, { tintColor: COLORS.primary }]}
         />
         <View>
-          <Text style={[styles.name, { color: dark ? COLORS.white : COLORS.greyscale900 }]}>
+          <Text
+            style={[
+              styles.name,
+              { color: dark ? COLORS.white : COLORS.greyscale900 },
+            ]}
+          >
             {name}
           </Text>
           <Text
@@ -50,7 +55,10 @@ const SettingsItem: React.FC<SettingsItemProps> = ({
           <Image
             source={icons.rightArrow}
             contentFit="contain"
-            style={[styles.arrowRight, { tintColor: dark ? COLORS.white : COLORS.primary }]}
+            style={[
+              styles.arrowRight,
+              { tintColor: dark ? COLORS.white : COLORS.primary },
+            ]}
           />
         </View>
       )}
