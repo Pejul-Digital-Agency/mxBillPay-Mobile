@@ -10,6 +10,8 @@ import {
   FlatList,
   TextInput,
   Keyboard,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import React, { useCallback, useEffect, useReducer, useState } from 'react';
 import { COLORS, SIZES, FONTS, icons, images } from '../constants';
@@ -94,7 +96,7 @@ const EditProfile = () => {
   const navigation = useNavigation<NavigationProp<any>>();
   const queryClient = useQueryClient();
   const { token, userProfile } = useAppSelector((state) => state.auth);
-  const [image, setImage] = useState<{ uri: any }>({ uri: null });
+  const [image, setImage] = useState<any>(null);
   const [formState, dispatchFormState] = useReducer(reducer, initialState);
   const dispatch = useDispatch();
   const [keyboardVisible, setKeyboardVisible] = useState(false);
@@ -102,6 +104,7 @@ const EditProfile = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [openStartDatePicker, setOpenStartDatePicker] = useState(false);
   const [selectedGender, setSelectedGender] = useState('');
+
   const { dark } = useTheme();
   const {
     data: profileData,
@@ -112,6 +115,25 @@ const EditProfile = () => {
     queryFn: () => getUserProfile(token),
     refetchOnMount: true,
   });
+  const [dob, setDob] = useState(profileData?.data?.dob || '');
+  useEffect(() => {
+    if (profileData?.data) {
+      // const formattedDob = profileData?.data?.dob
+      //   ? format(new Date(profileData.data.dob), 'yyyy-MM-dd') // Format to YYYY-MM-DD
+      //   : '';
+      setDob(profileData?.data?.dob || '');
+      console.log("profileData", profileData);
+
+      formState.inputValues.occupation = profileData?.data?.occupation || '';
+      formState.inputValues.firstName = profileData?.data?.firstName || '';
+      formState.inputValues.lastName = profileData?.data?.lastName || '';
+      formState.inputValues.phoneNumber = profileData?.data?.phone || '';
+      setSelectedGender(profileData?.data?.gender || '');
+      setImage({ uri: profileData?.data?.profilPicture });
+    }
+  }, [profileData]);
+  const [openDobPicker, setOpenDobPicker] = useState(false);
+
   const { mutate, isPending } = useMutation({
     mutationKey: ['updateProfile'],
     mutationFn: updateProfile,
@@ -148,6 +170,7 @@ const EditProfile = () => {
     },
   });
 
+
   const genderOptions = [
     { label: 'Male', value: 'male' },
     { label: 'Female', value: 'female' },
@@ -160,41 +183,66 @@ const EditProfile = () => {
       formState.inputValues.firstName = profileData?.data?.firstName || '';
       formState.inputValues.lastName = profileData?.data?.lastName || '';
       formState.inputValues.phoneNumber =
-        profileData?.data?.phone.slice(4) || '';
+        profileData?.data?.phone || '';
       setSelectedGender(profileData?.data?.gender || '');
       setImage({ uri: profileData?.data?.profilPicture });
     }
   }, [profileData]);
 
-  const handleUpdateProfile = () => {
-    // interface IUpdateProfileRequest {
-    //   firstName?: string;
-    //   lastName?: string;
-    //   phone?: string;
-    //   gender?: string | null;
-    //   occupation?: string;
-    //   dob?: string; // Date in ISO format (e.g., "1990-01-01")
-    //   profilePicture?: string | null;
-    // }
-
-    const { firstName, lastName, phoneNumber, occupation } =
-      formState.inputValues;
+  const handleUpdateProfile = async () => {
+    const { firstName, lastName, phoneNumber, occupation } = formState.inputValues;
     const formData = new FormData();
-    firstName !== profileData?.data.firstName &&
-      formData.append('firstName', firstName);
-    lastName !== profileData?.data.lastName &&
-      formData.append('lastName', lastName);
-    phoneNumber !== profileData?.data.phone &&
-      formData.append('phone', phoneNumber);
-    occupation !== profileData?.data.occupation &&
-      formData.append('occupation', occupation);
-    selectedGender !== profileData?.data.gender &&
-      formData.append('gender', selectedGender);
-    image?.uri !== profileData?.data.profilPicture &&
-      formData.append('profilePicture', image as any);
+    let hasChanges = false;
 
-    mutate({ token, data: formData });
+    // Check other fields
+    const fieldsToCheck = [
+      { key: 'firstName', value: firstName, original: profileData?.data.firstName },
+      { key: 'lastName', value: lastName, original: profileData?.data.lastName },
+      { key: 'phone', value: phoneNumber, original: profileData?.data.phone },
+      { key: 'occupation', value: occupation, original: profileData?.data.occupation },
+      { key: 'gender', value: selectedGender, original: profileData?.data.gender },
+      { key: 'dob', value: dob, original: profileData?.data.dob },
+    ];
+
+    fieldsToCheck.forEach(({ key, value, original }) => {
+      if (value !== original) {
+        formData.append(key, value);
+        hasChanges = true;
+      }
+    });
+
+    // Handle image
+    if (image && image?.uri !== profileData?.data.profilPicture) {
+      formData.append('profilePicture', {
+        uri: image?.uri,
+        name: image?.fileName,
+        type: image?.mimeType,
+      } as any);
+      hasChanges = true;
+    }
+    // If no changes, show a toast and return
+    if (!hasChanges) {
+      showToast({
+        type: 'info',
+        text1: 'No changes made to update.',
+      });
+      return;
+    }
+
+    console.log('Prepared formData:', formData);
+
+    // Call the mutate function
+    try {
+      mutate({ token, data: formData });
+      console.log('Mutation triggered');
+    } catch (error) {
+      console.error('Error triggering mutation:', error);
+    }
   };
+
+
+
+
 
   const handleGenderChange = (value: any) => {
     setSelectedGender(value);
@@ -228,15 +276,10 @@ const EditProfile = () => {
 
   const pickImage = async () => {
     try {
-      const tempUri = await launchImagePicker();
-
-      if (!tempUri) return;
-
-      // Set the image
-      setImage({ uri: tempUri });
-    } catch (error) {
-      console.log('Error picking image:', error);
-    }
+      const imageData = await launchImagePicker();
+      if (!imageData) return;
+      setImage({ ...imageData });
+    } catch (error) { }
   };
 
   React.useEffect(() => {
@@ -256,6 +299,11 @@ const EditProfile = () => {
     };
   }, []);
 
+  const handleDobChange = (selectedDate) => {
+    setDob(selectedDate);
+    setOpenDobPicker(false); // Close the date picker after selection
+  };
+
   return (
     <SafeAreaView
       style={[
@@ -264,212 +312,223 @@ const EditProfile = () => {
       ]}
     >
       {isLoading && <Loader />}
-      <View
-        style={[
-          styles.container,
-          { backgroundColor: dark ? COLORS.dark1 : COLORS.white },
-        ]}
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={{ flex: 1 }}
       >
-        <Header title="Personal Profile" />
         <ScrollView
-          showsVerticalScrollIndicator={false}
+          showsVerticalScrollIndicator={true}
           contentContainerStyle={{ flexGrow: 1 }}
+          keyboardShouldPersistTaps="handled"
         >
-          <View style={{ alignItems: 'center', marginVertical: 12 }}>
-            <View style={styles.avatarContainer}>
-              <Image
-                source={image?.uri}
-                contentFit="contain"
-                style={styles.avatar}
-              />
-              <TouchableOpacity onPress={pickImage} style={styles.pickImage}>
-                <MaterialCommunityIcons
-                  name="pencil-outline"
-                  size={24}
-                  color={COLORS.white}
+          <View
+            style={[
+              styles.container,
+              { backgroundColor: dark ? COLORS.dark1 : COLORS.white },
+            ]}
+          >
+            <Header title="Personal Profile" />
+            <View style={{ alignItems: 'center', marginVertical: 12 }}>
+              <View style={styles.avatarContainer}>
+                <Image
+                  source={image?.uri}
+                  contentFit="contain"
+                  style={styles.avatar}
                 />
-              </TouchableOpacity>
+                <TouchableOpacity onPress={pickImage} style={styles.pickImage}>
+                  <MaterialCommunityIcons
+                    name="pencil-outline"
+                    size={24}
+                    color={COLORS.white}
+                  />
+                </TouchableOpacity>
+              </View>
             </View>
-          </View>
-          <View>
-            <Text
-              style={[
-                styles.label,
-                {
-                  color: dark ? COLORS.white : COLORS.greyscale900,
-                },
-              ]}
-            >
-              First Name
-            </Text>
-            <Input
-              id="firstName"
-              onInputChanged={inputChangedHandler}
-              errorText={formState.inputValidities['fullName']}
-              // placeholder={profileData?.data?.firstName || ''}
-              placeholderTextColor={dark ? COLORS.grayTie : COLORS.black}
-              isEditable={true}
-              value={formState.inputValues.firstName}
-            />
 
-            <Text
-              style={[
-                styles.label,
-                {
-                  color: dark ? COLORS.white : COLORS.greyscale900,
-                },
-              ]}
-            >
-              First Name
-            </Text>
-            <Input
-              id="lastName"
-              onInputChanged={inputChangedHandler}
-              errorText={formState.inputValidities['nickname']}
-              // placeholder={profileData?.data?.lastName || ''}
-              placeholderTextColor={dark ? COLORS.grayTie : COLORS.black}
-              isEditable={true}
-              value={formState.inputValues.lastName}
-            />
-            {/* <Input
-              id="email"
-              value={userProfile?.email}
-              onInputChanged={inputChangedHandler}
-              errorText={formState.inputValidities['email']}
-              placeholder="Email"
-              placeholderTextColor={dark ? COLORS.grayTie : COLORS.black}
-              keyboardType="email-address"
-            /> */}
-            {/* <View
-              style={{
-                width: SIZES.width - 32,
-              }}
-            >
-              <TouchableOpacity
-                style={[
-                  styles.inputBtn,
-                  {
-                    backgroundColor: dark ? COLORS.dark2 : COLORS.greyscale500,
-                    borderColor: dark ? COLORS.dark2 : COLORS.greyscale500,
-                  },
-                ]}
-                onPress={handleOnPressStartDate}
-              >
-                <Text style={{ ...FONTS.body4, color: COLORS.grayscale400 }}>
-                  {startedDate}
-                </Text>
-                <Feather
-                  name="calendar"
-                  size={24}
-                  color={COLORS.grayscale400}
-                />
-              </TouchableOpacity>
-            </View> */}
-
-            <Text
-              style={[
-                styles.label,
-                {
-                  color: dark ? COLORS.white : COLORS.greyscale900,
-                },
-              ]}
-            >
-              Phone
-            </Text>
-            <PhoneInput
-              isEditable={true}
-              onInputChanged={inputChangedHandler}
-              errorText={formState.inputValidities['phoneNumber']}
-              // placeholder={profileData?.data?.phone.replace('+234', '') || ''}
-              value={formState.inputValues.phoneNumber.replace('+234', '')}
-            />
+            {/* Input Fields */}
             <View>
               <Text
                 style={[
                   styles.label,
-                  {
-                    color: dark ? COLORS.white : COLORS.greyscale900,
-                  },
+                  { color: dark ? COLORS.white : COLORS.greyscale900 },
                 ]}
               >
-                Gender
+                First Name
               </Text>
-              <RNPickerSelect
-                placeholder={{ label: 'Select', value: '' }}
-                items={genderOptions}
-                onValueChange={(value) => handleGenderChange(value)}
-                value={selectedGender}
-                style={{
-                  inputIOS: {
-                    fontSize: 16,
-                    paddingHorizontal: 10,
-                    borderRadius: 10,
-                    color: COLORS.greyscale600,
-                    paddingRight: 30,
-                    marginVertical: 5,
-                    height: 52,
-                    width: SIZES.width - 32,
-                    alignItems: 'center',
-                    backgroundColor: dark ? COLORS.dark2 : COLORS.greyscale500,
-                  },
-                  inputAndroid: {
-                    fontSize: 16,
-                    paddingHorizontal: 10,
-                    marginVertical: 5,
-                    borderRadius: 10,
-                    color: COLORS.greyscale600,
-                    paddingRight: 30,
-                    height: 52,
-                    width: SIZES.width - 32,
-                    alignItems: 'center',
-                    backgroundColor: dark ? COLORS.dark2 : COLORS.greyscale500,
-                  },
-                }}
+              <Input
+                id="firstName"
+                onInputChanged={inputChangedHandler}
+                errorText={formState.inputValidities['fullName']}
+                placeholderTextColor={dark ? COLORS.grayTie : COLORS.black}
+                isEditable={true}
+                value={formState.inputValues.firstName}
+              />
+
+              <Text
+                style={[
+                  styles.label,
+                  { color: dark ? COLORS.white : COLORS.greyscale900 },
+                ]}
+              >
+                Last Name
+              </Text>
+              <Input
+                id="lastName"
+                onInputChanged={inputChangedHandler}
+                errorText={formState.inputValidities['nickname']}
+                placeholderTextColor={dark ? COLORS.grayTie : COLORS.black}
+                isEditable={true}
+                value={formState.inputValues.lastName}
+              />
+              <Text
+                style={[
+                  styles.label,
+                  { color: dark ? COLORS.white : COLORS.greyscale900 },
+                ]}
+              >
+                Email
+              </Text>
+              <View pointerEvents="none">
+                <Input
+                  id="email"
+                  onInputChanged={inputChangedHandler}
+                  errorText={formState.inputValidities['nickname']}
+                  placeholderTextColor={COLORS.grayTie}
+                  value={userProfile?.email}
+                  style={{
+                    color: COLORS.greyscale300, // Optional: Adjust color for a disabled look
+                  }}
+                />
+              </View>
+
+              <Text
+                style={[
+                  styles.label,
+                  { color: dark ? COLORS.white : COLORS.greyscale900 },
+                ]}
+              >
+                Phone
+              </Text>
+              <PhoneInput
+                isEditable={true}
+                onInputChanged={inputChangedHandler}
+                errorText={formState.inputValidities['phoneNumber']}
+                value={formState.inputValues.phoneNumber.replace('+234', '')}
+              />
+
+              {/* Gender */}
+              <View>
+                <Text
+                  style={[
+                    styles.label,
+                    { color: dark ? COLORS.white : COLORS.greyscale900 },
+                  ]}
+                >
+                  Gender
+                </Text>
+                <RNPickerSelect
+                  placeholder={{ label: 'Select', value: '' }}
+                  items={genderOptions}
+                  onValueChange={(value) => handleGenderChange(value)}
+                  value={selectedGender}
+                  style={{
+                    inputIOS: {
+                      fontSize: 16,
+                      paddingHorizontal: 10,
+                      borderRadius: 10,
+                      color: COLORS.greyscale600,
+                      paddingRight: 30,
+                      marginVertical: 5,
+                      height: 52,
+                      width: SIZES.width - 32,
+                      alignItems: 'center',
+                      backgroundColor: dark ? COLORS.dark2 : COLORS.greyscale500,
+                    },
+                    inputAndroid: {
+                      fontSize: 16,
+                      paddingHorizontal: 10,
+                      marginVertical: 5,
+                      borderRadius: 10,
+                      color: COLORS.greyscale600,
+                      paddingRight: 30,
+                      height: 52,
+                      width: SIZES.width - 32,
+                      alignItems: 'center',
+                      backgroundColor: dark ? COLORS.dark2 : COLORS.greyscale500,
+                    },
+                  }}
+                />
+              </View>
+
+              {/* Date of Birth */}
+              <View>
+                <Text
+                  style={[
+                    styles.label,
+                    { color: dark ? COLORS.white : COLORS.greyscale900 },
+                  ]}
+                >
+                  Date of Birth
+                </Text>
+                <TouchableOpacity
+                  style={[
+                    styles.inputBtn,
+                    {
+                      backgroundColor: dark ? COLORS.dark2 : COLORS.greyscale500,
+                      borderColor: dark ? COLORS.dark2 : COLORS.greyscale500,
+                    },
+                  ]}
+                  onPress={() => setOpenDobPicker(true)}
+                >
+                  <Text style={{ ...FONTS.body4, color: COLORS.grayscale400 }}>
+                    {dob || 'Select your date of birth'}
+                  </Text>
+                  <Feather name="calendar" size={24} color={COLORS.grayscale400} />
+                </TouchableOpacity>
+              </View>
+
+              <DatePickerModal
+                open={openDobPicker}
+                selectedDate={dob}
+                onClose={() => setOpenDobPicker(false)}
+                onChangeStartDate={handleDobChange}
+                endDate={getFormatedDate(new Date(), 'YYYY-MM-DD')}
+              />
+
+              <Text
+                style={[
+                  styles.label,
+                  { color: dark ? COLORS.white : COLORS.greyscale900 },
+                ]}
+              >
+                Occupation
+              </Text>
+              <Input
+                id="occupation"
+                onInputChanged={inputChangedHandler}
+                errorText={formState.inputValidities['occupation']}
+                placeholderTextColor={dark ? COLORS.grayTie : COLORS.black}
+                isEditable={true}
+                value={formState.inputValues.occupation}
               />
             </View>
-
-            <Text
-              style={[
-                styles.label,
-                {
-                  color: dark ? COLORS.white : COLORS.greyscale900,
-                },
-              ]}
-            >
-              Occupation
-            </Text>
-            <Input
-              id="occupation"
-              onInputChanged={inputChangedHandler}
-              errorText={formState.inputValidities['occupation']}
-              // placeholder={profileData?.data?.occupation || ''}
-              placeholderTextColor={dark ? COLORS.grayTie : COLORS.black}
-              isEditable={true}
-              value={formState.inputValues.occupation}
-            />
           </View>
         </ScrollView>
-      </View>
-      <DatePickerModal
-        open={openStartDatePicker}
-        endDate={startDate}
-        selectedDate={startedDate}
-        onClose={() => setOpenStartDatePicker(false)}
-        onChangeStartDate={(date) => setStartedDate(date)}
-      />
-      {/* {RenderAreasCodesModal()} */}
-      {!keyboardVisible && (
-        <View style={styles.bottomContainer}>
-          <Button
-            isLoading={isPending}
-            title={isPending ? 'Updating...' : 'Update'}
-            filled
-            disabled={isPending}
-            style={styles.continueButton}
-            onPress={handleUpdateProfile}
-          />
-        </View>
-      )}
+
+        {/* Bottom Button */}
+        {!keyboardVisible && (
+          <View style={styles.bottomContainer}>
+            <Button
+              isLoading={isPending}
+              title={isPending ? 'Updating...' : 'Update'}
+              filled
+              disabled={isPending}
+              style={styles.continueButton}
+              onPress={handleUpdateProfile}
+            />
+          </View>
+        )}
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 };
@@ -565,8 +624,9 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   bottomContainer: {
-    position: 'absolute',
+    // position: 'absolute',
     bottom: 32,
+    marginTop: 32,
     right: 16,
     left: 16,
     flexDirection: 'row',

@@ -78,6 +78,7 @@ export const verifyUser = async ({
 };
 
 export interface IUserProfile {
+  userId: string;
   firstName: string;
   lastName: string;
   email: string;

@@ -1,6 +1,7 @@
 import { View, Text, Modal, StyleSheet, TouchableOpacity } from 'react-native';
 import React from 'react';
-import { COLORS, FONTS } from '@/constants';
+import { COLORS, FONTS, icons, images } from '@/constants';
+import { Image } from 'expo-image';
 
 interface modalProps extends React.ComponentProps<typeof TouchableOpacity> {
   modalVisible: boolean;
@@ -9,6 +10,8 @@ interface modalProps extends React.ComponentProps<typeof TouchableOpacity> {
   btnText: string;
   btn2Text?: string;
   onPress2?: () => void;
+  icon?: boolean;
+  btn2?: boolean;
 }
 
 const CustomModal = ({
@@ -18,6 +21,8 @@ const CustomModal = ({
   btnText,
   btn2Text,
   onPress2,
+  icon,
+  btn2,
   ...props
 }: modalProps) => {
   return (
@@ -25,10 +30,12 @@ const CustomModal = ({
       animationType="slide"
       visible={modalVisible}
       transparent
-      // onRequestClose={() => setModalVisible(false)}
     >
       <View style={styles.modalBackdrop}>
         <View style={styles.modalContainer}>
+          {icon && (
+            <Image source={images.alert} style={styles.alertIcon} />
+          )}
           <Text style={{ textAlign: 'center', ...FONTS.h3 }}>{title}</Text>
           <View
             style={{
@@ -37,12 +44,20 @@ const CustomModal = ({
               justifyContent: btn2Text ? 'space-between' : 'center',
             }}
           >
+              {
+              btn2 && (
+                <TouchableOpacity style={[styles.modalButton,{marginRight:10}]} onPress={() => setModalVisible(false)}>
+                  <Text style={styles.modalButtonText}>Close</Text>
+                </TouchableOpacity>
+              )
+            }
             <TouchableOpacity
               style={[styles.modalButton, { width: btn2Text ? '40%' : '50%' }]}
               {...props}
             >
               <Text style={styles.modalButtonText}>{btnText}</Text>
             </TouchableOpacity>
+          
             {btn2Text && (
               <TouchableOpacity style={styles.modalButton} onPress={onPress2}>
                 <Text style={styles.modalButtonText}>{btn2Text}</Text>
@@ -70,6 +85,11 @@ const styles = StyleSheet.create({
     width: '80%',
     alignItems: 'center',
     borderRadius: 15,
+  },
+  alertIcon: {
+    width: 50,
+    height: 50,
+    marginBottom: 10,
   },
   modalButton: {
     padding: 10,

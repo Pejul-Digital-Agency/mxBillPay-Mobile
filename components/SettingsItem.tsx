@@ -11,6 +11,7 @@ interface SettingsItemProps {
   onPress: () => void;
   hasArrowRight?: boolean;
   subtitle?: string;
+  color?: string;
 }
 
 const SettingsItem: React.FC<SettingsItemProps> = ({
@@ -19,6 +20,7 @@ const SettingsItem: React.FC<SettingsItemProps> = ({
   onPress,
   hasArrowRight = true,
   subtitle,
+  color,
 }) => {
   const { dark } = useTheme();
 
@@ -28,7 +30,10 @@ const SettingsItem: React.FC<SettingsItemProps> = ({
         <Image
           source={icon}
           contentFit="contain"
-          style={[styles.icon, { tintColor: COLORS.primary }]}
+          {...color && { tintColor: color } 
+        
+        }
+          style={[styles.icon, {   tintColor: color ? color : dark ? COLORS.white : COLORS.greyscale900 }]}
         />
         <View>
           <Text
@@ -72,7 +77,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginVertical: 12,
+    marginVertical: 8,
   },
   leftContainer: {
     flexDirection: 'row',

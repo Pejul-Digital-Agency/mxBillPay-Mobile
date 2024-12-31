@@ -5,6 +5,7 @@ import {
   TouchableOpacity,
   Switch,
   useColorScheme,
+  Alert,
 } from 'react-native';
 // import React, { useState, useEffect } from 'react';
 import React, { useState, useRef, useEffect } from 'react';
@@ -24,6 +25,9 @@ import { useAppSelector } from '@/store/slices/authSlice';
 import { NavigationProp } from '@react-navigation/native';
 import { StatusBar } from 'expo-status-bar';
 import { LinearGradient } from 'expo-linear-gradient';
+import axios from 'axios';
+import { useDispatch } from 'react-redux';
+import * as SecureStore from 'expo-secure-store';
 
 type Nav = {
   navigate: (value: string) => void;
@@ -31,6 +35,7 @@ type Nav = {
 
 const Profile = () => {
   const refRBSheet = useRef<any>(null);
+  const refRBSheet2 = useRef<any>(null);
   const { dark, colors, setScheme } = useTheme();
   const { navigate, reset } = useNavigation<NavigationProp<any>>();
   const { token, userProfile, userAccount } = useAppSelector(
@@ -38,8 +43,9 @@ const Profile = () => {
   );
   const dispatch = useAppDispatch();
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     // Dispatch clearToken to reset auth state
+    await SecureStore.deleteItemAsync('authCredentials');
     dispatch(authSliceActions.clearToken());
     dispatch(authSliceActions.setUser({}));
     // Reset navigation stack and navigate to login screen
@@ -49,6 +55,36 @@ const Profile = () => {
     });
   };
 
+  const handleDelete = async () => {
+
+
+    try {
+      const response = await axios.get('https://mxbillpay.hmstech.org/api/delete-account', {
+        headers: {
+          Authorization: `Bearer ${token}`, // Replace with the actual token logic
+        },
+      });
+
+      if (response.status === 200) {
+        Alert.alert('Account Deleted', 'Your account has been successfully deleted.');
+
+        // Dispatch actions to reset auth state
+        dispatch(authSliceActions.clearToken());
+        dispatch(authSliceActions.setUser({}));
+
+        // Reset navigation stack and navigate to login screen
+        reset({
+          index: 0,
+          routes: [{ name: 'login' }],
+        });
+      } else {
+        Alert.alert('Error', 'Failed to delete the account. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error deleting account:', error);
+      Alert.alert('Error', 'An error occurred while deleting your account. Please try again later.');
+    }
+  };
   const renderTopContainer = () => {
     return (
       <>
@@ -56,10 +92,11 @@ const Profile = () => {
           <View style={styles.userInfo}>
             <View style={styles.userDetails}>
               <Image
-                source={userProfile?.profilePicture || icons.profile}
+                source={userProfile?.profilePicture || images.profile}
                 contentFit="cover"
                 style={styles.profilePicture}
               />
+              {/* <Text style={{color: COLORS.white}} >{userProfile?.profilePicture}</Text> */}
               <Text style={styles.greetingText}>
                 {'Hi, ' + userProfile?.firstName + ' ' + userProfile?.lastName}
               </Text>
@@ -74,20 +111,20 @@ const Profile = () => {
     <SafeAreaView
       style={[
         styles.area,
-        { backgroundColor: dark ? COLORS.dark2 : COLORS.grayscale200 },
+        { backgroundColor: COLORS.grayscale200 },
       ]}
     >
       <View
         style={[
           styles.container,
-          { backgroundColor: colors.background, position: 'relative' },
+          { backgroundColor: COLORS.grayscale200, position: 'relative' },
         ]}
       >
         <View
           style={{
             padding: 16,
-            height: 240,
-            zIndex: 1,
+            height: 210,
+            zIndex: -1,
             borderBottomRightRadius: 20,
             borderBottomLeftRadius: 20,
             backgroundColor: COLORS.primary,
@@ -97,10 +134,10 @@ const Profile = () => {
         </View>
 
         <ScrollView
-          contentContainerStyle={{ marginHorizontal: 10 }}
-          style={{ position: 'absolute', zIndex: 2, top: 140 }}
+          contentContainerStyle={{ marginHorizontal: 10, marginBottom: 20 }}
+          style={{ zIndex: 100, marginTop: -70 }}
         >
-          <View style={[styles.sectionContainer]}>
+          <View style={[styles.sectionContainer, { zIndex: 100 }]}>
             <SettingsItem
               icon={icons.profile2}
               name="Edit Profile"
@@ -136,7 +173,7 @@ const Profile = () => {
             <SettingsItem
               icon={icons.rating}
               name="Rate Us"
-              onPress={() => {}}
+              onPress={() => { }}
               subtitle="Love our App"
             />
           </View>
@@ -151,9 +188,10 @@ const Profile = () => {
           </View>
           <View style={[styles.sectionContainer]}>
             <SettingsItem
-              icon={icons.logout}
+              icon={icons.trash}
+              color={COLORS.red}
               name="Delete Account"
-              onPress={() => {}}
+              onPress={() => refRBSheet2.current.open()}
               subtitle="Delete your Mx Bill Pay Account"
             />
           </View>
@@ -219,6 +257,65 @@ const Profile = () => {
           />
         </View>
       </RBSheet>
+      <RBSheet
+        ref={refRBSheet2}
+        closeOnPressMask={true}
+        height={240}
+        customStyles={{
+          wrapper: {
+            backgroundColor: 'rgba(0,0,0,0.5)',
+          },
+          draggableIcon: {
+            backgroundColor: dark ? COLORS.gray2 : COLORS.grayscale200,
+            height: 4,
+          },
+          container: {
+            borderTopRightRadius: 32,
+            borderTopLeftRadius: 32,
+            height: 240,
+            backgroundColor: dark ? COLORS.dark2 : COLORS.white,
+          },
+        }}
+      >
+        <Text style={styles.bottomTitle}>Delete!</Text>
+        <View
+          style={[
+            styles.separateLine,
+            {
+              backgroundColor: dark ? COLORS.greyScale800 : COLORS.grayscale200,
+            },
+          ]}
+        />
+        <Text
+          style={[
+            styles.bottomSubtitle,
+            {
+              color: dark ? COLORS.white : COLORS.black,
+            },
+          ]}
+        >
+          Are you sure you want to delete your account?
+        </Text>
+        <View style={[styles.bottomContainer]}>
+          <Button
+            title="Cancel"
+            style={{
+              width: (SIZES.width - 32) / 2 - 8,
+              backgroundColor: dark ? COLORS.dark3 : COLORS.tansparentPrimary,
+              borderRadius: 32,
+              borderColor: dark ? COLORS.dark3 : COLORS.tansparentPrimary,
+            }}
+            textColor={dark ? COLORS.white : COLORS.primary}
+            onPress={() => refRBSheet2.current.close()}
+          />
+          <Button
+            title="Yes, Delete"
+            filled
+            style={styles.logoutButton}
+            onPress={handleDelete}
+          />
+        </View>
+      </RBSheet>
     </SafeAreaView >
   );
 };
@@ -228,7 +325,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   sectionContainer: {
-    marginVertical: 8,
+    marginVertical: 4,
+
     paddingHorizontal: 16,
     paddingVertical: 12,
     backgroundColor: COLORS.white,

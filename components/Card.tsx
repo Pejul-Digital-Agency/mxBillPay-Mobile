@@ -58,10 +58,12 @@ const styles = StyleSheet.create({
   container: {
     width: 304,
     height: 200,
-    backgroundColor: COLORS.primary,
+    backgroundColor: COLORS.grayscale400,
     borderRadius: 10,
     padding: 12,
     marginRight: 16,
+    marginTop:-100,
+    zIndex: 99,
   },
   headerContainer: {
     flexDirection: 'row',

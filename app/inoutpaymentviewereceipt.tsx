@@ -17,6 +17,7 @@ import { ScrollView } from 'react-native-virtualized-view';
 import Barcode from '@kichiyaki/react-native-barcode-generator';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import * as Clipboard from 'expo-clipboard';
+
 import { useTheme } from '../theme/ThemeProvider';
 import {
   NavigationProp,
@@ -27,7 +28,11 @@ import {
 import { IBillerItemDetails } from '@/utils/queries/appQueries';
 import { applyCommission } from '@/utils/helpers/commissionedFee';
 import Button from '@/components/Button';
+import { getUserProfile } from '@/utils/queries/accountQueries';
+import { getFormatedDate } from 'react-native-modern-datepicker';
+// import { useAppSelector } from '@/store/slices/authSlice';
 
+// import { useAppSelector } from '@/store/slices/authSlice';
 interface ReceiptData {
   status: string;
   item: string;
@@ -36,9 +41,14 @@ interface ReceiptData {
   category: string;
   transactionId: string;
   transactionDate: string;
+  token?: string;
+  totalAmount?: number;
 }
 
 const InOutPaymentViewEreceipt = () => {
+  // const { token, userAccount, userProfile } = useAppSelector(
+  //   (state) => state.auth
+  // );
   const { navigate, reset, goBack } = useNavigation<NavigationProp<any>>();
   const route = useRoute<RouteProp<any>>();
   if (!route.params || Object.keys(route.params).length == 0) return goBack();
@@ -95,18 +105,7 @@ const InOutPaymentViewEreceipt = () => {
     return (
       <View style={styles.headerContainer}>
         <View style={styles.headerLeft}>
-          {/* <TouchableOpacity onPress={() => goBack()}>
-            <Image
-              source={icons.back as ImageSourcePropType}
-              resizeMode="contain"
-              style={[
-                styles.backIcon,
-                {
-                  tintColor: dark ? COLORS.white : COLORS.black,
-                },
-              ]}
-            />
-          </TouchableOpacity> */}
+
           <Text
             style={[
               styles.headerTitle,
@@ -118,18 +117,6 @@ const InOutPaymentViewEreceipt = () => {
             E-Receipt
           </Text>
         </View>
-        <TouchableOpacity onPress={() => setModalVisible(true)}>
-          <Image
-            source={icons.moreCircle as ImageSourcePropType}
-            resizeMode="contain"
-            style={[
-              styles.moreIcon,
-              {
-                tintColor: dark ? COLORS.secondaryWhite : COLORS.black,
-              },
-            ]}
-          />
-        </TouchableOpacity>
       </View>
     );
   };
@@ -165,33 +152,20 @@ const InOutPaymentViewEreceipt = () => {
               styles.viewRight,
               {
                 color: dark ? COLORS.white : COLORS.black,
+                fontSize: value?.split(" ").length === 3 ? 13 : 16, // Adjust font size based on word count
               },
             ]}
           >
             {value}
           </Text>
+
         </View>
       );
     };
 
     return (
-      <View style={{ marginVertical: 22 }}>
-        <Barcode
-          format="EAN13"
-          value="0123456789012"
-          text="0123456789012"
-          width={SIZES.width - 64}
-          height={72}
-          style={{
-            marginBottom: 4,
-            backgroundColor: dark ? COLORS.dark1 : COLORS.white,
-          }}
-          lineColor={dark ? COLORS.white : COLORS.black}
-          textStyle={{
-            color: dark ? COLORS.white : COLORS.black,
-          }}
-          maxWidth={SIZES.width - 64}
-        />
+      <View style={{ marginBottom: 22 }}>
+
         <View
           style={[
             styles.summaryContainer,
@@ -201,31 +175,41 @@ const InOutPaymentViewEreceipt = () => {
             },
           ]}
         >
-          <EntryRow title="Bill Amount (NGN)" value={billerItemData?.itemFee} />
-          <EntryRow
-            title="Percentage Charges"
-            value={billerItemData?.percentage_commission}
-          />
-          <EntryRow
-            title="Net Bill Amount (NGN)"
-            value={applyCommission(
-              billerItemData?.percentage_commission,
-              billerItemData?.itemFee
-            )}
-          />
           <EntryRow
             title="Amount Paid (NGN)"
-            value={transactionData?.amount.toFixed(2).toString()}
+            value={transactionData?.totalAmount?.toString()}
           />
-          <EntryRow
-            title="Remaining Bill Amount (NGN)"
-            value={(
-              +applyCommission(
-                billerItemData?.percentage_commission,
-                billerItemData?.itemFee
-              ) - transactionData?.amount
-            ).toString()}
-          />
+          {transactionData?.token && (
+
+            <View style={styles.viewContainer}>
+              <Text
+                style={[
+                  styles.viewLeft,
+                  {
+                    color: dark ? COLORS.grayscale400 : 'gray',
+                  },
+                ]}
+              >
+                Token
+              </Text>
+              <View style={styles.copyContentContainer}>
+                <Text style={styles.viewRight}>
+                  {transactionData?.token?.toString().replace(/(\d{4})(?=\d)/g, "$1-")}
+                </Text>
+
+                <TouchableOpacity
+                  style={{ marginLeft: 8 }}
+                  onPress={handleCopyToClipboard}
+                >
+                  <MaterialCommunityIcons
+                    name="content-copy"
+                    size={24}
+                    color={COLORS.primary}
+                  />
+                </TouchableOpacity>
+              </View>
+            </View>
+          )}
         </View>
 
         <View
@@ -240,7 +224,6 @@ const InOutPaymentViewEreceipt = () => {
           <EntryRow title="Biller Category" value={transactionData?.category} />
           <EntryRow title="Biller Provider" value={transactionData?.provider} />
           <EntryRow title="Biller Item" value={transactionData?.item} />
-          <EntryRow title="Country" value={'Nigeria'} />
         </View>
 
         <View
@@ -254,7 +237,7 @@ const InOutPaymentViewEreceipt = () => {
         >
           <EntryRow
             title="Transaction Date"
-            value={transactionData?.transactionDate}
+            value={getFormatedDate(transactionData?.transactionDate)}
           />
 
           <View style={styles.viewContainer}>
@@ -295,9 +278,36 @@ const InOutPaymentViewEreceipt = () => {
             >
               Status
             </Text>
-            <TouchableOpacity style={styles.statusBtn}>
-              <Text style={styles.statusBtnText}>Paid</Text>
+            <TouchableOpacity
+              style={[
+                styles.statusBtn,
+                {
+                  backgroundColor:
+                    transactionData.status === 'completed' || transactionData.status === 'success'
+                      ? COLORS.transparentPayment // Background for completed or success
+                      : transactionData.status === 'pending'
+                        ? 'yellow' // Background for pending
+                        : COLORS.transparentRed, // Background for other statuses
+                },
+              ]}
+            >
+              <Text
+                style={[
+                  styles.statusBtnText,
+                  {
+                    color:
+                      transactionData.status === 'completed' || transactionData.status === 'success'
+                        ? 'white' // Text color for completed or success
+                        : transactionData.status === 'pending'
+                          ? 'black' // Text color for pending
+                          : 'white', // Text color for other statuses
+                  },
+                ]}
+              >
+                {transactionData.status}
+              </Text>
             </TouchableOpacity>
+
           </View>
         </View>
       </View>
@@ -326,7 +336,6 @@ const InOutPaymentViewEreceipt = () => {
           filled
         />
       </View>
-      {/* Modal for dropdown selection */}
       <Modal animationType="slide" transparent={true} visible={modalVisible}>
         <TouchableWithoutFeedback onPress={() => setModalVisible(false)}>
           <View style={{ position: 'absolute', top: 112, right: 12 }}>
@@ -434,12 +443,12 @@ const styles = StyleSheet.create({
     marginVertical: 12,
   },
   viewLeft: {
-    fontSize: 12,
+    fontSize: 16,
     fontFamily: 'regular',
     color: 'gray',
   },
   viewRight: {
-    fontSize: 14,
+    fontSize: 16,
     fontFamily: 'medium',
     color: COLORS.black,
   },
@@ -452,7 +461,8 @@ const styles = StyleSheet.create({
     height: 28,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: COLORS.tansparentPrimary,
+
+
     borderRadius: 6,
   },
   statusBtnText: {

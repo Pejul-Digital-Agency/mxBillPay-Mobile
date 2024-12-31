@@ -416,7 +416,7 @@ const amazon = require('../assets/icons/amazon.png') as string;
 const upOutlined = require('../assets/icons/upoutline.png') as string;
 const attachFile = require('../assets/icons/attach-file.png') as string;
 // const eyeFill = require('../assets/icons/eyefill.png') as string;
-
+const eyeOff = require('../assets/icons/eyesOff.png') as string;
 const icons = {
   addFileOutline,
   addFile,
@@ -488,6 +488,7 @@ const icons = {
   setting2Outline,
   settings,
   shieldOutline,
+  eyeOff,
   shield,
   show,
   squareInfo,

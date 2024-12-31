@@ -9,6 +9,9 @@ import { ScrollView } from 'react-native-virtualized-view';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
 import { Image } from 'expo-image';
 import HelpCenterItem from '@/components/HelpCenterItem';
+import { useQuery } from '@tanstack/react-query';
+import { getFaqs, getSocialMediaLinks } from '@/utils/queries/appQueries';
+import { Linking } from 'react-native';
 
 interface KeywordItemProps {
   item: {
@@ -25,7 +28,14 @@ const faqsRoute = () => {
   const [searchText, setSearchText] = useState('');
 
   const { dark } = useTheme();
-
+  const {
+    data: faqsData,
+    isLoading: isLoadingFaqs,
+    error: errorLoadingFaqs,
+  } = useQuery({
+    queryKey: ['getFaqs'],
+    queryFn: () => getFaqs(),
+  });
   const handleKeywordPress = (id: any) => {
     setSelectedKeywords((prevSelectedKeywords: any) => {
       const selectedKeyword = faqKeywords.find((keyword) => keyword.id === id);
@@ -71,7 +81,7 @@ const faqsRoute = () => {
   return (
     <View>
       <View style={{ marginVertical: 16 }}>
-        <FlatList
+        {/* <FlatList
           data={faqKeywords}
           horizontal
           keyExtractor={(item) => item.id}
@@ -83,7 +93,7 @@ const faqsRoute = () => {
               selected={selectedKeywords.includes(item.name)}
             />
           )}
-        />
+        /> */}
       </View>
       <View
         style={[
@@ -116,7 +126,7 @@ const faqsRoute = () => {
             },
           ]}
           placeholder="Search"
-          placeholderTextColor={ dark ? COLORS.greyscale600 : COLORS.grayscale400 }
+          placeholderTextColor={dark ? COLORS.greyscale600 : COLORS.grayscale400}
           value={searchText}
           onChangeText={(text) => setSearchText(text)}
         />
@@ -124,15 +134,8 @@ const faqsRoute = () => {
       <ScrollView
         showsVerticalScrollIndicator={false}
         style={{ marginVertical: 22 }}>
-        {faqs
-          .filter((faq) => {
-            if (selectedKeywords.length === 0) return true;
-            // console.log(selectedKeywords);
-            return (
-              faq.type &&
-              selectedKeywords.includes(faq.type)
-            );
-          })
+        {faqsData?.data
+          
           .filter((faq) =>
             faq.question.toLowerCase().includes(searchText.toLowerCase())
           )
@@ -170,6 +173,14 @@ const faqsRoute = () => {
 
 
 const contactUsRoute = () => {
+  const {
+    data: socialMediaLinks,
+    isLoading: isLoadingSocialMediaLinks,
+    error: errorSocialMediaLinks,
+  } = useQuery({
+    queryKey: ['socialMediaLinks'],
+    queryFn: () => getSocialMediaLinks(),
+  });
   const navigation = useNavigation<NavigationProp<any>>();
   const { dark } = useTheme();
 
@@ -177,36 +188,28 @@ const contactUsRoute = () => {
     <View style={[styles.routeContainer, {
       backgroundColor: dark ? COLORS.dark1 : COLORS.tertiaryWhite
     }]}>
-      <HelpCenterItem
-        icon={icons.headset}
-        title="Customer Service"
-        onPress={() => navigation.navigate("customerservice")}
-      />
-      <HelpCenterItem
-        icon={icons.whatsapp}
-        title="Whatsapp"
-        onPress={() => console.log('Whatsapp')}
-      />
-      <HelpCenterItem
-        icon={icons.world}
-        title="Website"
-        onPress={() => console.log('Website')}
-      />
-      <HelpCenterItem
-        icon={icons.facebook2}
-        title="Facebook"
-        onPress={() => console.log('Facebook')}
-      />
-      <HelpCenterItem
-        icon={icons.twitter}
-        title="Twitter"
-        onPress={() => console.log("Twitter")}
-      />
-      <HelpCenterItem
-        icon={icons.instagram}
-        title="Instagram"
-        onPress={() => console.log("Instagram")}
-      />
+      {/* Check if social media links exist */}
+      {socialMediaLinks && socialMediaLinks.data.map((socialMediaLink: any, index: number) => (
+        <HelpCenterItem
+          key={index}
+          icon={socialMediaLink.icon}
+          title={socialMediaLink.title}
+          onPress={() => {
+            if (socialMediaLink.title === "customer support") {
+              // Navigate to the customer service page
+              navigation.navigate("customerservice");
+            } else if (socialMediaLink.link && socialMediaLink.link !== "#") {
+              // Open the external link in a browser
+              Linking.openURL(socialMediaLink.link);
+            } else {
+              // Stay on the same page, do nothing
+              console.log("No action for this link.");
+            }
+          }}
+        />
+      ))}
+
+
     </View>
   )
 }

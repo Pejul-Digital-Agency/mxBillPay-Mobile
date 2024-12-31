@@ -5,8 +5,7 @@ import React, {
   useState,
   ReactNode,
 } from 'react';
-import { useColorScheme } from 'react-native';
-import { lightColors, darkColors } from './colors';
+import { lightColors } from './colors';
 
 interface ThemeContextType {
   dark: boolean;
@@ -20,27 +19,21 @@ const defaultThemeContext: ThemeContextType = {
   setScheme: () => {},
 };
 
-export const ThemeContext =
-  createContext<ThemeContextType>(defaultThemeContext);
+export const ThemeContext = createContext<ThemeContextType>(defaultThemeContext);
 
 interface ThemeProviderProps {
   children: ReactNode;
 }
 
 export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
-  const colorScheme = useColorScheme();
-  const [isDark, setIsDark] = useState(colorScheme === 'dark');
-
-  useEffect(() => {
-    setIsDark(colorScheme === 'dark');
-  }, [colorScheme]);
+  // Always set the theme to light
+  const [isDark, setIsDark] = useState(false);
 
   const defaultTheme: ThemeContextType = {
     dark: isDark,
-    colors: isDark ? darkColors : lightColors,
+    colors: lightColors, // Always use lightColors
     setScheme: (scheme: 'light' | 'dark') => setIsDark(scheme === 'dark'),
   };
-  //   console.log(defaultTheme);
 
   return (
     <ThemeContext.Provider value={defaultTheme}>

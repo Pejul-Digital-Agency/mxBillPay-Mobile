@@ -101,6 +101,7 @@ export interface IPayBill {
   customerId: string;
   billerItemId: string;
   phoneNumber: string;
+  totaltAmount?: string;
   // paymentMethod: string;
 }
 

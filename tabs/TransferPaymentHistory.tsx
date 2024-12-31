@@ -8,6 +8,11 @@ import { NavigationProp, useNavigation } from '@react-navigation/native';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ITrasnferTransaction } from '@/utils/queries/accountQueries';
 import TransferHistoryCard from '@/components/TransferHistoryCard';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { getTrsansactionDetails } from '@/utils/queries/appQueries';
+import { useAppSelector } from '@/store/slices/authSlice';
+import { ApiError } from '@/utils/customApiCall';
+
 
 const TransferHistory = ({
   transferData,
@@ -16,8 +21,28 @@ const TransferHistory = ({
 }) => {
   const navigation = useNavigation<NavigationProp<any>>();
   const { dark } = useTheme();
-  const handleonPress = () => {
-    console.log('onpress');
+  const { navigate, reset } = useNavigation<NavigationProp<any>>();
+  const { token, userAccount, userProfile } = useAppSelector(
+    (state) => state.auth
+  );
+  const { mutate: getDetail, isPending: isBillPaying } = useMutation({
+    mutationFn: getTrsansactionDetails,
+    onSuccess: (data) => {
+      console.log('transaction_data', data);
+      navigate('inoutpaymentviewereceipt', {
+        transactionData: data.data,
+        billerItemData: data.data,
+      });
+    },
+    onError: (error: ApiError) => {
+      console.log(error);
+      // setErrorModalText(error.message);
+      // setErrorModal(true);
+    },
+  });
+  const handleonPress = (id: string) => {
+    console.log('onpress', id);
+    getDetail({ id, token });
   };
 
   return (
@@ -28,7 +53,7 @@ const TransferHistory = ({
         <TransferHistoryCard {...item} onPress={handleonPress} />
       )}
       scrollEnabled
-      style={{ marginBottom: 12 }}
+      style={{ marginBottom: 2 }}
     />
   );
 };

@@ -5,7 +5,8 @@ export function applyCommission(
   if (!percentage || !amount) {
     return '0.00';
   }
-  const commission = parseFloat(amount) * parseFloat(percentage);
-  const commissionedAmount = parseFloat(amount) + commission;
-  return commissionedAmount.toFixed(2).toString();
+  // Correctly calculate commission as a percentage of the amount
+  const commission = (parseFloat(amount) * parseFloat(percentage)) / 100;
+  const commissionedAmount = commission;
+  return commissionedAmount.toFixed(2);
 }

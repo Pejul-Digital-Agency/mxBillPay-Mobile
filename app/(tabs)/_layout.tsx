@@ -102,7 +102,7 @@ const TabLayout: React.FC = () => {
                         : COLORS.gray3,
                     }}
                   >
-                    Statistics
+                    Transactions
                   </Text>
                 </View>
               );
@@ -144,7 +144,7 @@ const TabLayout: React.FC = () => {
                         : COLORS.gray3,
                     }}
                   >
-                    My Card
+                   Cards
                   </Text>
                 </View>
               );

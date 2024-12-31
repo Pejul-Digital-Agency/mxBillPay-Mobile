@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "576378105680",
+    "project_id": "mx-bill-pay-5c87d",
+    "storage_bucket": "mx-bill-pay-5c87d.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:576378105680:android:b9f421900f863137eec655",
+        "android_client_info": {
+          "package_name": "com.mehmood5491.AllPay"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCLulDSMfyp9v5kSI5P0bEUd-b44d6rSbQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

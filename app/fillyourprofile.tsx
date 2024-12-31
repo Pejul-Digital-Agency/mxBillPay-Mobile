@@ -44,7 +44,7 @@ export interface IClientCreation {
   userId: string;
   firstName: string;
   lastName: string;
-  dob: string;
+  // dob: string;
   phone: string;
   profilePicture: {
     uri: string;
@@ -126,7 +126,7 @@ const FillYourProfile = () => {
     (inputId: string, inputValue: string) => {
       const result = validateInput(inputId, inputValue);
       dispatchFormState({
-        inputId,
+        inputId, 
         validationResult: result,
         inputValue,
       });
@@ -143,26 +143,29 @@ const FillYourProfile = () => {
       });
       return;
     }
-    if (!image) {
-      showToast({
-        type: 'error',
-        text1: 'Please upload profile picture',
-      });
-      return;
-    }
+    // if (!image) {
+    //   showToast({
+    //     type: 'error',
+    //     text1: 'Please upload profile picture',
+    //   });
+    //   return;
+    // }
     const { firstName, lastName, phoneNumber } = formState.inputValues;
     // const extension = image?.fileName.split('.').pop();
     // console.log(extension);
     const formData = new FormData();
     formData.append('firstName', firstName);
     formData.append('lastName', lastName);
-    formData.append('dob', startedDate);
+    // formData.append('dob', startedDate);
     formData.append('phone', phoneNumber);
-    formData.append('profilePicture', {
-      uri: image?.uri,
-      name: image?.fileName,
-      type: image?.mimeType,
-    } as any);
+    if (image != null) {
+
+      formData.append('profilePicture', {
+        uri: image?.uri,
+        name: image?.fileName,
+        type: image?.mimeType,
+      } as any);
+    }
 
     console.log(token);
     mutate({
@@ -192,7 +195,7 @@ const FillYourProfile = () => {
       const imageData = await launchImagePicker();
       if (!imageData) return;
       setImage({ ...imageData });
-    } catch (error) {}
+    } catch (error) { }
   };
 
   useEffect(() => {
@@ -268,7 +271,7 @@ const FillYourProfile = () => {
                   width: SIZES.width - 32,
                 }}
               >
-                <TouchableOpacity
+                {/* <TouchableOpacity
                   style={[
                     styles.inputBtn,
                     {
@@ -288,7 +291,7 @@ const FillYourProfile = () => {
                     size={24}
                     color={COLORS.grayscale400}
                   />
-                </TouchableOpacity>
+                </TouchableOpacity> */}
               </View>
               <View
                 style={[
@@ -301,7 +304,7 @@ const FillYourProfile = () => {
               >
                 <TouchableOpacity
                   style={styles.selectFlagContainer}
-                  onPress={() => {}}
+                  onPress={() => { }}
                 >
                   <View style={{ justifyContent: 'center' }}>
                     <Image
@@ -469,7 +472,7 @@ const styles = StyleSheet.create({
     marginVertical: 10,
     height: 40,
     fontSize: 14,
-    color: COLORS.white,
+    color: COLORS.black,
   },
   inputBtn: {
     borderWidth: 1,

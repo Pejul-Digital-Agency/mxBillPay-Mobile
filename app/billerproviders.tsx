@@ -6,6 +6,7 @@ import {
   ScrollView,
   FlatList,
   TouchableOpacity,
+  Alert,
 } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -44,10 +45,17 @@ const BillerProviders = () => {
   });
 
   const handleClickProvider = (providerData: IProviderData) => {
-    navigate('billreviewsummary', { categoryData, providerData });
+    console.log(providerData);
+    if (providerData.status == false) {
+      console.log('provider is not available')
+      Alert.alert('Notification','This provider is under maintainance, please try again later')
+    }else{
+      navigate('billreviewsummary', { categoryData, providerData });
+
+    }
   };
 
-  // console.log(billerItemsData);
+  console.log(data?.data);
   // error && console.log(error);
 
   const renderListItem = (provider: IProviderData) => {
@@ -67,7 +75,7 @@ const BillerProviders = () => {
       </TouchableOpacity>
     );
   };
-  
+
   const renderList = () => {
     return (
       <FlatList
@@ -102,7 +110,7 @@ const BillerProviders = () => {
                 tintColor={COLORS.white}
               />
               <Text style={[styles.title]}>
-                Fund Your {categoryData?.category} Account
+                {categoryData?.categoryDescription || `Fund Your ${categoryData?.category} Account`}
               </Text>
             </View>
             <View
@@ -191,23 +199,6 @@ const styles = StyleSheet.create({
   continueBtn: {
     marginVertical: 22,
   },
-  // itemContainer: {
-  //   padding: 16, // Adjusted for SIZES.padding * 2
-  //   width: '48%',
-  //   rowGap: 8,
-  //   borderRadius: 12,
-  //   marginBottom: 16, // Adjusted for SIZES.padding
-  //   alignItems: 'flex-start',
-  // },
-  // itemImage: {
-  //   height: 24,
-  //   width: 24,
-  //   borderRadius: 50,
-  // },
-  // itemName: {
-  //   fontSize: 16, // Adjusted for SIZES.h4
-  //   fontWeight: '600',
-  // },
   itemContainer: {
     padding: 0, // Removed padding
     width: '48%',

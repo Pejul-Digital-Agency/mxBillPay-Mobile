@@ -23,6 +23,8 @@ const mxlogo = require('../assets/images/mxlogo.png');
 const eyefill = require('../assets/images/eyefill.png');
 const infoCircleFilled = require('../assets/images/infocirclefilled.png');
 const coverImage = require('../assets/images/coverImg.jpg');
+const alert = require('../assets/images/alert.png');
+const profile=require('../assets/images/profile_placeholder.png');
 
 const images = {
   coverImage,
@@ -50,6 +52,8 @@ const images = {
   user11,
   elipseCard,
   rectangleCard,
+  alert,
+  profile
 };
 
 export default images;

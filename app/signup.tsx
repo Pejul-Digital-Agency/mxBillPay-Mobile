@@ -30,6 +30,7 @@ import { authSliceActions } from '@/store/slices/authSlice';
 import { useDispatch } from 'react-redux';
 import CustomModal from './custommodal';
 
+
 export interface InputValues {
   email: string;
   password: string;
@@ -75,6 +76,9 @@ const Signup = () => {
   const [isPasswordsEqual, setIsPasswordsEqual] = useState(true);
   const [isChecked, setChecked] = useState(false);
   const { colors, dark } = useTheme();
+  const [passwordVisible, setPasswordVisible] = useState(false);
+  const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
+
   const dispatch = useDispatch();
   const { mutate: signUp, isPending: signingUp } = useMutation({
     mutationFn: (data: InputValues) => signUpUser(data),
@@ -200,6 +204,9 @@ const Signup = () => {
   const googleAuthHandler = () => {
     console.log('Google Authentication');
   };
+  const handlePrivacyPolicyPress = () => {
+    console.log('privacy policy')
+  }
 
   // console.log(keyboardVisible);
 
@@ -234,32 +241,48 @@ const Signup = () => {
             icon={icons.email}
             keyboardType="email-address"
           />
-          <Input
-            onInputChanged={inputChangedHandler}
-            errorText={formState.inputValidities['password']}
-            autoCapitalize="none"
-            id="password"
-            placeholder="Password"
-            placeholderTextColor={dark ? COLORS.grayTie : COLORS.black}
-            icon={icons.padlock}
-            secureTextEntry={true}
-          />
-          <Input
-            onInputChanged={inputChangedHandler}
-            errorText={
-              formState.inputValues['confirmPassword'].trim() == ''
-                ? 'confirm password is required'
-                : !isPasswordsEqual
-                ? 'both passwords should match'
-                : ''
-            }
-            autoCapitalize="none"
-            id="confirmPassword"
-            placeholder="Confirm Password"
-            placeholderTextColor={dark ? COLORS.grayTie : COLORS.black}
-            icon={icons.padlock}
-            secureTextEntry={true}
-          />
+          <View style={styles.passwordContainer}>
+            <Input
+              id="password"
+              onInputChanged={inputChangedHandler}
+              placeholder="Password"
+              placeholderTextColor={dark ? COLORS.grayTie : COLORS.black}
+              icon={icons.padlock}
+              secureTextEntry={!passwordVisible}
+              style={styles.passwordInput}
+            />
+            <TouchableOpacity
+              onPress={() => setPasswordVisible(!passwordVisible)}
+              style={styles.showPasswordIcon}
+            >
+              <Image
+                source={passwordVisible ? icons.eye : icons.eyeOff}
+                style={styles.icon}
+                contentFit="contain"
+              />
+            </TouchableOpacity>
+          </View>
+          <View style={styles.passwordContainer}>
+            <Input
+              id="confirmPassword"
+              onInputChanged={inputChangedHandler}
+              placeholder="Confirm Password"
+              placeholderTextColor={dark ? COLORS.grayTie : COLORS.black}
+              icon={icons.padlock}
+              secureTextEntry={!confirmPasswordVisible}
+              style={styles.passwordInput}
+            />
+            <TouchableOpacity
+              onPress={() => setConfirmPasswordVisible(!confirmPasswordVisible)}
+              style={styles.showPasswordIcon}
+            >
+              <Image
+                source={confirmPasswordVisible ? icons.eye : icons.eyeOff}
+                style={styles.icon}
+                contentFit="contain"
+              />
+            </TouchableOpacity>
+          </View>
           <View style={styles.checkBoxContainer}>
             <View style={{ flexDirection: 'row' }}>
               <Checkbox
@@ -279,8 +302,19 @@ const Signup = () => {
                     },
                   ]}
                 >
-                  By continuing you accept our Privacy Policy
+                  By continuing you accept our{' '}
+                  <Text
+                    style={{
+                      color: COLORS.primary,
+                      textDecorationLine: 'underline',
+                    }}
+                    onPress={handlePrivacyPolicyPress}
+                  >
+                    Privacy Policy
+                  </Text>
                 </Text>
+
+
               </View>
             </View>
           </View>
@@ -292,21 +326,7 @@ const Signup = () => {
             onPress={handleSignUp}
             style={[styles.button, { opacity: signingUp ? 0.5 : 1 }]}
           />
-          {/* <View>
-            <OrSeparator text="or continue with" />
-            <View style={styles.socialBtnContainer}>
-              <SocialButton
-                icon={icons.appleLogo}
-                onPress={appleAuthHandler}
-                tintColor={dark ? COLORS.white : COLORS.black}
-              />
-              <SocialButton
-                icon={icons.facebook}
-                onPress={facebookAuthHandler}
-              />
-              <SocialButton icon={icons.google} onPress={googleAuthHandler} />
-            </View>
-          </View> */}
+
         </ScrollView>
         <View
           style={[
@@ -331,32 +351,30 @@ const Signup = () => {
           </TouchableOpacity>
         </View>
       </View>
-      {/* modal for going to the bvn consent */}
-      {/*<Modal
-        animationType="slide"
-        visible={modalVisible}
-        transparent
-        onRequestClose={() => setModalVisible(false)}
-      >
-        <View style={styles.modalBackdrop}>
-          <View style={styles.modalContainer}>
-            <Text style={{ textAlign: 'center', ...FONTS.h3 }}>
-              Activating your account requires your BVN consent
-            </Text>
-            <TouchableOpacity
-              style={styles.modalButton}
-              onPress={handleGoToBVNConsent}
-            >
-              <Text style={styles.modalButtonText}>Click to continue</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>*/}
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
+  passwordContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    position: 'relative',
+  },
+  passwordInput: {
+    flex: 1,
+  },
+  showPasswordIcon: {
+    position: 'absolute',
+    right: 16,
+    height: '100%',
+    justifyContent: 'center',
+  },
+  icon: {
+    width: 24,
+    height: 24,
+    tintColor: COLORS.primary,
+  },
   area: {
     flex: 1,
     backgroundColor: COLORS.white,
@@ -369,7 +387,7 @@ const styles = StyleSheet.create({
   logo: {
     width: 100,
     height: 100,
-    borderRadius: 50,
+    borderRadius: 70,
     // tintColor: COLORS.primary,
   },
   logoContainer: {
@@ -407,6 +425,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontFamily: 'regular',
     color: COLORS.black,
+
   },
   socialTitle: {
     fontSize: 19.25,

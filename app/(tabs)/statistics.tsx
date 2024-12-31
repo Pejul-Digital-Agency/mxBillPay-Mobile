@@ -1,108 +1,88 @@
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  useWindowDimensions,
-} from 'react-native';
-import React from 'react';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import React, { useEffect, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { COLORS, SIZES, icons, images } from '@/constants';
-import { Image } from 'expo-image';
 import { useTheme } from '@/theme/ThemeProvider';
+import { COLORS, FONTS, SIZES, icons } from '@/constants';
+import { Image } from 'expo-image';
 import { useNavigation } from 'expo-router';
-import { SceneMap, TabBar, TabView } from 'react-native-tab-view';
-import {
-  AnalyticsMonthV1,
-  AnalyticsQuarterV1,
-  AnalyticsQuarterV2,
-  AnalyticsYearV1,
-  AnalyticsYearV2,
-} from '@/tabs';
+import { ScrollView } from 'react-native-virtualized-view';
+import { NavigationProp } from '@react-navigation/native';
+import { QueryClient, useQuery } from '@tanstack/react-query';
+import { getTransferHistory } from '@/utils/queries/accountQueries';
+import { useAppSelector } from '@/store/slices/authSlice';
+import TransferHistory from '@/tabs/TransferPaymentHistory';
+import Loader from '../loader';
+import Header from '@/components/Header';
+import SlideComponent from '@/components/SlideComponent';
 
-const renderScene = SceneMap({
-  first: AnalyticsMonthV1,
-  second: AnalyticsQuarterV1,
-  third: AnalyticsYearV1,
-  // fourth: AnalyticsYearToYearV1
-});
+type Tab = 'Transfer History' | 'Bill Payments';
 
-type Nav = {
-  navigate: (value: string) => void;
-};
-
-const Statistics = () => {
-  const { navigate } = useNavigation<Nav>();
+const InOutPaymentHistory = () => {
   const { colors, dark } = useTheme();
-  const layout = useWindowDimensions();
-  const [index, setIndex] = React.useState(0);
+  const navigation = useNavigation<NavigationProp<any>>();
+  const { token, userAccount } = useAppSelector((state) => state.auth);
 
-  const [routes] = React.useState([
-    { key: 'first', title: 'Month' },
-    { key: 'second', title: 'Quarter' },
-    { key: 'third', title: 'Year' },
-    // { key: 'fourth', title: 'YTY' }
-  ]);
+  const {
+    data: transferData,
+    isLoading: loadingTransfer,
+    error: errorTransfer,
+  } = useQuery({
+    queryKey: ['transactionsHistory'],
+    queryFn: () => getTransferHistory(token),
+  });
+  useEffect(()=>{
+    console.log(transferData)
+  })
 
-  const renderTabBar = (props: any) => (
-    <TabBar
-      {...props}
-      indicatorStyle={{
-        backgroundColor: COLORS.primary,
-      }}
-      style={{
-        backgroundColor: colors.background,
-      }}
-      renderLabel={({ route, focused }) => (
-        <Text
-          style={[
-            {
-              color: focused ? COLORS.primary : 'gray',
-              fontSize: 16,
-              fontFamily: 'bold',
-            },
-          ]}
-        >
-          {route.title}
-        </Text>
-      )}
-    />
-  );
-
+  const renderHeader = () => {
+    return (
+      <View style={[styles.headerContainer]}>
+        <TouchableOpacity onPress={() => navigation.goBack()}>
+          <Image
+            source={icons.back}
+            contentFit="contain"
+            style={styles.backIcon}
+            tintColor={COLORS.white}
+          />
+        </TouchableOpacity>
+        <Text style={[styles.headTitle]}>Transactions History</Text>
+      </View>
+    );
+  };
   /**
    * Render header
    */
-  const renderHeader = () => {
+  const renderTopContainer = () => {
     return (
-      <View style={styles.headerContainer}>
-        <View style={styles.headerLeft}>
-          {/* <Image
-            source={images.logo}
-            contentFit='contain'
-            style={styles.headerLogo}
-          /> */}
-          <Text
-            style={[
-              styles.headerTitle,
-              {
-                color: dark ? COLORS.white : COLORS.greyscale900,
-              },
-            ]}
-          >
-            Analytics
+      <View style={styles.cardContainer}>
+        {renderHeader()}
+        {/* <Header title="Transactions History" /> */}
+        <View style={{ alignItems: 'center', rowGap: 4, marginTop: 20 }}>
+          <Text style={styles.balanceAmount}>
+            ₦{userAccount?.balance.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",") || '0.00'}
           </Text>
+          <Text style={styles.balanceText}>Current balance</Text>
         </View>
-        <View style={styles.headerRight}>
-          {/* <TouchableOpacity
-            onPress={() => navigate("invoicesettings")}>
-            <Image
-              source={icons.moreCircle}
-              contentFit='contain'
-              style={[styles.searchIcon, {
-                tintColor: dark ? COLORS.secondaryWhite : COLORS.greyscale900
-              }]}
-            />
-          </TouchableOpacity> */}
+        <View
+          style={{
+            flexDirection: 'row',
+            paddingHorizontal: 20,
+            marginTop: 8,
+            justifyContent: 'space-between',
+          }}
+        >
+          <View style={{ alignItems: 'center', rowGap: 3 }}>
+            <Text style={styles.balanceAmountBottom}>
+              ₦{userAccount?.totalBillPayment.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",") || '0.00'}
+            </Text>
+            <Text style={styles.balanceTextBottom}>Total Bill Payment</Text>
+          </View>
+          <View style={{ alignItems: 'center', rowGap: 3 }}>
+            <Text style={styles.balanceAmountBottom}>
+              ₦{userAccount?.totalIncome.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",") || '44.88'}
+            </Text>
+            <Text style={styles.balanceTextBottom}>Total Wallet Deposit</Text>
+          </View>
         </View>
       </View>
     );
@@ -110,21 +90,64 @@ const Statistics = () => {
 
   return (
     <SafeAreaView style={[styles.area, { backgroundColor: colors.background }]}>
+      {/* {loadingTransfer && <Loader />} */}
       <View style={[styles.container, { backgroundColor: colors.background }]}>
-        {renderHeader()}
-        <TabView
-          navigationState={{ index, routes }}
-          renderScene={renderScene}
-          onIndexChange={setIndex}
-          initialLayout={{ width: layout.width }}
-          renderTabBar={renderTabBar}
-        />
+        {renderTopContainer()}
+        <ScrollView showsVerticalScrollIndicator={false}>
+          <View style={styles.viewContainer}>
+            <View style={styles.contentContainer}>
+              {transferData?.data && transferData.data.length > 0 ? (
+                <TransferHistory transferData={transferData.data} />
+              ) : (
+                <Text style={{ textAlign: 'center', ...FONTS.body3 }}>
+                No recent transactions
+                </Text>
+              )}
+            </View>
+            <SlideComponent />
+          </View>
+        </ScrollView>
       </View>
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
+  cardContainer: {
+    position: 'relative',
+    width: '100%',
+    height: 'auto',
+    zIndex: 1,
+    paddingTop: 20,
+    paddingBottom: 50,
+    borderBottomLeftRadius: 24,
+    borderBottomRightRadius: 24,
+    backgroundColor: COLORS.primary,
+    paddingHorizontal: 22,
+    // rowGap: 16,
+  },
+  balanceText: {
+    fontSize: 12,
+    fontFamily: 'regular',
+    color: COLORS.white,
+    // marginBottom: 4,
+  },
+  balanceAmount: {
+    fontSize: 28,
+    fontFamily: 'extraBold',
+    color: COLORS.white,
+  },
+  balanceTextBottom: {
+    fontSize: 10,
+    fontFamily: 'regular',
+    color: COLORS.white,
+    // marginBottom: 4,
+  },
+  balanceAmountBottom: {
+    fontSize: 20,
+    fontFamily: 'regular',
+    color: COLORS.white,
+  },
   area: {
     flex: 1,
     backgroundColor: COLORS.white,
@@ -132,13 +155,14 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.white,
-    padding: 16,
+    // padding: 16,
   },
   headerContainer: {
+    backgroundColor: COLORS.primary,
     flexDirection: 'row',
     alignItems: 'center',
     width: SIZES.width - 32,
-    justifyContent: 'space-between',
+    // justifyContent: 'space-between',
     marginBottom: 12,
   },
   headerLeft: {
@@ -148,7 +172,7 @@ const styles = StyleSheet.create({
   headerLogo: {
     height: 24,
     width: 24,
-    tintColor: COLORS.primary,
+    tintColor: COLORS.greyscale900,
   },
   headerTitle: {
     fontSize: 22,
@@ -171,6 +195,101 @@ const styles = StyleSheet.create({
     tintColor: COLORS.black,
     marginLeft: 12,
   },
+  viewContainer: {
+    flex: 1,
+    marginBottom: 20,
+  },
+  tabContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    backgroundColor: COLORS.white,
+    paddingVertical: 10,
+  },
+  tabButton: {
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 22,
+    borderWidth: 2,
+    borderColor: COLORS.primary,
+  },
+  activeTabButton: {
+    backgroundColor: COLORS.primary,
+  },
+  tabButtonText: {
+    color: COLORS.primary,
+    fontSize: 16,
+    fontFamily: 'bold',
+  },
+  activeTabButtonText: {
+    color: COLORS.white,
+  },
+  contentContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 26,
+       
+    marginTop: 10,
+  },
+  contentText: {
+    fontSize: 18,
+    color: COLORS.black,
+  },
+  renderTopContainer: {
+    position: 'relative',
+    width: '100%',
+    height: 'auto',
+    zIndex: 1,
+    paddingTop: 20,
+    paddingBottom: 25,
+    borderBottomLeftRadius: 7,
+    borderBottomRightRadius: 7,
+    backgroundColor: COLORS.primary,
+    paddingHorizontal: 0,
+  },
+  //for mx bill payment title
+  mxtitle: {
+    textAlign: 'center',
+    fontSize: 19,
+    marginTop: 4,
+    fontWeight: '500',
+    textTransform: 'uppercase',
+
+    fontFamily: 'regular',
+    color: 'orange',
+    // marginBottom: 4,
+  },
+  titleContainer: {
+    backgroundColor: COLORS.white,
+    width: SIZES.width - 32,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  backIcon: {
+    width: 24,
+    height: 24,
+    marginRight: 16,
+  },
+  headTitle: {
+    fontSize: 22,
+    fontFamily: 'bold',
+    color: COLORS.white,
+  },
+  // balanceAmount: {
+  //   textAlign: 'center',
+  //   fontSize: 28,
+  //   marginTop: 4,
+  //   fontFamily: 'extraBold',
+  //   color: COLORS.white,
+  // },
+  // balanceText: {
+  //   textAlign: 'center',
+  //   fontSize: 12,
+  //   marginTop: 4,
+  //   fontFamily: 'regular',
+  //   color: COLORS.white,
+  //   // marginBottom: 4,
+  // },
 });
 
-export default Statistics;
+export default InOutPaymentHistory;

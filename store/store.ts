@@ -4,9 +4,7 @@ import authReducer from './slices/authSlice';
 
 export const store = configureStore({
   reducer: {
-    // pusher: pusherReducer,
     auth: authReducer,
-    // currPage: currentPageReducer,
   },
 });
 

@@ -2,8 +2,9 @@ import React, { useState } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { COLORS, SIZES } from '@/constants';
-import { IBillerItemsList } from '@/utils/queries/appQueries';
+// import { IBillerItemsList } from '@/utils/queries/appQueries';
 import { Image } from 'expo-image';
+import { IBillerItemsList } from '@/utils/queries/appQueries';
 
 interface PickerProps {
   placeholder: string;
@@ -48,13 +49,7 @@ export default function CustomPicker(props: PickerProps) {
         style={[
           styles.picker,
           {
-            color: dark
-              ? props.selectedValue == ''
-                ? COLORS.grayscale200
-                : COLORS.white
-              : !dark
-              ? COLORS.grayscale700
-              : COLORS.greyscale900,
+            color:COLORS.black
           },
         ]}
         dropdownIconColor={isFocused ? COLORS.primary : '#BCBCBC'}
@@ -72,14 +67,12 @@ export default function CustomPicker(props: PickerProps) {
             value={item.id.toString()}
             color={
               props.selectedValue === item.id.toString()
-                ? COLORS.primary
-                : '#BCBCBC'
+                ? COLORS.grayscale700
+                : COLORS.black
             }
+            style={{fontSize:13}}
           />
         ))}
-        {/* <Picker.Item label="Option 1" value="option1" color="blue" />
-        <Picker.Item label="Option 2" value="option2" />
-        <Picker.Item label="Option 3" value="option3" /> */}
       </Picker>
     </View>
   );

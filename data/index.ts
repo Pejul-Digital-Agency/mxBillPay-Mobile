@@ -2499,31 +2499,7 @@ export const userCards = [
         number: "2298 1268 3398 9874",
         balance: "28885.00",
         date: "12/24"
-    },
-    {
-        id: "2",
-        number: "4222 1268 3398 9874",
-        balance: "12985.00",
-        date: "09/26"
-    },
-    {
-        id: "3",
-        number: "4242 4242 3398 9874",
-        balance: "120003.00",
-        date: "12/25"
-    },
-    {
-        id: "4",
-        number: "4141 4242 3398 9874",
-        balance: "100000.00",
-        date: "12/25"
-    },
-    {
-        id: "4",
-        number: "4242 4242 3398 9874",
-        balance: "1230015.25",
-        date: "11/25"
-    },
+    }
 ];
 
 export const transactions = [

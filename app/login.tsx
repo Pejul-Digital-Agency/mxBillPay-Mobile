@@ -29,6 +29,7 @@ import { useDispatch } from 'react-redux';
 import { authSliceActions, useAppSelector } from '@/store/slices/authSlice';
 import * as SecureStore from 'expo-secure-store';
 import { NavigationProp } from '@react-navigation/native';
+// import * as SecureStore from 'expo-secure-store';
 
 export interface InputValues {
   email: string;
@@ -65,28 +66,47 @@ const Login = () => {
   const [isBiometricAvailable, setIsBiometricAvailable] = useState(false);
   const [keyboardVisible, setKeyboardVisible] = useState(false);
   const { colors, dark } = useTheme();
+  const [passwordVisible, setPasswordVisible] = useState(false);
   const dispatch = useDispatch();
   const { isPending: isPendingLogin, mutate: mutateLogin } = useMutation({
     mutationFn: (data: InputValues) => loginUser(data),
-    onSuccess: (data) => {
-      console.log(data);
-      dispatch(authSliceActions.setToken(data?.token));
-      dispatch(
-        authSliceActions.setUser({
-          userProfile: data.user,
-        })
-      );
-      reset({ index: 0, routes: [{ name: '(tabs)' }] });
-      navigate('(tabs)');
+    onSuccess: async (data) => {
+      try {
+        console.log('Login Success:', data);
+
+        // Save user data in SecureStore
+        await SecureStore.setItemAsync(
+          'authCredentials',
+          JSON.stringify({
+            token: data?.token,
+            user: data.user,
+          })
+        );
+
+        // Update Redux store
+        dispatch(authSliceActions.setToken(data?.token));
+        dispatch(
+          authSliceActions.setUser({
+            userProfile: data.user,
+          })
+        );
+
+        // Navigate to the main screen
+        reset({ index: 0, routes: [{ name: '(tabs)' }] });
+        navigate('(tabs)');
+      } catch (error) {
+        console.error('Error saving data:', error);
+      }
     },
     onError: (error) => {
-      console.log(error);
+      console.error('Login Error:', error);
       showToast({
         type: 'error',
-        text1: error.message,
+        text1: error.message || 'Login failed',
       });
     },
   });
+
   const { isPending: isPendingForgot, mutate: mutateForgotPassword } =
     useMutation({
       mutationFn: forgotPassword,
@@ -137,6 +157,7 @@ const Login = () => {
     if (!formState.inputValues.email) {
       // Show a modal for entering their email
       console.log('Email is not valid or not provided');
+      Alert.alert('Error', 'Please enter a valid email address')
       // setModalVisible(true);
       return;
     }
@@ -192,6 +213,36 @@ const Login = () => {
 
   //implementing Biometric authentication
   useEffect(() => {
+    const handleBiometricLoginOnStart = async () => {
+      const hasHardware = await LocalAuthentication.hasHardwareAsync();
+      const isEnrolled = await LocalAuthentication.isEnrolledAsync();
+
+      if (hasHardware && isEnrolled) {
+        const result = await LocalAuthentication.authenticateAsync({
+          promptMessage: 'Login with Fingerprint',
+          cancelLabel: 'Skip',
+          disableDeviceFallback: true,
+        });
+
+        if (result.success) {
+          const authCredentials = await SecureStore.getItemAsync('authCredentials');
+          if (authCredentials) {
+            const credentials = JSON.parse(authCredentials);
+            if (credentials.email && credentials.password) {
+              mutateLogin({
+                email: credentials.email,
+                password: credentials.password,
+              });
+            }
+          }
+        }
+      }
+    };
+
+    handleBiometricLoginOnStart();
+  }, []);
+
+  useEffect(() => {
     const handleBiometricAuth = async () => {
       if (!isBiometricAvailable) {
         return;
@@ -210,10 +261,6 @@ const Login = () => {
       });
       console.log(result);
       if (result.success) {
-        // showToast({
-        //   type: 'success',
-        //   text1: 'Login Successful',
-        // });
         const authCredentials = await SecureStore.getItemAsync(
           'authCredentials'
         );
@@ -283,16 +330,27 @@ const Login = () => {
               icon={icons.email}
               keyboardType="email-address"
             />
-            <Input
-              onInputChanged={inputChangedHandler}
-              errorText={formState.inputValidities['password']}
-              autoCapitalize="none"
-              id="password"
-              placeholder="Password"
-              placeholderTextColor={dark ? COLORS.grayTie : COLORS.black}
-              icon={icons.padlock}
-              secureTextEntry={true}
-            />
+            <View style={styles.passwordContainer}>
+              <Input
+                id="password"
+                onInputChanged={inputChangedHandler}
+                placeholder="Password"
+                placeholderTextColor={dark ? COLORS.grayTie : COLORS.black}
+                icon={icons.padlock}
+                secureTextEntry={!passwordVisible}
+                style={styles.passwordInput}
+              />
+              <TouchableOpacity
+                onPress={() => setPasswordVisible(!passwordVisible)}
+                style={styles.showPasswordIcon}
+              >
+                <Image
+                  source={passwordVisible ? icons.eye : icons.eyeOff}
+                  style={styles.icon}
+                  contentFit="contain"
+                />
+              </TouchableOpacity>
+            </View>
 
             <View style={styles.checkBoxContainer}>
               <View style={{ flexDirection: 'row' }}>
@@ -313,7 +371,7 @@ const Login = () => {
                       },
                     ]}
                   >
-                    Remenber me
+                    Remember me
                   </Text>
                 </View>
               </View>
@@ -354,19 +412,7 @@ const Login = () => {
           )}
         </View>
 
-        {/* <WebView
-          source={{ uri: 'https://services.vfdtech.ng/' }}
-          style={{
-            flex: 1,
-            zIndex: 9999,
-            position: 'static',
-            // top: 0,
-            left: 0,
-            bottom: 0,
-            width: '100%',
-            height: '100%',
-          }}
-        /> */}
+
       </SafeAreaView>
     </>
   );
@@ -385,8 +431,27 @@ const styles = StyleSheet.create({
   logo: {
     width: 100,
     height: 100,
+    borderRadius: 80,
     // tintColor: COLORS.primary,
-    borderRadius: 50,
+  },
+  passwordContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    position: 'relative',
+  },
+  passwordInput: {
+    flex: 1,
+  },
+  showPasswordIcon: {
+    position: 'absolute',
+    right: 16,
+    height: '100%',
+    justifyContent: 'center',
+  },
+  icon: {
+    width: 24,
+    height: 24,
+    tintColor: COLORS.primary,
   },
   logoContainer: {
     alignItems: 'center',

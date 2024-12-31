@@ -52,7 +52,7 @@ export const apiCall = async (
       default:
         throw new Error('Unsupported HTTP method');
     }
-
+    // console.log(response?.data)
     return response?.data;
   } catch (error) {
     console.log(error);
@@ -67,7 +67,7 @@ export const apiCall = async (
       throw new ApiError(
         undefined,
         'Network or server error occurred',
-        'Something wend wrong'
+        'Something went wrong'
       );
     }
   }

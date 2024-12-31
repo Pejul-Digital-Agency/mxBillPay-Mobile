@@ -1,11 +1,16 @@
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import React from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
+import React, { useEffect, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { COLORS, SIZES, icons, images } from '../constants';
 import SocialButtonV2 from '../components/SocialButtonV2';
 import { useTheme } from '../theme/ThemeProvider';
 import { useNavigation } from 'expo-router';
 import { Image } from 'expo-image';
+import { authSliceActions, useAppSelector } from '@/store/slices/authSlice';
+
+import Button from '@/components/Button';
+import * as SecureStore from 'expo-secure-store';
+import { useDispatch } from 'react-redux';
 
 type Nav = {
   navigate: (value: string) => void;
@@ -13,11 +18,49 @@ type Nav = {
 
 // Welcome screen
 const Welcome = () => {
-  const { navigate } = useNavigation<Nav>();
+  const { navigate, reset } = useNavigation<Nav>();
+  // const { colors, dark } = useTheme();
+  // const { navigate, reset } = useNavigation<Nav>();
   const { colors, dark } = useTheme();
+  const [loading, setLoading] = useState(true);
+  const dispatch = useDispatch();
+  // Check for stored credentials
+  useEffect(() => {
+    const checkStoredCredentials = async () => {
+      try {
+        const storedCredentials = await SecureStore.getItemAsync('authCredentials');
+        if (storedCredentials) {
+          const credentials = JSON.parse(storedCredentials);
 
+          // Dispatch token and user data to Redux
+          dispatch(authSliceActions.setToken(credentials.token));
+          dispatch(
+            authSliceActions.setUser({
+              userProfile: credentials.user,
+            })
+          );
+          reset({ index: 0, routes: [{ name: '(tabs)' }] });
+          navigate('(tabs)');
+        } else {
+          setLoading(false); // No stored credentials, stop loading
+        }
+      } catch (error) {
+        console.error('Error checking credentials:', error);
+        setLoading(false); // Stop loading on error
+      }
+    };
+    checkStoredCredentials();
+  }, [reset, navigate]);
+
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color={COLORS.primary} />
+      </SafeAreaView>
+    );
+  }
   return (
-    <SafeAreaView style={[styles.area, { backgroundColor: colors.background }]}>
+    <SafeAreaView style={[styles.area, { backgroundColor: colors.background }]}he>
       <View style={[styles.container, { backgroundColor: colors.background }]}>
         <Image
           source={images.mxlogo}
@@ -25,16 +68,15 @@ const Welcome = () => {
           style={styles.logo}
         />
         <Text style={[styles.title, { color: colors.text }]}>
-          Welcome Back!
+          Mx Bill Pay
         </Text>
         <Text
           style={[styles.subtitle, { color: dark ? COLORS.white : 'black' }]}
         >
-          Hello there, personalize your financial journey for maximum returns
-          and peace of mind on AllPay.
+          Mx Bill Pay is your go-to solution for seamless and secure bill payments. Manage and pay for electricity, airtime, data, cable, tolls, betting top up and internet services all in one place.
         </Text>
         <View style={{ marginVertical: 32 }}>
-          <SocialButtonV2
+          {/* <SocialButtonV2
             title="Continue with Apple"
             icon={icons.appleLogo}
             onPress={() => navigate('signup')}
@@ -44,11 +86,15 @@ const Welcome = () => {
             title="Continue with Google"
             icon={icons.google}
             onPress={() => navigate('signup')}
-          />
-          <SocialButtonV2
-            title="Continue with Email"
-            icon={icons.email2}
+          /> */}
+          <Button
+            title={'Create Account'}
+            filled
+            isLoading={false}
+            disabled={false}
+            style={styles.button}
             onPress={() => navigate('signup')}
+          // onPress={() => navigate('paybillssuccessful')}
           />
         </View>
         <View style={{ flexDirection: 'row' }}>
@@ -96,6 +142,18 @@ const Welcome = () => {
 };
 
 const styles = StyleSheet.create({
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: COLORS.white,
+  },
+  button: {
+    marginVertical: 6,
+    width: SIZES.width - 32,
+    borderRadius: 30,
+    // opacity: isLoading ? 0.5 : 1
+  },
   area: {
     flex: 1,
     backgroundColor: COLORS.white,
@@ -112,7 +170,7 @@ const styles = StyleSheet.create({
     height: 72,
     marginBottom: 22,
     marginTop: -22,
-    tintColor: COLORS.primary,
+    // tintColor: COLORS.primary,
   },
   title: {
     fontSize: 28,

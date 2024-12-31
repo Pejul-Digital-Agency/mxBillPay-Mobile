@@ -13,6 +13,7 @@ import { useAppSelector } from '@/store/slices/authSlice';
 import TransferHistory from '@/tabs/TransferPaymentHistory';
 import Loader from './loader';
 import Header from '@/components/Header';
+import SlideComponent from '@/components/SlideComponent';
 
 type Tab = 'Transfer History' | 'Bill Payments';
 
@@ -55,7 +56,7 @@ const InOutPaymentHistory = () => {
         {/* <Header title="Transactions History" /> */}
         <View style={{ alignItems: 'center', rowGap: 4, marginTop: 20 }}>
           <Text style={styles.balanceAmount}>
-            ₦{userAccount?.balance.toFixed(2) || '0.00'}
+            ₦{userAccount?.balance.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",") || '0.00'}
           </Text>
           <Text style={styles.balanceText}>Current balance</Text>
         </View>
@@ -69,13 +70,13 @@ const InOutPaymentHistory = () => {
         >
           <View style={{ alignItems: 'center', rowGap: 3 }}>
             <Text style={styles.balanceAmountBottom}>
-              ₦{userAccount?.totalBillPayment.toFixed(2) || '0.00'}
+              ₦{userAccount?.totalBillPayment.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",")|| '0.00'}
             </Text>
             <Text style={styles.balanceTextBottom}>Total Bill Payment</Text>
           </View>
           <View style={{ alignItems: 'center', rowGap: 3 }}>
             <Text style={styles.balanceAmountBottom}>
-              ₦{userAccount?.totalIncome.toFixed(2) || '44.88'}
+              ₦{userAccount?.totalIncome.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",") || '44.88'}
             </Text>
             <Text style={styles.balanceTextBottom}>Total Wallet Deposit</Text>
           </View>
@@ -86,7 +87,7 @@ const InOutPaymentHistory = () => {
 
   return (
     <SafeAreaView style={[styles.area, { backgroundColor: colors.background }]}>
-      {loadingTransfer && <Loader />}
+      {/* {loadingTransfer && <Loader />} */}
       <View style={[styles.container, { backgroundColor: colors.background }]}>
         {renderTopContainer()}
         <ScrollView showsVerticalScrollIndicator={false}>
@@ -96,13 +97,13 @@ const InOutPaymentHistory = () => {
                 <TransferHistory transferData={transferData.data} />
               ) : (
                 <Text style={{ textAlign: 'center', ...FONTS.body3 }}>
-                  {errorTransfer
-                    ? 'Error fetching transactions'
-                    : 'No recent transactions'}
+              
+                   No recent transactions
                 </Text>
               )}
             </View>
           </View>
+          <SlideComponent />
         </ScrollView>
       </View>
     </SafeAreaView>
@@ -194,6 +195,7 @@ const styles = StyleSheet.create({
   },
   viewContainer: {
     flex: 1,
+    width: '100%',
   },
   tabContainer: {
     flexDirection: 'row',
@@ -223,7 +225,9 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 16,
+    paddingHorizontal: 26,
+    
+    marginTop: 10,
   },
   contentText: {
     fontSize: 18,

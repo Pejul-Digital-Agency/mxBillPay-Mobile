@@ -1,4 +1,4 @@
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import {  StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import React, { useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import {
@@ -15,6 +15,7 @@ import { Image } from 'expo-image';
 import { useTheme } from '@/theme/ThemeProvider';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Loader from './loader';
+import Button from '@/components/Button';
 import * as ClipBoard from 'expo-clipboard';
 import showToast from '@/utils/showToast';
 import { formatDate } from '@/utils/helpers/formatDate';
@@ -24,11 +25,11 @@ const FundWallet = () => {
   const { token, userProfile, userAccount } = useAppSelector(
     (state) => state.auth
   );
-  const { navigate, goBack } = useNavigation<NavigationProp<any>>();
+  const { navigate,reset, goBack } = useNavigation<NavigationProp<any>>();
   const { dark, colors } = useTheme();
   const [showModal, setShowModal] = React.useState(false);
   const router = useRouter();
-
+//  const { navigate, reset, goBack } = useNavigation<NavigationProp<any>>();
   const {
     data: transferData,
     isLoading: loadingTransfer,
@@ -121,7 +122,8 @@ const FundWallet = () => {
         {/* Balance Section */}
 
         <View style={styles.topContainer}>
-          <Text style={styles.mxtitle}>MX Bill Payment</Text>
+          <Text style={styles.mxtitle}>FUND WALLET
+          </Text>
           <Text style={styles.balanceAmount}>₦{userAccount?.balance || 0}</Text>
           <Text style={styles.balanceText}>Current Balance</Text>
         </View>
@@ -136,16 +138,44 @@ const FundWallet = () => {
           >
             Fund your naira wallet
           </Text> */}
-          <Text
+          <View
             style={{
               ...styles.walletDescription,
-              color: dark ? COLORS.secondaryWhite : COLORS.greyScale800,
+
             }}
           >
-            Fund your MX Bill Pay wallet by sending Naira from any bank to the
-            virtual account below.
-          </Text>
-        </View>
+            <Text style={{ fontWeight: 'bold', fontSize: 16, marginBottom: 10 }}>
+              HOW TO FUND YOUR WALLET
+            </Text>
+
+            <Text style={{ fontSize: 14, marginBottom: 10 }}>
+              To make bill payments, fund your wallet by following these steps:
+            </Text>
+
+            <Text style={{ fontSize: 13, marginBottom: 5 }}>
+              1. Copy the bank account details below.
+            </Text>
+            <Text style={{ fontSize: 13, marginBottom: 5 }}>
+              2. Open your banking app and select VFD Microfinance Bank (VFD MFB).
+            </Text>
+            <Text style={{ fontSize: 13, marginBottom: 5 }}>
+              3. Transfer your desired amount to the provided account name: Mx Bill Pay.
+            </Text>
+            <Text style={{ fontSize: 13, marginBottom: 5 }}>
+              4. Wait 10–45 seconds to receive a notification and see the funds in your wallet.
+            </Text>
+            <Text style={{ fontSize: 13, marginBottom: 5 }}>
+              5. If funds don’t appear within 5 minutes, visit the Help Center and contact Support.
+            </Text>
+
+            <Text style={{ marginTop: 5, fontSize: 13 }}>
+              That’s it! Now you’re ready to pay bills with ease.
+            </Text>
+          </View>
+
+
+
+        </View >
         {fundData?.data?.expiryDate && (
           <Text
             style={{
@@ -160,7 +190,8 @@ const FundWallet = () => {
             {fundData?.data?.expiryDate &&
               formatDate(fundData?.data?.expiryDate)}
           </Text>
-        )}
+        )
+        }
 
         {/* Bank Account Section */}
         <View style={styles.bankAccountBox}>
@@ -238,7 +269,16 @@ const FundWallet = () => {
         {/* {renderHeader()} */}
         {renderTopContainer()}
         <View style={{ paddingHorizontal: 16 }}>
-          {renderTransactionsHistory()}
+        <Button
+          title="Go Back"
+          onPress={() => {
+            console.log('pressed');
+            reset({ index: 0, routes: [{ name: 'tabs' }] });
+            navigate('(tabs)');
+          }}
+          filled
+        />
+          {/* {renderTransactionsHistory()} */}
         </View>
       </View>
       <CustomModal
@@ -416,10 +456,10 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   walletDescription: {
-    fontSize: 16,
+    // fontSize: 16,
     marginTop: 14,
-    textAlign: 'center',
-    fontWeight: '500',
+    textAlign: 'left',
+    // fontWeight: '500',
     marginBottom: 24,
   },
   // bankAccountBox: {

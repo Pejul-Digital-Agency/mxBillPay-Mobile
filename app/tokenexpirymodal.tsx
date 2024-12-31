@@ -17,7 +17,7 @@ import {
   useNavigation,
   useNavigationState,
 } from '@react-navigation/native';
-import { currentPageActions } from '@/store/slices/currentPageSlice';
+// import { currentPageActions } from '@/store/slices/currentPageSlice';
 import { useAppStateContext } from '@/store/AppStateContext';
 
 const TokenExpiryModal = () => {

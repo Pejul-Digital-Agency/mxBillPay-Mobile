@@ -58,6 +58,21 @@ export const getBillerItemDetails = async ({
   );
 };
 
+export const getTrsansactionDetails = async ({
+  id,
+  token,
+}: {
+  id: string;
+  token: string;
+}): Promise<TransactionResponse> => {
+  return await apiCall(
+    `${API_ENDPOINTS.BILL_MANAGEMENT.TransactionDetails}/${id}`,
+    'GET',
+    undefined,
+    token
+  );
+};
+
 export const getBanks = async (token: string): Promise<IBanksResponse> => {
   return await apiCall(
     API_ENDPOINTS.MONEY_TRANSFER.GetBanks,
@@ -82,6 +97,40 @@ export const getTransactionStatus = async ({
   );
 };
 
+export const getSocialMediaLinks = async (): Promise<SocialMediaResponse> => {
+  console.log("social media api  called")
+  return await apiCall(
+    API_ENDPOINTS.ACCOUNT_MANAGEMENT.GetSocialMediaLinks,
+    'GET',
+    undefined,
+  );
+};
+
+export const getFaqs = async (): Promise<FaqRespone> => {
+  console.log("Faq a[o ca;;ed")
+  return await apiCall(
+    API_ENDPOINTS.ACCOUNT_MANAGEMENT.GetFaqs,
+    'GET',
+    undefined,
+  );
+};
+export const getSlide = async (): Promise<SlideResponse> => {
+  console.log("Slides called")
+  return await apiCall(
+    API_ENDPOINTS.ACCOUNT_MANAGEMENT.GetSlides,
+    'GET',
+    undefined,
+  );
+};
+interface SlideResponse{
+  status: 'success' | 'error';
+  data: Slide[]
+}
+
+interface Slide{
+  id: number;
+  image: string;
+}
 interface IBillerCategoriesResponse {
   message: string;
   data: IBillerCategory[];
@@ -91,6 +140,9 @@ export interface IBillerCategory {
   category: string;
   isCategory: 0 | 1;
   icon?: string;
+  categoryTitile?: string;
+  categoryDescription?: string;
+  selectTitle?: string;
   iconColor?: string;
 }
 
@@ -103,7 +155,11 @@ export interface IProviderData {
   id: number;
   title: string;
   slug: string;
+  description: string;
+  providerTitle: string;
+  selectTitle: string;
   logo: string;
+  status?:boolean
 }
 export interface IBillerItemsList {
   category: {
@@ -117,6 +173,7 @@ export interface IBillerItemsList {
 
 export interface IBillerItem {
   id: number;
+  amount: string;
   paymentitemname: string;
   percentageComission: string;
   logo: string;
@@ -150,6 +207,7 @@ export type IBillerItemDetails = {
   billerId: string;
   icon?: string;
   iconColor?: string;
+  amount?: number;
 };
 
 interface IBillerItemDetailsData {
@@ -161,10 +219,44 @@ interface IBanksResponse {
   status: string;
   data: IBankDetails[];
 }
+interface SocialMediaResponse {
+  status: string;
+  data: SocialMediaLinks[];
+}
+interface SocialMediaLinks{
+  title?: string;
+  link?: string;
+  icon?: string;
+}
+interface FaqRespone{
+  status: string;
+  data: Faq[];
+}
+interface Faq{
+  id: number;
+  question: string;
+  answer: string;
+
+}
 
 export interface IBankDetails {
   id: number;
   name: string;
   code: string;
   logo: string | null;
+}
+export interface TransactionResponse{
+  status: string;
+  data: TransactionDetails[]
+}
+export interface TransactionDetails{
+  id: number;
+  amount?: string;
+  transactionDate?: string;
+  transactionId?: string;
+  category?: string;
+  item?: string;
+  billerType?: string;
+  status?: string;
+  provider?: string;
 }

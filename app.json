@@ -4,7 +4,7 @@
     "slug": "AllPay",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/logo2.png",
+    "icon": "./assets/images/logo3.png",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "splash": {
@@ -22,15 +22,17 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/logo2.png",
-        "backgroundColor": "#246BFD"
+        "foregroundImage": "./assets/images/logo3.png",
+        "backgroundColor": "#130534"
       },
       "permissions": [
         "android.permission.USE_BIOMETRIC",
         "android.permission.USE_FINGERPRINT",
         "INTERNET"
       ],
-      "package": "com.mehmood5491.AllPay"
+      "package": "com.mehmood5491.AllPay",
+      "googleServicesFile": "./google-services.json",
+      "useNextNotificationsApi": true
     },
     "web": {
       "bundler": "metro",
@@ -61,7 +63,7 @@
         "origin": false
       },
       "eas": {
-        "projectId": "cbc05dfd-da38-4d26-b0e4-9d71fe95b4ef"
+        "projectId": "c050278d-6563-46fd-9ed2-9dbba11c6abe"
       }
     }
   }

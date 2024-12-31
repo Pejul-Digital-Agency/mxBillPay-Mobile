@@ -158,7 +158,7 @@ const OTPVerification = () => {
               },
             ]}
           >
-            Code has been send to your email
+            OTP Has been sent to your email
           </Text>
           <OtpInput
             numberOfDigits={4}

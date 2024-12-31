@@ -150,6 +150,7 @@ interface IBalanceResposne {
   balance: number;
   totalIncome: number;
   totalBillPayment: number;
+  unreadNotification?:number
 }
 
 interface IUserProfileResponse {
@@ -199,6 +200,7 @@ interface INotificationsResponse {
 export type ITrasnferTransaction = {
   transaction_id: number;
   amount: string;
+  totalAmount: string;
   category: string;
   item: string;
   logo: string;

@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, TextInput } from 'react-native';
+import { View, Text, StyleSheet, TextInput, KeyboardAvoidingView, Platform } from 'react-native';
 import React, { useEffect } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Header from '@/components/Header';
@@ -30,7 +30,9 @@ import { billServices } from '@/data';
 import { applyCommission } from '@/utils/helpers/commissionedFee';
 import RBSheet from 'react-native-raw-bottom-sheet';
 import { ApiError } from '@/utils/customApiCall';
+// import alert from '../assets/icons/alert-svgrepo-com.svg'
 import CustomPicker from '@/components/Picker';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
 interface InputValues {
   customerId: string;
@@ -83,7 +85,9 @@ const BillReviewSummary = () => {
   const { userId } = useAppSelector((state) => state.auth);
   const [errorModal, setErrorModal] = React.useState(false);
   const [errorModalText, setErrorModalText] = React.useState('');
-
+  const [modalButtonText, setModalButtonText] = React.useState('');
+  const [btn2, setBtn2Status] = React.useState(false);
+  const [userName, setUserName] = React.useState(userProfile?.firstName + " " + userProfile?.lastName);
   const {
     data: billerItemsList,
     isLoading: isLoadingItemList,
@@ -117,11 +121,13 @@ const BillReviewSummary = () => {
     mutationFn: validateCustomer,
     onSuccess: (data) => {
       console.log(data);
+      setUserName(data?.customerName ?? userProfile?.firstName + " " + userProfile?.lastName);;
       rbSheetRef?.current.open();
     },
     onError: (error) => {
       console.log(error.message);
       setErrorModalText(error.message);
+      setModalButtonText('Close');
       setErrorModal(true);
     },
   });
@@ -137,12 +143,23 @@ const BillReviewSummary = () => {
       });
     },
     onError: (error: ApiError) => {
-      console.log(error);
+      console.log(error.data);
       setErrorModalText(error.message);
       setErrorModal(true);
+      if (error.message == 'Insufficient balance') {
+        setModalButtonText('Fund Wallet');
+        setBtn2Status(true);
+
+      } else {
+        setModalButtonText('Close');
+        setBtn2Status(false);
+      }
     },
   });
-
+  useEffect(() => {
+    // console.log("loading category data")
+    // console.log(categoryData);
+  })
   const inputChangedHandler = React.useCallback(
     (inputId: string, inputValue: string) => {
       const result = validateInput(inputId, inputValue);
@@ -156,23 +173,32 @@ const BillReviewSummary = () => {
   );
 
   const handlePaymentClick = () => {
-    if (!formState.formIsValid) {
-      showToast({
-        type: 'error',
-        text1: 'Fill all fields with valid data',
-      });
-      return;
+    if (categoryData.category == 'Airtime' || categoryData.category == 'Data') {
+
+    } else {
+      if (!formState.formIsValid) {
+        showToast({
+          type: 'error',
+          text1: 'Fill all fields with valid data',
+        });
+        return;
+      }
+
     }
     if (billerItemData) {
+
       const reqData = {
         amount:
-          billerItemData.data?.itemFee !== null &&
-          billerItemData.data?.itemFee !== '0.00'
-            ? billerItemData.data.itemFee
+          billerItemData.data?.amount !== null &&
+            billerItemData.data?.amount !== 0
+            ? billerItemData.data.amount
             : formState.inputValues.amount,
         billerId: billerItemData.data?.billerId,
         billerItemId: billerItemData.data?.id.toString(),
-        customerId: formState.inputValues.customerId,
+        customerId:
+          categoryData.category == 'Airmtime' || categoryData.category == 'Data'
+            ? formState.inputValues.phone
+            : formState.inputValues.customerId,
         phoneNumber: formState.inputValues.phone,
         userId,
       };
@@ -186,13 +212,28 @@ const BillReviewSummary = () => {
   };
   const handleErrorModal = () => {
     setErrorModal(false);
+    //navigate to fund wallet
+    if (modalButtonText == 'Fund Wallet') {
+      navigate('fundwallet');
+
+    } else {
+      console.log("modal closed with error ");
+    }
   };
 
   const handleValidateCustomer = () => {
-    if (!formState.formIsValid) {
+    if (!formState.inputValues.phone) {
       showToast({
         type: 'error',
-        text1: 'Fill all fields with valid data',
+        text1: 'Please enter a valid phone number',
+      });
+      return;
+    }
+
+    if (categoryData.category != 'Airtime' && categoryData.category != 'Data' && !formState.inputValues.customerId) {
+      showToast({
+        type: 'error',
+        text1: 'Please enter a valid Customer Id',
       });
       return;
     }
@@ -204,47 +245,21 @@ const BillReviewSummary = () => {
       });
       return;
     }
+
+    const customerId = categoryData.category == 'Airtime' || categoryData.category == 'Data'
+      ? formState.inputValues.phone
+      : formState.inputValues.customerId;
+
     validate({
       data: {
-        customerId: formState.inputValues.customerId,
+        customerId,
         id: selectedBillerItemId,
       },
       token,
     });
   };
 
-  // const TopContainerItem = ({
-  //   title,
-  //   value,
-  // }: {
-  //   title: string;
-  //   value: string;
-  // }) => {
-  //   return (
-  //     <View style={styles.view}>
-  //       <Text
-  //         style={[
-  //           styles.viewLeft,
-  //           {
-  //             color: dark ? COLORS.greyscale300 : COLORS.grayscale700,
-  //           },
-  //         ]}
-  //       >
-  //         {title}
-  //       </Text>
-  //       <Text
-  //         style={[
-  //           styles.viewRight,
-  //           {
-  //             color: dark ? COLORS.white : COLORS.greyscale900,
-  //           },
-  //         ]}
-  //       >
-  //         {value}
-  //       </Text>
-  //     </View>
-  //   );
-  // };
+
 
   const SeparateLine = () => {
     return (
@@ -273,18 +288,10 @@ const BillReviewSummary = () => {
                 },
               ]}
             >
-              Pay {providerData.title} bills safely, conveniently & easily.
+              {providerData.description || ` Pay ${providerData.title} bills safely, conveniently & easily.`}
+              {/* Pay   {providerData.title} bills safely, conveniently & easily. */}
             </Text>
-            <Text
-              style={[
-                styles.subtitle,
-                {
-                  color: dark ? COLORS.greyscale300 : COLORS.greyScale800,
-                },
-              ]}
-            >
-              You can pay anytime and anywhere!
-            </Text>
+
           </View>
 
           <SeparateLine />
@@ -354,72 +361,95 @@ const BillReviewSummary = () => {
     <SafeAreaView style={[styles.area, { backgroundColor: colors.background }]}>
       {
         <CustomModal
-          btnText={'Error'}
+          btnText={modalButtonText}
           modalVisible={errorModal}
           setModalVisible={setErrorModal}
           title={errorModalText}
           disabled={isBillPaying}
           onPress={handleErrorModal}
+          icon={true}
+          btn2={btn2}
         />
       }
-
-      <View style={[styles.container, { backgroundColor: colors.background }]}>
-        <Header title={`Pay ${providerData?.title} Bill`} />
-        {/* <Header title={data.data} /> */}
-        {/* <ScrollView showsVerticalScrollIndicator={false}> */}
-        {renderTopContainer()}
-        <View style={{ height: 20 }} />
-        {billerItemsList?.data?.itemList && (
-          <CustomPicker
-            selectedValue={selectedBillerItemId}
-            setSelectedValue={setSelectedBillerItemId}
-            placeholder="-Select Biller Item-"
-            options={billerItemsList?.data?.itemList}
+      <KeyboardAwareScrollView
+        enableOnAndroid={true}
+        extraScrollHeight={10}
+        contentContainerStyle={{ flexGrow: 1 }}
+        keyboardShouldPersistTaps="handled"
+      >
+        <View style={[styles.container, { backgroundColor: colors.background }]}>
+          <Header title={providerData.providerTitle || `Pay ${providerData?.title} Bill`} />
+          {/* <Header title={data.data} /> */}
+          {/* <ScrollView showsVerticalScrollIndicator={false}> */}
+          {renderTopContainer()}
+          <View style={{ height: 20 }} />
+          {/* <Text> {billerItemData?.data.amount}</Text> */}
+          {billerItemsList?.data?.itemList && (
+            <CustomPicker
+              selectedValue={selectedBillerItemId}
+              setSelectedValue={setSelectedBillerItemId}
+              placeholder={categoryData.selectTitle || 'Select Biller Item'
+              }
+              options={billerItemsList?.data?.itemList}
+            />
+          )}
+          {categoryData.category != 'Airtime' && categoryData.category != 'Data' && (
+            <Input
+              id="customerId"
+              value={formState.inputValues.customerId}
+              onInputChanged={inputChangedHandler}
+              errorText={formState.inputValidities['customerId']}
+              placeholder="Customer Id"
+              placeholderTextColor={dark ? COLORS.grayTie : COLORS.black}
+              icon={icons.profile2}
+              keyboardType="number-pad"
+            />
+          )}
+          <Input
+            id="phone"
+            value={formState.inputValues.phone}
+            onInputChanged={inputChangedHandler}
+            errorText={formState.inputValidities['phone']}
+            placeholder="Phone Number"
+            placeholderTextColor={dark ? COLORS.grayTie : COLORS.black}
+            icon={icons.mobile}
+            keyboardType="number-pad"
           />
-        )}
-        <Input
-          id="customerId"
-          value={formState.inputValues.customerId}
-          onInputChanged={inputChangedHandler}
-          errorText={formState.inputValidities['customerId']}
-          placeholder="Customer Id"
-          placeholderTextColor={dark ? COLORS.grayTie : COLORS.black}
-          icon={icons.profile2}
-          keyboardType="number-pad"
-        />
+          <Input
+            id="amount"
+            value={
+              billerItemData?.data.amount && billerItemData?.data.amount !== 0
+                ? billerItemData?.data.amount.toString()
+                : formState.inputValues.amount
+            }
+            onInputChanged={inputChangedHandler}
+            editable={billerItemData?.data.amount != 0} // Editable only if amount is not 0
+            selectTextOnFocus={true} // Allows text selection on focus
+            errorText={formState.inputValidities['amount']}
+            placeholder="Amount"
+            placeholderTextColor={dark ? COLORS.grayTie : COLORS.black}
+            icon={icons.wallet}
+            keyboardType="number-pad"
+            style={{
+              backgroundColor: billerItemData?.data.amount === 0 ? COLORS.white : COLORS.white,
+            }}
+          />
 
-        <Input
-          id="phone"
-          value={formState.inputValues.phone}
-          onInputChanged={inputChangedHandler}
-          errorText={formState.inputValidities['phone']}
-          placeholder="Phone Number"
-          placeholderTextColor={dark ? COLORS.grayTie : COLORS.black}
-          icon={icons.mobile}
-          keyboardType="number-pad"
-        />
-        <Input
-          id="amount"
-          onInputChanged={inputChangedHandler}
-          errorText={formState.inputValidities['amount']}
-          placeholder="Amount"
-          placeholderTextColor={dark ? COLORS.grayTie : COLORS.black}
-          icon={icons.wallet}
-          keyboardType="number-pad"
-        />
-        {/* ))} */}
 
-        <Button
-          title={'Confirm & Verify Bill'}
-          filled
-          isLoading={isValidating}
-          disabled={isValidating}
-          style={styles.continueBtn}
-          onPress={handleValidateCustomer}
+          {/* ))} */}
+
+          <Button
+            title={'Confirm & Verify Bill'}
+            filled
+            isLoading={isValidating}
+            disabled={isValidating}
+            style={styles.continueBtn}
+            onPress={handleValidateCustomer}
           // onPress={() => navigate('paybillssuccessful')}
-        />
-        {/* </ScrollView> */}
-      </View>
+          />
+          {/* </ScrollView> */}
+        </View>
+      </KeyboardAwareScrollView>
       <RBSheet
         ref={rbSheetRef}
         closeOnPressMask={true}
@@ -441,16 +471,6 @@ const BillReviewSummary = () => {
           statusBarTranslucent: true,
         }}
       >
-        {/* <Text
-          style={{
-            fontSize: 32,
-            fontFamily: 'bold',
-            color: dark ? COLORS.grayTie : COLORS.greyscale900,
-            marginBottom: 12,
-          }}
-        >
-          ₦{formState.inputValues.amount}
-        </Text> */}
         {/* <RBSheetItem title="Bank" value="VFD Microfinance Bank" /> */}
         <RBSheetItem
           title="Bill Name"
@@ -458,35 +478,38 @@ const BillReviewSummary = () => {
         />
         <RBSheetItem
           title="Account Name"
-          value={userProfile?.firstName + ' ' + userProfile?.lastName}
+          value={userName}
           isbold
         />
         <RBSheetItem
-          title="Amount (NGN)"
-          value={billerItemData?.data?.itemFee || '0.00'}
-          // isbold
+          title="Amount "
+          value={formState.inputValues.amount || billerItemData?.data?.amount}
+        // isbold
         />
         <RBSheetItem
-          title="Charges applied (NGN)"
+          title="Charges applied "
           value={
-            billerItemData?.data.itemFee
-              ? (
-                  +applyCommission(
-                    billerItemData?.data?.percentage_commission,
-                    billerItemData?.data?.itemFee
-                  ) - +billerItemData?.data?.itemFee
-                )
-                  .toFixed(2)
-                  .toString()
-              : '0.00'
+            (parseFloat(applyCommission(billerItemData?.data?.percentage_commission, formState.inputValues.amount)) + parseFloat((billerItemData?.data?.fixed_commission))).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
           }
         />
         <RBSheetItem
           title="Total Payment"
-          value={applyCommission(
-            billerItemData?.data?.percentage_commission,
-            billerItemData?.data?.itemFee
-          )}
+          value={
+            (
+              parseFloat(billerItemData?.data?.amount || formState.inputValues.amount) +
+              parseFloat(
+                applyCommission(
+                  billerItemData?.data?.percentage_commission || '0',
+                  billerItemData?.data?.amount || formState.inputValues.amount
+                )
+              ) +
+              parseFloat(billerItemData?.data?.fixed_commission || '0') // Add fixed commission here
+            )
+              .toFixed(2)
+              .replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+          }
+
+
           isbold
         />
         <View
@@ -528,19 +551,10 @@ const BillReviewSummary = () => {
               paddingRight: 8,
             }}
           >
-            ₦{userAccount?.balance}
+            ₦{userAccount?.balance.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
           </Text>
         </View>
-        {/* <RBSheetItem
-          title="Remaining amount"
-          value={
-            billerItemData?.data?.itemFee
-              ? (+billerItemData?.data?.itemFee - +formState.inputValues.amount)
-                  .toFixed(2)
-                  .toString()
-              : '0.00'
-          }
-        /> */}
+
         <Button
           title="Pay"
           isLoading={isBillPaying}

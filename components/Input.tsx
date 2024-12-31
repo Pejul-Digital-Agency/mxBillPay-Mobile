@@ -93,7 +93,16 @@ const Input: FC<InputProps> = (props) => {
           onChangeText={onChangeText}
           onFocus={handleFocus}
           onBlur={handleBlur}
-          style={[styles.input, { color: dark ? COLORS.white : COLORS.black }]}
+          style={[
+            styles.input,
+            { 
+              color: 
+                props.isEditable !== undefined && !props.isEditable 
+                  ? COLORS.gray 
+                  : COLORS.black 
+            },
+          ]}
+          
           placeholder={props.placeholder}
           editable={props.isEditable ? isEditing : true}
           placeholderTextColor={props.placeholderTextColor}

@@ -7,6 +7,7 @@ import {
   BackHandler,
   Platform,
   StatusBar,
+  ActivityIndicator,
 } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import {
@@ -36,8 +37,9 @@ import { usePusher } from '@/store/SocketContext';
 // import { StatusBar } from 'expo-status-bar';
 import { useAppStateContext } from '@/store/AppStateContext';
 import { useDispatch } from 'react-redux';
+import SlideComponent from '@/components/SlideComponent';
 // import { useGlobalApis } from '@/store/GlobalApisContext';
-
+import { CommonActions } from '@react-navigation/native';
 const HomeScreen = () => {
   const { navigate, setParams } = useNavigation<NavigationProp<any>>();
   const { token, userProfile } = useAppSelector((state) => state.auth);
@@ -46,7 +48,8 @@ const HomeScreen = () => {
   const dispatch = useDispatch();
   const { channel } = usePusher();
   const { currentPage } = useAppStateContext();
-
+  const navigation = useNavigation();
+  const [isLoading, setIsLoading] = useState(true); // Preloader state
   const { data: billerCategories, isLoading: isLoadingCategories } = useQuery({
     queryKey: ['billCategories'],
     queryFn: () => getBillerCategories({ token }),
@@ -71,7 +74,10 @@ const HomeScreen = () => {
     isError: isErrorBalance,
   } = useQuery({
     queryKey: ['get Balance'],
-    queryFn: () => getBalance(token),
+    queryFn: () => {
+      return getBalance(token)
+
+    },
     refetchInterval: ({ state }) => {
       queryClient.invalidateQueries({ queryKey: ['get Balance'] });
       return 3000;
@@ -80,6 +86,7 @@ const HomeScreen = () => {
   });
 
   useEffect(() => {
+    console.log(balance);
     if (balance) {
       dispatch(
         authSliceActions.setUserAccount({
@@ -90,14 +97,28 @@ const HomeScreen = () => {
       );
     }
   }, [balance]);
-
+  useEffect(() => {
+    const isAnyQueryLoading = isLoadingCategories || isLoadingTransactions || isLoadingBalance;
+    setIsLoading(isAnyQueryLoading);
+  }, [isLoadingCategories, isLoadingTransactions, isLoadingBalance]);
+  useEffect(() => {
+    if (token && !userProfile?.firstName) {
+      // Redirect to "Fill Your Profile" if the profile is incomplete
+      navigation.dispatch(
+        CommonActions.reset({
+          index: 0,
+          routes: [{ name: 'fillyourprofile' }], // Replace the stack with "Fill Your Profile"
+        })
+      );
+    }
+  }, [token, userProfile, navigation]);
   const handleClickCategory = (category: IBillerCategory) => {
     if (!category) return;
     if (category.isCategory == 1) {
       navigate('billerproviders', { categoryData: category });
       return;
     }
-    if (category.category == 'Top Up') {
+    if (category.category == 'Deposit') {
       navigate('fundwallet');
       return;
     }
@@ -113,31 +134,41 @@ const HomeScreen = () => {
     return (
       <View style={styles.headerContainer}>
         <Image
-          source={userProfile?.profilePicture || icons.profile}
+          source={userProfile?.profilePicture || images.profile}
           contentFit="contain"
           style={styles.userIcon}
         />
         <Text style={[styles.title]}>{'MX BILL PAY'}</Text>
         <View style={styles.viewRight}>
           <TouchableOpacity onPress={() => navigate('notifications')}>
-            <Image
-              source={icons.notification2}
-              contentFit="contain"
-              style={[styles.bellIcon, { tintColor: COLORS.grayscale200 }]}
-            />
+            <View>
+              <Image
+                source={icons.notification2}
+                contentFit="contain"
+                style={[styles.bellIcon, { tintColor: COLORS.grayscale200 }]}
+              />
+              {balance?.unreadNotification > 0 && (
+                <View style={styles.redDot} />
+              )}
+            </View>
           </TouchableOpacity>
         </View>
       </View>
     );
   };
-
+  const renderOverlayLoader = () => (
+    <View style={styles.overlay}>
+      <ActivityIndicator size="large" color={COLORS.primary} />
+      <Text style={styles.loadingText}>Loading...</Text>
+    </View>
+  );
   const renderTopContainer = () => {
     return (
       <View style={styles.cardContainer}>
         {renderHeader()}
         <View style={{ alignItems: 'center', rowGap: 4, marginTop: 20 }}>
           <Text style={styles.balanceAmount}>
-            ₦{balance?.balance.toFixed(2) || '0.00'}
+            ₦{balance?.balance ? balance.balance.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",") : '0.00'}
           </Text>
           <Text style={styles.balanceText}>Current balance</Text>
         </View>
@@ -151,13 +182,13 @@ const HomeScreen = () => {
         >
           <View style={{ alignItems: 'center', rowGap: 3 }}>
             <Text style={styles.balanceAmountBottom}>
-              ₦{balance?.totalBillPayment.toFixed(2) || '0.00'}
+              ₦{balance?.totalBillPayment.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",") || '0.00'}
             </Text>
             <Text style={styles.balanceTextBottom}>Total Bill Payment</Text>
           </View>
           <View style={{ alignItems: 'center', rowGap: 3 }}>
             <Text style={styles.balanceAmountBottom}>
-              ₦{balance?.totalIncome.toFixed(2) || '44.88'}
+              ₦{balance?.totalIncome.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",") || '44.88'}
             </Text>
             <Text style={styles.balanceTextBottom}>Total Wallet Deposit</Text>
           </View>
@@ -199,13 +230,13 @@ const HomeScreen = () => {
 
   const rederTransactionsHistory = () => {
     return (
-      <View style={{ marginBottom: 8, marginTop: 130, paddingHorizontal: 16 }}>
+      <View style={{ marginBottom: 2, marginTop: 130, paddingHorizontal: 16 }}>
         <SubHeaderItem
           title="Recent Transactions"
           navTitle="See all"
           onPress={() => navigate('inoutpaymenthistory')}
         />
-        <View style={{ marginBottom: 12 }}>
+        <View style={{ marginBottom: 2 }}>
           {transactionsHistory?.data && transactionsHistory.data.length > 0 ? (
             <TransferHistory
               transferData={[...transactionsHistory.data].splice(0, 2)}
@@ -218,6 +249,8 @@ const HomeScreen = () => {
             </Text>
           )}
         </View>
+
+
       </View>
     );
   };
@@ -231,11 +264,16 @@ const HomeScreen = () => {
         },
       ]}
     >
-      {renderTopContainer()}
-      {rederTransactionsHistory()}
-      {(isLoadingCategories || isLoadingTransactions || isLoadingBalance) && (
-        <Loader />
-      )}
+      {isLoading ? renderOverlayLoader() : <ScrollView contentContainerStyle={styles.scrollContent}>
+        {renderTopContainer()}
+        {rederTransactionsHistory()}
+        <SlideComponent />
+        {/* Uncomment the lines below if needed */}
+        {/* {(isLoadingCategories || isLoadingTransactions || isLoadingBalance) && (
+          <Loader />
+        )} */}
+      </ScrollView>}
+
     </SafeAreaView>
     // </View>
   );
@@ -249,6 +287,10 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     // padding: 16,
+  },
+  scrollContent: {
+    flexGrow: 1,
+    paddingBottom: 16, // Add padding for better scroll experience
   },
   headerContainer: {
     flexDirection: 'row',
@@ -389,6 +431,27 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     left: 0,
     right: 0,
+  },
+  redDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: COLORS.error,
+    position: 'absolute',
+    top: -2,
+    right: -2,
+  },
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)', // Semi-transparent background
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1,
+  },
+  loadingText: {
+    marginTop: 10,
+    fontSize: 16,
+    color: COLORS.white,
   },
 });
 

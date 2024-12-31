@@ -90,7 +90,7 @@ const SettingsSecurity = () => {
               navigate('authenticatewithdevice');
             }}
           />
-          <Button
+          {/* <Button
             title="Change PIN"
             style={{
               backgroundColor: dark ? COLORS.dark3 : COLORS.tansparentPrimary,
@@ -102,7 +102,7 @@ const SettingsSecurity = () => {
             onPress={() => {
               navigate('changepin');
             }}
-          />
+          /> */}
           <Button
             title="Change Password"
             style={{

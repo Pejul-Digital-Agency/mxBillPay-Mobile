@@ -109,14 +109,14 @@ export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({
       // stopTokenExpiryTimer();
       const backgroundTime = backGroundTimeRef.current;
       if (backgroundTime) {
-        const timeDiff = Date.now() - backgroundTime;
-        console.log(timeDiff);
-        if (timeDiff > 2 * 60 * 1000) {
-          dispatch(authSliceActions.clearToken());
-          console.log('token expired');
-          backGroundTimeRef.current = null;
-          //   setExpired(true);
-        }
+        // const timeDiff = Date.now() - backgroundTime;
+        // console.log(timeDiff);
+        // if (timeDiff > 2 * 60 * 1000) {
+        //   dispatch(authSliceActions.clearToken());
+        //   console.log('token expired');
+        //   backGroundTimeRef.current = null;
+        //   //   setExpired(true);
+        // }
       }
       currentStateRef.current = state;
     }
