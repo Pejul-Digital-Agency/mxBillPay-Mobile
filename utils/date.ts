@@ -45,9 +45,10 @@ export const getTimeFromDate = (date: string | Date): string => {
     hour: 'numeric',
     minute: 'numeric',
     hour12: true,
-    timeZone: 'UTC',
+    timeZone: 'Africa/Lagos', // Set to Africa/Lagos timezone
   });
 };
+
 export const getFormattedDate = (date: string | Date): string => {
   const dateObj = new Date(date);
   return dateObj.toLocaleDateString('en-US', {

@@ -103,11 +103,10 @@ const HomeScreen = () => {
   }, [isLoadingCategories, isLoadingTransactions, isLoadingBalance]);
   useEffect(() => {
     if (token && !userProfile?.firstName) {
-      // Redirect to "Fill Your Profile" if the profile is incomplete
       navigation.dispatch(
         CommonActions.reset({
           index: 0,
-          routes: [{ name: 'fillyourprofile' }], // Replace the stack with "Fill Your Profile"
+          routes: [{ name: 'fillyourprofile' }], 
         })
       );
     }

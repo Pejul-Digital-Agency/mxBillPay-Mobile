@@ -69,7 +69,7 @@ export const validateCustomer = async ({
   data,
   token,
 }: {
-  data: { customerId: string; id: string };
+  data: { customerId: string; id: string, billerId: string, paymentItem: string, divisionId: string,category_id: string };
   token: string;
 }): Promise<any> => {
   return await apiCall(
@@ -102,7 +102,12 @@ export interface IPayBill {
   billerItemId: string;
   phoneNumber: string;
   totaltAmount?: string;
-  // paymentMethod: string;
+  paymentitemname: string;
+  division: string;
+  paymentCode: string;
+  productId: string;
+  category_id: number;
+
 }
 
 interface IUpdatePassword {

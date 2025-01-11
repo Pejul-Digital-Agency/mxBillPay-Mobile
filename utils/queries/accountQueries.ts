@@ -31,6 +31,22 @@ export const markAllRead = async (token: string) => {
     token
   );
 };
+export const markSingleAsRead = async (id: string) => {
+  return await apiCall(
+    `${API_ENDPOINTS.ACCOUNT_MANAGEMENT.MarksingleNotificationAsRead}/${id}`,
+    'GET',
+    undefined
+  );
+};
+
+
+export const deleteSingleNotification = async (id: string) => {
+  return await apiCall(
+    `${API_ENDPOINTS.ACCOUNT_MANAGEMENT.DeleteSingleNotification}/${id}`,
+    'GET',
+    undefined
+  );
+};
 
 export const checkBvnStatus = async (
   token: string
@@ -150,7 +166,7 @@ interface IBalanceResposne {
   balance: number;
   totalIncome: number;
   totalBillPayment: number;
-  unreadNotification?:number
+  unreadNotification?: number
 }
 
 interface IUserProfileResponse {
@@ -179,7 +195,7 @@ interface User {
   updated_at: string;
 }
 
-interface INotification {
+export interface INotification {
   id: number;
   user_id: number;
   title: string;
@@ -191,7 +207,7 @@ interface INotification {
   icon: string;
   iconColor: string;
 }
-interface INotificationsResponse {
+export interface INotificationsResponse {
   status: string;
   message: string;
   data: INotification[];

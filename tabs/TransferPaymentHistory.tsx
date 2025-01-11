@@ -48,7 +48,7 @@ const TransferHistory = ({
   return (
     <FlatList
       data={transferData}
-      keyExtractor={(item) => item.transaction_id.toString()}
+      keyExtractor={(item) => item?.transaction_id?.toString()}
       renderItem={({ item }) => (
         <TransferHistoryCard {...item} onPress={handleonPress} />
       )}

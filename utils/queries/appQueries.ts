@@ -122,12 +122,12 @@ export const getSlide = async (): Promise<SlideResponse> => {
     undefined,
   );
 };
-interface SlideResponse{
+interface SlideResponse {
   status: 'success' | 'error';
   data: Slide[]
 }
 
-interface Slide{
+interface Slide {
   id: number;
   image: string;
 }
@@ -159,7 +159,7 @@ export interface IProviderData {
   providerTitle: string;
   selectTitle: string;
   logo: string;
-  status?:boolean
+  status?: boolean
 }
 export interface IBillerItemsList {
   category: {
@@ -176,7 +176,15 @@ export interface IBillerItem {
   amount: string;
   paymentitemname: string;
   percentageComission: string;
+  fixedComission: string;
+  paymentCode: string;
+  divisionId: string;
+  productId: string;
+  category_id: number;
+  // productId:string
   logo: string;
+  billerId: string;
+  // percentageComission
 }
 
 interface IBillerItemsListData {
@@ -223,16 +231,16 @@ interface SocialMediaResponse {
   status: string;
   data: SocialMediaLinks[];
 }
-interface SocialMediaLinks{
+interface SocialMediaLinks {
   title?: string;
   link?: string;
   icon?: string;
 }
-interface FaqRespone{
+interface FaqRespone {
   status: string;
   data: Faq[];
 }
-interface Faq{
+interface Faq {
   id: number;
   question: string;
   answer: string;
@@ -245,11 +253,11 @@ export interface IBankDetails {
   code: string;
   logo: string | null;
 }
-export interface TransactionResponse{
+export interface TransactionResponse {
   status: string;
   data: TransactionDetails[]
 }
-export interface TransactionDetails{
+export interface TransactionDetails {
   id: number;
   amount?: string;
   transactionDate?: string;

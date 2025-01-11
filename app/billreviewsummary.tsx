@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, TextInput, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, StyleSheet, TextInput, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
 import React, { useEffect } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Header from '@/components/Header';
@@ -13,12 +13,13 @@ import {
   getBillerItemDetails,
   getBillerItems,
   IBillerCategory,
+  IBillerItem,
   IBillerItemDetails,
   IProviderData,
 } from '@/utils/queries/appQueries';
 import { IPayBill, payBillFn } from '@/utils/mutations/accountMutations';
 import { validateCustomer } from '@/utils/mutations/accountMutations';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import CustomModal from './custommodal';
 import { useAppSelector } from '@/store/slices/authSlice';
 import LabeledInput from '@/components/LabeledInput';
@@ -64,6 +65,8 @@ const initialState: FormState = {
 const BillReviewSummary = () => {
   const { colors, dark } = useTheme();
   const { navigate, reset } = useNavigation<NavigationProp<any>>();
+  const navigation = useNavigation();
+  const queryClient = useQueryClient();
   const route = useRoute();
   if (!route.params || Object.keys(route.params).length == 0)
     return navigate('/(tabs)');
@@ -82,6 +85,7 @@ const BillReviewSummary = () => {
   const [modalOpen, setModalOpen] = React.useState(false);
   const [selectedBillerItemId, setSelectedBillerItemId] = React.useState('');
   const rbSheetRef = React.useRef<any>(null);
+  const [selectedItem, setSelectedItem] = React.useState<IBillerItem>({});
   const { userId } = useAppSelector((state) => state.auth);
   const [errorModal, setErrorModal] = React.useState(false);
   const [errorModalText, setErrorModalText] = React.useState('');
@@ -94,29 +98,40 @@ const BillReviewSummary = () => {
     isError: isErrorItemsList,
     error: errorItemsList,
   } = useQuery({
-    queryKey: ['billCategories', categoryData?.id],
+    queryKey: ['billCategories', categoryData?.id, providerData?.id],
     queryFn: () =>
       getBillerItems({
         categoryId: categoryData?.id.toString() as string,
         providerId: providerData?.id.toString() as string,
         token,
       }),
-    enabled: categoryData != null || providerData != null,
+    enabled: categoryData != null && providerData != null,
   });
-  const {
-    data: billerItemData,
-    isLoading: isLoadingItemData,
-    isError: isErrorItemData,
-    error: errorItemData,
-  } = useQuery({
-    queryKey: ['billerItems', selectedBillerItemId],
-    queryFn: () =>
-      getBillerItemDetails({
-        itemId: selectedBillerItemId,
-        token,
-      }),
-    enabled: selectedBillerItemId != '',
-  });
+  useEffect(() => {
+    const unsubscribeBlur = navigation.addListener('blur', () => {
+      // Invalidate the specific query
+      queryClient.invalidateQueries(['billCategories', categoryData?.id, providerData?.id]);
+    });
+
+    return () => {
+      unsubscribeBlur();
+    };
+  }, [navigation, queryClient, categoryData?.id, providerData?.id]);
+
+  // const {
+  //   data: billerItemData,
+  //   isLoading: isLoadingItemData,
+  //   isError: isErrorItemData,
+  //   error: errorItemData,
+  // } = useQuery({
+  //   queryKey: ['billerItems', selectedBillerItemId],
+  //   queryFn: () =>
+  //     getBillerItemDetails({
+  //       itemId: selectedBillerItemId,
+  //       token,
+  //     }),
+  //   enabled: selectedBillerItemId != '',
+  // });
   const { mutate: validate, isPending: isValidating } = useMutation({
     mutationFn: validateCustomer,
     onSuccess: (data) => {
@@ -139,7 +154,7 @@ const BillReviewSummary = () => {
       reset({ index: 0, routes: [{ name: 'inoutpaymentviewereceipt' }] });
       navigate('inoutpaymentviewereceipt', {
         transactionData: data?.data,
-        billerItemData: billerItemData?.data,
+        billerItemData: selectedItem,
       });
     },
     onError: (error: ApiError) => {
@@ -185,22 +200,30 @@ const BillReviewSummary = () => {
       }
 
     }
-    if (billerItemData) {
+    if (selectedItem) {
 
       const reqData = {
         amount:
-          billerItemData.data?.amount !== null &&
-            billerItemData.data?.amount !== 0
-            ? billerItemData.data.amount
+          selectedItem.amount !== null &&
+            parseInt(selectedItem.amount) !== 0
+            ? selectedItem.amount
             : formState.inputValues.amount,
-        billerId: billerItemData.data?.billerId,
-        billerItemId: billerItemData.data?.id.toString(),
+        billerId: selectedItem?.billerId,
+        billerItemId: selectedItem?.id.toString(),
         customerId:
           categoryData.category == 'Airmtime' || categoryData.category == 'Data'
             ? formState.inputValues.phone
             : formState.inputValues.customerId,
         phoneNumber: formState.inputValues.phone,
+        paymentitemname: selectedItem?.paymentitemname,
+        division: selectedItem?.divisionId,
+        paymentCode: selectedItem?.paymentCode,
+        productId: selectedItem?.productId,
+        category_id: selectedItem?.category_id,
+        // paymentCode: selectedItem?.paymentCode,
+
         userId,
+
       };
       console.log(reqData);
       // console.log(reqData);
@@ -210,6 +233,9 @@ const BillReviewSummary = () => {
       });
     }
   };
+  useEffect(() => {
+    console.log(selectedItem)
+  }, [selectedItem])
   const handleErrorModal = () => {
     setErrorModal(false);
     //navigate to fund wallet
@@ -222,6 +248,7 @@ const BillReviewSummary = () => {
   };
 
   const handleValidateCustomer = () => {
+    console.log(selectedItem);
     if (!formState.inputValues.phone) {
       showToast({
         type: 'error',
@@ -238,13 +265,38 @@ const BillReviewSummary = () => {
       return;
     }
 
-    if (!selectedBillerItemId) {
+    if (!selectedItem?.id) {
       showToast({
         type: 'error',
         text1: 'Please choose a biller item',
       });
       return;
     }
+    if (
+      selectedItem.amount === "0" && // Check if selected item requires user input
+      (!formState.inputValues.amount || parseFloat(formState.inputValues.amount) <= 0) // Check if the user input is invalid
+    ) {
+      showToast({
+        type: 'error',
+        text1: 'Please enter a valid amount',
+      });
+      return;
+    }
+    if (
+      categoryData.category === 'Power' &&
+      (!formState.inputValues.amount || parseFloat(formState.inputValues.amount) < 1000)
+    ) {
+      showToast({
+        type: 'error',
+        text1: 'Amount  must be at least 1000',
+      });
+      return;
+    }
+
+
+
+
+
 
     const customerId = categoryData.category == 'Airtime' || categoryData.category == 'Data'
       ? formState.inputValues.phone
@@ -253,7 +305,11 @@ const BillReviewSummary = () => {
     validate({
       data: {
         customerId,
-        id: selectedBillerItemId,
+        id: selectedItem.id.toString(),
+        billerId: selectedItem.billerId,
+        paymentItem: selectedItem.paymentCode,
+        divisionId: selectedItem.divisionId,
+        category_id: selectedItem.category_id.toString(),
       },
       token,
     });
@@ -357,8 +413,15 @@ const BillReviewSummary = () => {
     );
   };
 
+  const renderOverlayLoader = () => (
+    <View style={styles.overlay}>
+      <ActivityIndicator size="large" color={COLORS.primary} />
+      <Text style={styles.loadingText}>Loading...</Text>
+    </View>
+  );
   return (
     <SafeAreaView style={[styles.area, { backgroundColor: colors.background }]}>
+      {isLoadingItemList && renderOverlayLoader()}
       {
         <CustomModal
           btnText={modalButtonText}
@@ -371,6 +434,7 @@ const BillReviewSummary = () => {
           btn2={btn2}
         />
       }
+
       <KeyboardAwareScrollView
         enableOnAndroid={true}
         extraScrollHeight={10}
@@ -379,15 +443,12 @@ const BillReviewSummary = () => {
       >
         <View style={[styles.container, { backgroundColor: colors.background }]}>
           <Header title={providerData.providerTitle || `Pay ${providerData?.title} Bill`} />
-          {/* <Header title={data.data} /> */}
-          {/* <ScrollView showsVerticalScrollIndicator={false}> */}
           {renderTopContainer()}
           <View style={{ height: 20 }} />
-          {/* <Text> {billerItemData?.data.amount}</Text> */}
           {billerItemsList?.data?.itemList && (
             <CustomPicker
-              selectedValue={selectedBillerItemId}
-              setSelectedValue={setSelectedBillerItemId}
+              selectedValue={selectedItem} // Pass the selected item
+              setSelectedValue={(item) => setSelectedItem(item)} // Set the 
               placeholder={categoryData.selectTitle || 'Select Biller Item'
               }
               options={billerItemsList?.data?.itemList}
@@ -418,12 +479,12 @@ const BillReviewSummary = () => {
           <Input
             id="amount"
             value={
-              billerItemData?.data.amount && billerItemData?.data.amount !== 0
-                ? billerItemData?.data.amount.toString()
+              selectedItem.amount && selectedItem.amount != 0
+                ? selectedItem.amount.toString()
                 : formState.inputValues.amount
             }
             onInputChanged={inputChangedHandler}
-            editable={billerItemData?.data.amount != 0} // Editable only if amount is not 0
+            editable={selectedItem.amount != 0} // Editable only if amount is not 0
             selectTextOnFocus={true} // Allows text selection on focus
             errorText={formState.inputValidities['amount']}
             placeholder="Amount"
@@ -431,7 +492,7 @@ const BillReviewSummary = () => {
             icon={icons.wallet}
             keyboardType="number-pad"
             style={{
-              backgroundColor: billerItemData?.data.amount === 0 ? COLORS.white : COLORS.white,
+              backgroundColor: selectedItem.amount == 0 ? COLORS.white : COLORS.white,
             }}
           />
 
@@ -474,7 +535,7 @@ const BillReviewSummary = () => {
         {/* <RBSheetItem title="Bank" value="VFD Microfinance Bank" /> */}
         <RBSheetItem
           title="Bill Name"
-          value={billerItemData?.data?.paymentitemname || 'NA'}
+          value={selectedItem?.paymentitemname || 'NA'}
         />
         <RBSheetItem
           title="Account Name"
@@ -483,27 +544,27 @@ const BillReviewSummary = () => {
         />
         <RBSheetItem
           title="Amount "
-          value={formState.inputValues.amount || billerItemData?.data?.amount}
+          value={formState.inputValues.amount || selectedItem?.amount}
         // isbold
         />
         <RBSheetItem
           title="Charges applied "
           value={
-            (parseFloat(applyCommission(billerItemData?.data?.percentage_commission, formState.inputValues.amount)) + parseFloat((billerItemData?.data?.fixed_commission))).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+            (parseFloat(applyCommission(selectedItem?.percentageComission, formState.inputValues.amount)) + parseFloat((selectedItem?.fixedComission))).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
           }
         />
         <RBSheetItem
           title="Total Payment"
           value={
             (
-              parseFloat(billerItemData?.data?.amount || formState.inputValues.amount) +
+              parseFloat(formState.inputValues.amount || selectedItem.amount) +
               parseFloat(
                 applyCommission(
-                  billerItemData?.data?.percentage_commission || '0',
-                  billerItemData?.data?.amount || formState.inputValues.amount
+                  selectedItem?.percentageComission || '0',
+                  selectedItem?.amount || formState.inputValues.amount
                 )
               ) +
-              parseFloat(billerItemData?.data?.fixed_commission || '0') // Add fixed commission here
+              parseFloat(selectedItem?.percentageComission || '0') // Add fixed commission here
             )
               .toFixed(2)
               .replace(/\B(?=(\d{3})+(?!\d))/g, ",")
@@ -690,6 +751,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     alignItems: 'center',
     position: 'relative',
+  },
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)', // Semi-transparent background
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1,
+  },
+  loadingText: {
+    marginTop: 10,
+    fontSize: 16,
+    color: COLORS.white,
   },
 });
 

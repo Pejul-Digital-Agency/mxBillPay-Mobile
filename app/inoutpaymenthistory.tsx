@@ -1,5 +1,5 @@
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '@/theme/ThemeProvider';
 import { COLORS, FONTS, SIZES, icons } from '@/constants';
@@ -29,8 +29,12 @@ const InOutPaymentHistory = () => {
   } = useQuery({
     queryKey: ['transactionsHistory'],
     queryFn: () => getTransferHistory(token),
+    enabled: !!token,
   });
-
+  useEffect(() => {
+    console.log(transferData)
+    console.log("data lentgth", transferData?.data.length)
+  }, [transferData])
   const renderHeader = () => {
     return (
       <View style={[styles.headerContainer]}>
@@ -70,7 +74,7 @@ const InOutPaymentHistory = () => {
         >
           <View style={{ alignItems: 'center', rowGap: 3 }}>
             <Text style={styles.balanceAmountBottom}>
-              ₦{userAccount?.totalBillPayment.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",")|| '0.00'}
+              ₦{userAccount?.totalBillPayment.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",") || '0.00'}
             </Text>
             <Text style={styles.balanceTextBottom}>Total Bill Payment</Text>
           </View>
@@ -97,8 +101,8 @@ const InOutPaymentHistory = () => {
                 <TransferHistory transferData={transferData.data} />
               ) : (
                 <Text style={{ textAlign: 'center', ...FONTS.body3 }}>
-              
-                   No recent transactions
+
+                  No recent transactions
                 </Text>
               )}
             </View>
@@ -226,7 +230,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 26,
-    
+
     marginTop: 10,
   },
   contentText: {

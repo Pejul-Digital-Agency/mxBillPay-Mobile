@@ -84,6 +84,9 @@ const TransferHistoryCard: React.FC<TransferHistoryCardProps> = ({
             styles.price,
             {
               color: dark ? COLORS.grayscale200 : COLORS.primary,
+              // marginLeft:60
+              textAlign:'right',
+              marginRight:-30
             },
           ]}
         >
@@ -163,6 +166,7 @@ const styles = StyleSheet.create({
   },
   viewContainer: {
     flexDirection: 'column',
+    textAlign:'right',
     rowGap: 4,
     alignItems: 'flex-end',
   },

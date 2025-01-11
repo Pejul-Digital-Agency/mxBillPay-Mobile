@@ -32,9 +32,11 @@ const API_ENDPOINTS = {
     GetMonthlyStats: API_DOMAIN + '/monthly-stats',
     GetQuarterlyStats: API_DOMAIN + '/quarterly-stats',
     GetYearlyStats: API_DOMAIN + '/yearly-stats',
-    GetSocialMediaLinks:API_DOMAIN+'/social-media-links',
+    GetSocialMediaLinks: API_DOMAIN + '/social-media-links',
     GetFaqs: API_DOMAIN + '/faq',
     GetSlides: API_DOMAIN + '/slides',
+    MarksingleNotificationAsRead: API_DOMAIN + '/mark-single-notificatin-sRead',
+    DeleteSingleNotification: API_DOMAIN + '/delete-single-notification',
   },
   BILL_MANAGEMENT: {
     GetBillerCategories: API_DOMAIN + '/biller-categories-fetch',
@@ -45,7 +47,7 @@ const API_ENDPOINTS = {
     PayBills: API_DOMAIN + '/payBills',
     DeleteBill: API_DOMAIN + '/bills',
     TransactionDetails: API_DOMAIN + '/transaction-details',
-    
+
   },
   MONEY_TRANSFER: {
     GetBanks: API_DOMAIN + '/fetch-banks',
