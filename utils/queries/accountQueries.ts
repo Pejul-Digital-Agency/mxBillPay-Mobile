@@ -150,6 +150,13 @@ export const getQuarterlyStats = async (
     token
   );
 };
+export const getPrivacyPageLink = async (): Promise<any> => {
+  return await apiCall(
+    API_ENDPOINTS.ACCOUNT_MANAGEMENT.PrivacyPageLink,
+    'GET',
+    undefined
+  );
+};
 
 interface IStatsResponse {
   status: string;

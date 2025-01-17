@@ -1,21 +1,10 @@
 import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
 import axios from 'axios';
+import { apiCall, ApiError } from './customApiCall';
 
-const API_URL = 'https://mxbillpay.hmstech.org/api/set-fcm-token';
+const API_URL = 'https://admin.mxbillpay.com/api/set-fcm-token';
 
-// Configure how notifications are handled when received
-// Notifications.setNotificationHandler({
-//     handleNotification: async () => ({
-//         shouldShowAlert: true,
-//         shouldPlaySound: true,
-//         shouldSetBadge: false,
-//     }),
-// });
-
-/**
- * Function to request notification permissions and get the FCM push token
- */
 export const registerForPushNotificationsAsync = async (): Promise<string | null> => {
     try {
         // Step 1: Ensure the app is running on a physical device
@@ -67,24 +56,22 @@ interface ApiResponse {
  * Function to send the FCM token to the backend
  */
 export const saveFcmTokenToServer = async (fcmToken: string, authToken: string): Promise<void> => {
+    console.log('Auth token being sent:', authToken);
+
     try {
-        const response = await axios.post<ApiResponse>(
+        const response = await apiCall(
             API_URL,
-            { fcmToken }, // Sending the FCM token to the backend
-            {
-                headers: {
-                    Authorization: `Bearer ${authToken}`, // Include the auth token in the headers
-                },
-            }
+            'POST',
+            { fcmToken },
+            authToken // Pass the token here
         );
 
-        console.log('FCM token saved successfully:', response.data.message);
+        console.log('FCM token saved successfully:', response);
     } catch (error) {
-        // Check if the error is an Axios error with a response
-        if (axios.isAxiosError(error) && error.response) {
-            console.error('Failed to save FCM token:', error.response.data);
+        if (error instanceof ApiError) {
+            console.error('Failed to save FCM token:', error.data);
         } else {
-            console.error('Error saving FCM token:', error.message);
+            console.error('Unexpected error:', error);
         }
     }
 };

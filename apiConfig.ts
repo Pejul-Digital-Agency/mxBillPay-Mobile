@@ -1,4 +1,4 @@
-const API_DOMAIN = 'https://mxbillpay.hmstech.org/api';
+const API_DOMAIN = 'https://admin.mxbillpay.com/api';
 
 const API_ENDPOINTS = {
   AUTH: {
@@ -37,6 +37,7 @@ const API_ENDPOINTS = {
     GetSlides: API_DOMAIN + '/slides',
     MarksingleNotificationAsRead: API_DOMAIN + '/mark-single-notificatin-sRead',
     DeleteSingleNotification: API_DOMAIN + '/delete-single-notification',
+    PrivacyPageLink: API_DOMAIN + '/privacy-page-link'
   },
   BILL_MANAGEMENT: {
     GetBillerCategories: API_DOMAIN + '/biller-categories-fetch',

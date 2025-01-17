@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Linking, Alert } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { COLORS, SIZES, icons, images } from '../constants';
@@ -11,6 +11,13 @@ import { authSliceActions, useAppSelector } from '@/store/slices/authSlice';
 import Button from '@/components/Button';
 import * as SecureStore from 'expo-secure-store';
 import { useDispatch } from 'react-redux';
+// import { firebase } from '@react-native-firebase/analytics';
+// import { firebase
+// } from '@react-native-firebase/analytics';
+import firebase from '@react-native-firebase/app';
+import { useQuery } from '@tanstack/react-query';
+import { getPrivacyPageLink } from '@/utils/queries/accountQueries';
+import { analytics } from '@/utils/firebaseConfig';
 
 type Nav = {
   navigate: (value: string) => void;
@@ -24,7 +31,23 @@ const Welcome = () => {
   const { colors, dark } = useTheme();
   const [loading, setLoading] = useState(true);
   const dispatch = useDispatch();
-  // Check for stored credentials
+  const firebaseConfig = {
+    apiKey: "AIzaSyBUfShuprYPZrrTsNT86cNBGKRMXvbW5Eg",
+    authDomain: "mx-bill-pay-5c87d.firebaseapp.com",
+    projectId: "mx-bill-pay-5c87d",           // Derived from the project number
+    appId: "1:576378105680:ios:658b8a8835f05cb6eec655", // Updated based on new `google-services.json`
+  };
+
+  if (!firebase.apps.length) {
+    try {
+      firebase.initializeApp(firebaseConfig);
+      console.log("Firebase initialized successfully");
+    } catch (error) {
+      console.error("Error initializing Firebase:", error);
+    }
+  } else {
+    console.log("Firebase is already initialized");
+  }
   useEffect(() => {
     const checkStoredCredentials = async () => {
       try {
@@ -51,7 +74,49 @@ const Welcome = () => {
     };
     checkStoredCredentials();
   }, [reset, navigate]);
+  useEffect(() => {
+    const initializeAnalytics = async () => {
+      try {
+        console.log('Initializing Firebase Analytics...');
+        await analytics().logScreenView({
+          screen_name: 'WelcomeScreen',
+          screen_class: 'Welcome',
+        });
+        console.log('Firebase Analytics event logged successfully');
+      } catch (error) {
+        console.error('Error with Firebase Analytics:', error);
+      }
+    };
+  
+    // Delay analytics initialization by 3 seconds (optional)
+    setTimeout(() => {
+      initializeAnalytics();
+    }, 3000);
+  }, []);
+  // const { token } = useAppSelector((state) => state.auth);
+  const { data: privacyLink } = useQuery({
+    queryKey: ['privacyLink'],
+    queryFn: getPrivacyPageLink,
+    enabled: true
+  });
 
+  const handlePrivacyClick = async () => {
+    try {
+      const url = privacyLink?.data;
+      if (url) {
+        const supported = await Linking.canOpenURL(url);
+        if (supported) {
+          await Linking.openURL(url); // Opens the URL in the browser
+        } else {
+          Alert.alert('Error', 'The provided URL cannot be opened.');
+        }
+      } else {
+        Alert.alert('Error', 'No privacy link found.');
+      }
+    } catch (error) {
+      Alert.alert('Error', 'An error occurred while trying to open the link.');
+    }
+  };
   if (loading) {
     return (
       <SafeAreaView style={styles.loadingContainer}>
@@ -60,7 +125,7 @@ const Welcome = () => {
     );
   }
   return (
-    <SafeAreaView style={[styles.area, { backgroundColor: colors.background }]}he>
+    <SafeAreaView style={[styles.area, { backgroundColor: colors.background }]} he>
       <View style={[styles.container, { backgroundColor: colors.background }]}>
         <Image
           source={images.mxlogo}
@@ -76,17 +141,6 @@ const Welcome = () => {
           Mx Bill Pay is your go-to solution for seamless and secure bill payments. Manage and pay for electricity, airtime, data, cable, tolls, betting top up and internet services all in one place.
         </Text>
         <View style={{ marginVertical: 32 }}>
-          {/* <SocialButtonV2
-            title="Continue with Apple"
-            icon={icons.appleLogo}
-            onPress={() => navigate('signup')}
-            iconStyles={{ tintColor: dark ? COLORS.white : COLORS.black }}
-          />
-          <SocialButtonV2
-            title="Continue with Google"
-            icon={icons.google}
-            onPress={() => navigate('signup')}
-          /> */}
           <Button
             title={'Create Account'}
             filled
@@ -124,7 +178,7 @@ const Welcome = () => {
         >
           By continuing, you accept the Terms Of Use and
         </Text>
-        <TouchableOpacity onPress={() => navigate('login')}>
+        <TouchableOpacity onPress={handlePrivacyClick}>
           <Text
             style={[
               styles.bottomSubtitle,

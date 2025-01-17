@@ -14,6 +14,7 @@ import * as Notifications from 'expo-notifications';
 import { registerForPushNotificationsAsync, saveFcmTokenToServer } from '@/utils/notificationService';
 import { RootState } from '@/store/store'; // Adjust import to match your RootState definition
 
+
 SplashScreen.preventAutoHideAsync();
 LogBox.ignoreAllLogs();
 

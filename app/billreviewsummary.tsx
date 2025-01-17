@@ -34,7 +34,7 @@ import { ApiError } from '@/utils/customApiCall';
 // import alert from '../assets/icons/alert-svgrepo-com.svg'
 import CustomPicker from '@/components/Picker';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-
+import analytics from '@react-native-firebase/analytics';
 interface InputValues {
   customerId: string;
   phone: string;
@@ -150,12 +150,28 @@ const BillReviewSummary = () => {
     mutationFn: payBillFn,
     onSuccess: (data) => {
       console.log('transaction_data', data);
+      // try {
+      //   analytics().logEvent('purchase', {
+      //     transaction_id: data?.data?.transactionId || 'unknown', // Replace with actual transaction ID
+      //     value: data?.data?.amount || 0, // Replace with the actual purchase amount
+      //     currency: 'NGN', // Replace with the appropriate currency code
+      //     item_name: selectedItem?.paymentitemname || 'unknown', // Replace with the purchased item name
+      //     method: 'wallet', // Payment method used (e.g., wallet, credit card)
+      //   });
+      //   console.log('Purchase event logged successfully');
+      // } catch (error) {
+      //   console.error('Error logging purchase event:', error);
+      // }
       rbSheetRef.current.close();
-      reset({ index: 0, routes: [{ name: 'inoutpaymentviewereceipt' }] });
+
+      console.log('Navigating to inoutpaymentviewereceipt... with data ',data?.data);
       navigate('inoutpaymentviewereceipt', {
         transactionData: data?.data,
         billerItemData: selectedItem,
       });
+      
+
+
     },
     onError: (error: ApiError) => {
       console.log(error.data);
@@ -550,27 +566,23 @@ const BillReviewSummary = () => {
         <RBSheetItem
           title="Charges applied "
           value={
-            (parseFloat(applyCommission(selectedItem?.percentageComission, formState.inputValues.amount)) + parseFloat((selectedItem?.fixedComission))).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+            (parseFloat(applyCommission(selectedItem?.percentageComission, formState.inputValues.amount || selectedItem?.amount)) + parseFloat((selectedItem?.fixedComission))).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
           }
         />
         <RBSheetItem
           title="Total Payment"
-          value={
-            (
-              parseFloat(formState.inputValues.amount || selectedItem.amount) +
-              parseFloat(
-                applyCommission(
-                  selectedItem?.percentageComission || '0',
-                  selectedItem?.amount || formState.inputValues.amount
-                )
-              ) +
-              parseFloat(selectedItem?.percentageComission || '0') // Add fixed commission here
-            )
-              .toFixed(2)
-              .replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-          }
-
-
+          value={(
+            parseFloat(formState.inputValues.amount || selectedItem?.amount || 0) + // Base amount
+            parseFloat(
+              applyCommission(
+                selectedItem?.percentageComission || '0', // Percentage commission
+                formState.inputValues.amount || selectedItem?.amount || 0 // Base amount for commission
+              )
+            ) +
+            parseFloat(selectedItem?.fixedComission || 0) // Fixed commission
+          )
+            .toFixed(2)
+            .replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
           isbold
         />
         <View

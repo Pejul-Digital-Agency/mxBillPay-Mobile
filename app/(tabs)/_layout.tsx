@@ -1,7 +1,7 @@
 import { Tabs, useNavigation } from 'expo-router';
 import { View, Text, Platform, BackHandler } from 'react-native';
 import { Image } from 'expo-image';
-import { COLORS, icons, FONTS } from '../../constants';
+import { COLORS, icons, FONTS, images } from '../../constants';
 import { useTheme } from '@/theme/ThemeProvider';
 import TokenExpiryModal from '../tokenexpirymodal';
 
@@ -122,7 +122,7 @@ const TabLayout: React.FC = () => {
                   }}
                 >
                   <Image
-                    source={focused ? icons.wallet2 : icons.wallet2Outline}
+                    source={focused ? images.helpCenter : images.helpCenter}
                     contentFit="contain"
                     style={{
                       width: 24,
@@ -144,7 +144,7 @@ const TabLayout: React.FC = () => {
                         : COLORS.gray3,
                     }}
                   >
-                   Cards
+                   Help 
                   </Text>
                 </View>
               );
@@ -186,7 +186,7 @@ const TabLayout: React.FC = () => {
                         : COLORS.gray3,
                     }}
                   >
-                    Profile
+                    Settings
                   </Text>
                 </View>
               );

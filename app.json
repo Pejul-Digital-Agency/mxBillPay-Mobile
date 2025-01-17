@@ -1,8 +1,8 @@
 {
   "expo": {
     "name": "Mx Bill Pay",
-    "slug": "AllPay",
-    "version": "1.0.0",
+    "slug": "MxBillPay",
+    "version": "1.5.0",
     "orientation": "portrait",
     "icon": "./assets/images/logo3.png",
     "scheme": "myapp",
@@ -15,10 +15,13 @@
     "ios": {
       "supportsTablet": true,
       "infoPlist": {
-        "NSCameraUsageDescription": "This app uses the camera to scan barcodes on event tickets.",
-        "NSFaceIDUsageDescription": "This app uses Face ID for biometric authentication."
+        "NSPhotoLibraryUsageDescription": "This app needs access to your photo library to upload images.",
+        "NSPhotoLibraryAddUsageDescription": "This app needs access to save images to your photo library.",
+        "NSFaceIDUsageDescription": "This app uses Face ID for biometric authentication.",
+        "UIBackgroundModes": ["remote-notification"]
       },
-      "bundleIdentifier": "ios-build"
+      "bundleIdentifier": "com.mxbillpay.app",
+      "googleServicesFile": "./GoogleService-Info.plist"
     },
     "android": {
       "adaptiveIcon": {
@@ -30,9 +33,10 @@
         "android.permission.USE_FINGERPRINT",
         "INTERNET"
       ],
-      "package": "com.mehmood5491.AllPay",
+      "package": "com.mxbillpay.app",
       "googleServicesFile": "./google-services.json",
-      "useNextNotificationsApi": true
+      "useNextNotificationsApi": true,
+      "versionCode": 2
     },
     "web": {
       "bundler": "metro",
@@ -53,7 +57,15 @@
           "iCloudContainerEnvironment": "Production"
         }
       ],
-      "expo-secure-store"
+      "expo-secure-store",
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "useFrameworks": "static"
+          }
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true
@@ -63,7 +75,7 @@
         "origin": false
       },
       "eas": {
-        "projectId": "e11be5d1-85b9-40e1-84d6-d95728a700e8"
+        "projectId": "8660d730-8849-4191-84bc-669c3a8e5954"
       }
     }
   }

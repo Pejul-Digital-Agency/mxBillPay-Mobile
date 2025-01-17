@@ -461,6 +461,7 @@ const EditProfile = () => {
               </View>
 
               {/* Date of Birth */}
+              {/* Date of Birth */}
               <View>
                 <Text
                   style={[
@@ -470,22 +471,67 @@ const EditProfile = () => {
                 >
                   Date of Birth
                 </Text>
-                <TouchableOpacity
-                  style={[
-                    styles.inputBtn,
-                    {
-                      backgroundColor: dark ? COLORS.dark2 : COLORS.greyscale500,
-                      borderColor: dark ? COLORS.dark2 : COLORS.greyscale500,
-                    },
-                  ]}
-                  onPress={() => setOpenDobPicker(true)}
-                >
-                  <Text style={{ ...FONTS.body4, color: COLORS.grayscale400 }}>
-                    {dob || 'Select your date of birth'}
-                  </Text>
-                  <Feather name="calendar" size={24} color={COLORS.grayscale400} />
-                </TouchableOpacity>
+                <View style={styles.rowContainer}>
+                  {/* Date Input */}
+                  <TextInput
+                    style={[
+                      styles.dobInput,
+                      {
+                        backgroundColor: dark ? COLORS.dark2 : COLORS.greyscale500,
+                        color: dark ? COLORS.white : COLORS.black,
+                      },
+                    ]}
+                    placeholder="DD"
+                    placeholderTextColor={COLORS.grayscale400}
+                    keyboardType="number-pad"
+                    maxLength={2}
+                    value={dob.split('-')[2] || ''} // Extract day from dob
+                    onChangeText={(value) => {
+                      const [year, month] = dob.split('-');
+                      setDob(`${year || ''}-${month || ''}-${value}`);
+                    }}
+                  />
+                  {/* Month Input */}
+                  <TextInput
+                    style={[
+                      styles.dobInput,
+                      {
+                        backgroundColor: dark ? COLORS.dark2 : COLORS.greyscale500,
+                        color: dark ? COLORS.white : COLORS.black,
+                      },
+                    ]}
+                    placeholder="MM"
+                    placeholderTextColor={COLORS.grayscale400}
+                    keyboardType="number-pad"
+                    maxLength={2}
+                    value={dob.split('-')[1] || ''} // Extract month from dob
+                    onChangeText={(value) => {
+                      const [year, , day] = dob.split('-');
+                      setDob(`${year || ''}-${value}-${day || ''}`);
+                    }}
+                  />
+                  {/* Year Input */}
+                  <TextInput
+                    style={[
+                      styles.dobInput,
+                      {
+                        backgroundColor: dark ? COLORS.dark2 : COLORS.greyscale500,
+                        color: dark ? COLORS.white : COLORS.black,
+                      },
+                    ]}
+                    placeholder="YYYY"
+                    placeholderTextColor={COLORS.grayscale400}
+                    keyboardType="number-pad"
+                    maxLength={4}
+                    value={dob.split('-')[0] || ''} // Extract year from dob
+                    onChangeText={(value) => {
+                      const [, month, day] = dob.split('-');
+                      setDob(`${value}-${month || ''}-${day || ''}`);
+                    }}
+                  />
+                </View>
               </View>
+
 
               <DatePickerModal
                 open={openDobPicker}
@@ -534,6 +580,17 @@ const EditProfile = () => {
 };
 
 const styles = StyleSheet.create({
+  dobInput: {
+    flex: 1,
+    height: 50,
+    borderWidth: 1,
+    borderRadius: 8,
+    textAlign: 'center',
+    marginHorizontal: 5,
+    fontSize: 16,
+    borderColor: COLORS.greyscale500,
+  },
+  
   area: {
     flex: 1,
     backgroundColor: COLORS.white,

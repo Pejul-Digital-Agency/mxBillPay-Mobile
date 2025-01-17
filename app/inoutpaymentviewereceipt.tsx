@@ -51,13 +51,15 @@ const InOutPaymentViewEreceipt = () => {
   // );
   const { navigate, reset, goBack } = useNavigation<NavigationProp<any>>();
   const route = useRoute<RouteProp<any>>();
-  if (!route.params || Object.keys(route.params).length == 0) return goBack();
-  const {
-    transactionData,
-    billerItemData,
-  }: { transactionData: ReceiptData; billerItemData: IBillerItemDetails } =
-    route.params as any;
-  if (!transactionData || !billerItemData) return goBack();
+
+  if (!route.params || Object.keys(route.params).length == 0) {
+    goBack();
+    console.log("no params");
+    return null;
+  }
+
+  const { transactionData, billerItemData } = route.params;
+
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const { colors, dark } = useTheme();
@@ -330,7 +332,6 @@ const InOutPaymentViewEreceipt = () => {
           title="Go Back"
           onPress={() => {
             console.log('pressed');
-            reset({ index: 0, routes: [{ name: 'tabs' }] });
             navigate('(tabs)');
           }}
           filled

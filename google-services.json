@@ -7,9 +7,9 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:576378105680:android:b9f421900f863137eec655",
+        "mobilesdk_app_id": "1:576378105680:android:2101ecf29eb9fe16eec655",
         "android_client_info": {
-          "package_name": "com.mehmood5491.AllPay"
+          "package_name": "com.mxbillpay.app"
         }
       },
       "oauth_client": [],

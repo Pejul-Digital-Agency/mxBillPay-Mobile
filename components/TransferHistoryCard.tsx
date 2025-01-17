@@ -5,6 +5,7 @@ import {
   StyleSheet,
   ImageSourcePropType,
   TouchableOpacity,
+  Platform,
 } from 'react-native';
 import { COLORS, FONTS, icons, SIZES } from '@/constants';
 import { Image } from 'expo-image';
@@ -84,9 +85,8 @@ const TransferHistoryCard: React.FC<TransferHistoryCardProps> = ({
             styles.price,
             {
               color: dark ? COLORS.grayscale200 : COLORS.primary,
-              // marginLeft:60
-              textAlign:'right',
-              marginRight:-30
+              textAlign: 'right',
+              marginRight: Platform.OS === 'ios' ? 0 : -30, 
             },
           ]}
         >

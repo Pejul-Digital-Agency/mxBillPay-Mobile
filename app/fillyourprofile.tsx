@@ -95,7 +95,7 @@ const FillYourProfile = () => {
   const [keyboardVisible, setKeyboardVisible] = useState(false);
   const [startedDate, setStartedDate] = useState(`-Select your Date of Birth`);
   const { colors, dark } = useTheme();
-  console.log(token);
+  // console.log(token);
   const { mutate, isPending } = useMutation({
     mutationFn: createIndividualAccount,
     onSuccess: (data) => {
@@ -167,7 +167,7 @@ const FillYourProfile = () => {
       } as any);
     }
 
-    console.log(token);
+  // console.log(token);
     mutate({
       data: formData,
       token: token,

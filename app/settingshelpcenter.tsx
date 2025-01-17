@@ -269,15 +269,7 @@ const SettingsHelpCenter = () => {
             color: dark ? COLORS.white : COLORS.greyscale900
           }]}>Help Center</Text>
         </View>
-        <TouchableOpacity>
-          <Image
-            source={icons.moreCircle}
-            contentFit='contain'
-            style={[styles.moreIcon, {
-              tintColor: dark ? COLORS.secondaryWhite : COLORS.greyscale900
-            }]}
-          />
-        </TouchableOpacity>
+        
       </View>
     )
   }

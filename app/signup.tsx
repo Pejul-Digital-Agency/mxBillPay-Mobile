@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   Keyboard,
   Modal,
+  Linking,
 } from 'react-native';
 import React, { useCallback, useEffect, useReducer, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -24,11 +25,17 @@ import { Image } from 'expo-image';
 import { Redirect, router, useNavigation } from 'expo-router';
 import { isLoading } from 'expo-font';
 import showToast from '@/utils/showToast';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { generateBvnLink, signUpUser } from '@/utils/mutations/authMutations';
 import { authSliceActions } from '@/store/slices/authSlice';
 import { useDispatch } from 'react-redux';
 import CustomModal from './custommodal';
+// import { analytics } from '@/utils/firebaseConfig';
+// import { analytics } from "./firebaseConfig";
+// import { logEvent } from "firebase/analytics";
+import analytics from '@react-native-firebase/analytics';
+import { getPrivacyPageLink } from '@/utils/queries/accountQueries';
+
 
 
 export interface InputValues {
@@ -79,11 +86,26 @@ const Signup = () => {
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
 
-  const dispatch = useDispatch();
+const dispatch = useDispatch();
   const { mutate: signUp, isPending: signingUp } = useMutation({
     mutationFn: (data: InputValues) => signUpUser(data),
     onSuccess: (data) => {
       console.log(data);
+
+      // // Log the predefined `sign_up` event
+      // analytics()
+      //   .logEvent('sign_up', {
+      //     method: 'email', // Add the method of signup (e.g., 'email', 'google', etc.)
+      //     button_name: 'signup', // Additional data (optional)
+      //   })
+      //   .then(() => {
+      //     console.log('sign_up event logged successfully');
+      //   })
+      //   .catch((error) => {
+      //     console.error('Error logging sign_up event:', error);
+      //   });
+
+      // Save token and user details in Redux state
       dispatch(authSliceActions.setToken(data?.token));
       dispatch(
         authSliceActions.setUser({
@@ -91,14 +113,19 @@ const Signup = () => {
           userId: data.user_id,
         })
       );
+
+      // Navigate to the OTP verification page
       router.push({
         pathname: '/otpverification',
         params: {
           type: 'email',
         },
       });
+
+      // Uncomment if you need a modal to be shown
       // setModalVisible(true);
     },
+
     onError: (error) => {
       console.log(error);
       showToast({
@@ -107,7 +134,6 @@ const Signup = () => {
       });
     },
   });
-
   const inputChangedHandler = useCallback(
     (inputId: string, inputValue: string) => {
       const result = validateInput(inputId, inputValue);
@@ -204,8 +230,31 @@ const Signup = () => {
   const googleAuthHandler = () => {
     console.log('Google Authentication');
   };
-  const handlePrivacyPolicyPress = () => {
-    console.log('privacy policy')
+  const { data: privacyLink } = useQuery({
+    queryKey: ['privacyLink'],
+    queryFn: getPrivacyPageLink,
+    enabled: true
+  });
+
+  const handlePrivacyClick = async () => {
+
+  };
+  const handlePrivacyPolicyPress = async () => {
+    try {
+      const url = privacyLink?.data;
+      if (url) {
+        const supported = await Linking.canOpenURL(url);
+        if (supported) {
+          await Linking.openURL(url); // Opens the URL in the browser
+        } else {
+          Alert.alert('Error', 'The provided URL cannot be opened.');
+        }
+      } else {
+        Alert.alert('Error', 'No privacy link found.');
+      }
+    } catch (error) {
+      Alert.alert('Error', 'An error occurred while trying to open the link.');
+    }
   }
 
   // console.log(keyboardVisible);

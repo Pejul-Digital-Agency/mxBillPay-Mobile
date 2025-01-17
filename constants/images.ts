@@ -2,6 +2,7 @@ const logo = require('../assets/images/logo2.png') as string;
 const onboardingSplash = require('../assets/images/onboarding_splash1.png');
 const onboardingSplashDark = require('../assets/images/onboarding_splash1_dark.png');
 const idAvatar = require('../assets/images/id_avatar.png');
+const helpCenter= require('../assets/images/helpCenter.png');
 const avatar = require('../assets/images/avatar.png');
 const card = require('../assets/images/card.png');
 const face = require('../assets/images/face.png');
@@ -36,6 +37,7 @@ const images = {
   idAvatar,
   avatar,
   card,
+  helpCenter,
   face,
   infoCircleFilled,
   scanCard,

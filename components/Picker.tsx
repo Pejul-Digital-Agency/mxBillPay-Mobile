@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, TextInput, FlatList, TouchableOpacity, Text, Modal } from 'react-native';
+import { View, StyleSheet, TextInput, FlatList, TouchableOpacity, Text, Modal, Platform } from 'react-native';
 import { Image } from 'expo-image';
 import { COLORS, SIZES } from '@/constants';
 import { IBillerItemsList } from '@/utils/queries/appQueries';
@@ -130,12 +130,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   modalContent: {
-    marginTop:30,
+    marginTop: Platform.OS === 'ios' ? 70 : 30, // Add more margin for iOS
     width: '90%',
     backgroundColor: COLORS.white,
     borderRadius: 10,
     padding: 15,
-    marginBottom:20,
+    marginBottom: 20,
   },
   searchInput: {
     height: 40,

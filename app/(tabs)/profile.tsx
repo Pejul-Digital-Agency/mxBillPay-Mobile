@@ -47,12 +47,10 @@ const Profile = () => {
     // Dispatch clearToken to reset auth state
     await SecureStore.deleteItemAsync('authCredentials');
     dispatch(authSliceActions.clearToken());
-    dispatch(authSliceActions.setUser({}));
+    refRBSheet.current.close()
+    // dispatch(authSliceActions.setUser({}));
     // Reset navigation stack and navigate to login screen
-    reset({
-      index: 0,
-      routes: [{ name: 'login' }],
-    });
+    navigate('login'); 
   };
 
   const handleDelete = async () => {
@@ -69,14 +67,13 @@ const Profile = () => {
         Alert.alert('Account Deleted', 'Your account has been successfully deleted.');
 
         // Dispatch actions to reset auth state
+        refRBSheet2.current.close()
         dispatch(authSliceActions.clearToken());
         dispatch(authSliceActions.setUser({}));
-
+      
         // Reset navigation stack and navigate to login screen
-        reset({
-          index: 0,
-          routes: [{ name: 'login' }],
-        });
+        navigate('login');
+
       } else {
         Alert.alert('Error', 'Failed to delete the account. Please try again.');
       }
@@ -170,12 +167,12 @@ const Profile = () => {
               onPress={() => navigate('settingsprivacypolicy')}
               subtitle="Read our privacy policy"
             />
-            <SettingsItem
+            {/* <SettingsItem
               icon={icons.rating}
               name="Rate Us"
               onPress={() => { }}
               subtitle="Love our App"
-            />
+            /> */}
           </View>
           <View style={styles.sectionContainer}>
             <SettingsItem

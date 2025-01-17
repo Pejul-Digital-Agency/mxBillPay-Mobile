@@ -23,6 +23,8 @@ import { useAppStateContext } from '@/store/AppStateContext';
 const TokenExpiryModal = () => {
   const { expired, setExpired, currentPage } = useAppStateContext();
   const navigation = useNavigation<NavigationProp<any>>();
+   const { navigate, reset } = useNavigation<NavigationProp<any>>();
+  // const {navigate} = useNavigation();
   console.log(expired);
   return (
     <CustomModal
@@ -33,10 +35,8 @@ const TokenExpiryModal = () => {
       title="Sorry, your session has been expired, please login again to continue."
       onPress={() => {
         setExpired(false);
-        navigation.reset({
-          index: 0, // Ensures the login screen is the first screen in the stack
-          routes: [{ name: 'login', params: undefined }], // Replace the stack with the login route
-        });
+
+        navigate('login');
       }}
     />
   );

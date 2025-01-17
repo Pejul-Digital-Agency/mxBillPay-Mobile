@@ -86,7 +86,7 @@ const HomeScreen = () => {
   });
 
   useEffect(() => {
-    console.log(balance);
+    // console.log(balance);
     if (balance) {
       dispatch(
         authSliceActions.setUserAccount({
